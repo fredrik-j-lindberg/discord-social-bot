@@ -1,0 +1,40 @@
+# Discord Social Bot
+
+## Introduction
+
+This is a Discord bot built to cater to some specific needs I had a hard time finding good solutions for in existing bots
+
+## Features
+
+- Event syncing with a role. If your event has a `roleId="<idhere>"` in its description, whenever someone adds themselves to the event they receive the role, and vice versa
+
+## Getting Started
+
+### Pre-requisites:
+
+- Node 21 (nvm recommended)
+- pnpm
+- Discord bot credentials (ask repo author or setup your own bot)
+
+### Quick start
+
+To run the bot locally, follow the steps below:
+
+1. Clone this repository to your local machine:
+   ```bash
+   git clone https://github.com/fredrik-j-lindberg/discord-social-bot.git
+   ```
+2. Enter the new directory
+3. Make sure you are on the right node version
+   ```bash
+   nvm use
+   ```
+4. Install all packages
+   ```bash
+   pnpm install
+   ```
+5. Create the .env file. See the example [env file](./.env.example)
+6. Run the bot
+   ```bash
+   pnpm start
+   ```

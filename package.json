@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --env-file=.env ./src/index.ts",
+    "start": "tsx watch --env-file=.env ./src/index.ts",
     "addCommand": "tsx --env-file=.env ./src/addCommand.ts"
   },
   "keywords": [],
