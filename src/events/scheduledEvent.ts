@@ -1,12 +1,21 @@
 import { addRole, removeRole } from "~/lib/roles";
 import { registerEvent } from "./client";
 import { assertIsDefined } from "~/lib/validation";
+import { ClientEvents } from "discord.js";
 
 const extractRoleIdFromEventDescription = (description: string | null) => {
   const regex = /roleId="([^"]+)"/;
   const match = description?.match(regex);
   return match?.[1];
 };
+
+const metadataSelector = (
+  ...[event, user]: ClientEvents["guildScheduledEventUserAdd"]
+) => ({
+  user: user.displayName,
+  guild: event.guild?.name,
+  scheduledEvent: event.name,
+});
 
 export const registerScheduledEvents = () => {
   registerEvent(
@@ -23,10 +32,7 @@ export const registerScheduledEvents = () => {
         metadata: { role: roleAdded.name },
       };
     },
-    (event, user) => ({
-      user: user.displayName,
-      guild: event.guild?.name,
-    }),
+    metadataSelector,
   );
 
   registerEvent(
@@ -43,9 +49,6 @@ export const registerScheduledEvents = () => {
         metadata: { role: roleAdded.name },
       };
     },
-    (event, user) => ({
-      user: user.displayName,
-      guild: event.guild?.name,
-    }),
+    metadataSelector,
   );
 };
