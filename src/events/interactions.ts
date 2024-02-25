@@ -25,7 +25,7 @@ export const registerInteractionEvent = () => {
       };
     },
     (interaction) => ({
-      user: interaction.user.displayName,
+      user: interaction.user.tag,
       command: interaction.isChatInputCommand()
         ? interaction.commandName
         : null,

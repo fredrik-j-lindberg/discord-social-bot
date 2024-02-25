@@ -12,7 +12,7 @@ const extractRoleIdFromEventDescription = (description: string | null) => {
 const metadataSelector = (
   ...[event, user]: ClientEvents["guildScheduledEventUserAdd"]
 ) => ({
-  user: user.displayName,
+  user: user.tag,
   guild: event.guild?.name,
   scheduledEvent: event.name,
 });
