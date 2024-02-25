@@ -1,6 +1,6 @@
 import { registerScheduledEvents } from "./scheduledEvent";
 import { registerInteractionEvent } from "./interactions";
-import { login, registerEvent } from "./client";
+import { registerEvent } from "./client";
 
 export const registerEvents = () => {
   registerEvent("ready", (client) => {
@@ -11,6 +11,4 @@ export const registerEvents = () => {
   });
   registerInteractionEvent();
   registerScheduledEvents();
-
-  login();
 };
