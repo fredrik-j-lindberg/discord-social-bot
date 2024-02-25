@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "tsx watch --env-file=.env ./src/index.ts",
+    "lint": "eslint .",
     "addCommand": "tsx --env-file=.env ./src/addCommand.ts"
   },
   "keywords": [],
