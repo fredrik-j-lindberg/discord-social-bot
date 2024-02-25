@@ -3,7 +3,7 @@ import { DoraException } from "./exceptions/DoraException";
 
 const getRole = async ({ guild, roleId }: { guild: Guild; roleId: string }) => {
   try {
-    return await guild?.roles.fetch(roleId);
+    return await guild.roles.fetch(roleId);
   } catch (err) {
     throw new DoraException(
       `Failed to fetch role '${roleId}' in guild '${guild.name}'`,
@@ -31,7 +31,7 @@ export const addRole = async ({
   }
 
   try {
-    await guild?.members.addRole({ role, user });
+    await guild.members.addRole({ role, user });
   } catch (err) {
     throw new DoraException(
       `Failed to add role '${role.name}' in guild '${guild.name}' to user '${user.tag}'`,
@@ -61,7 +61,7 @@ export const removeRole = async ({
   }
 
   try {
-    await guild?.members.removeRole({ role, user });
+    await guild.members.removeRole({ role, user });
   } catch (err) {
     throw new DoraException(
       `Failed to remove role '${role.name}' in guild '${guild.name}' from user '${user.tag}'`,

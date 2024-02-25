@@ -6,6 +6,14 @@ import prettierRecommended from "eslint-plugin-prettier/recommended";
 
 export default tseslint.config(
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
   prettierRecommended,
+  ...tseslint.configs.strictTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
 );
