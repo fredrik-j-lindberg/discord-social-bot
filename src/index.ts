@@ -1,10 +1,11 @@
 import { registerEvents } from "./events";
-import { login } from "./events/client";
+import { client } from "./client";
 import { logger } from "./lib/logger";
+import { env } from "./env";
 
 (async () => {
   registerEvents();
-  await login();
+  await client.login(env.DISCORD_BOT_TOKEN);
 })().catch((err) => {
   logger.error(err, "Failed to initialize bot");
 });

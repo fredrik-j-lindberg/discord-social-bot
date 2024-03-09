@@ -1,21 +1,12 @@
-import { Awaitable, Client, ClientEvents, GatewayIntentBits } from "discord.js";
-import { env } from "~/env";
+import { ClientEvents, Awaitable } from "discord.js";
+import { client } from "~/client";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildScheduledEvents,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildPresences,
-  ],
-});
-
-export const login = () => client.login(env.DISCORD_BOT_TOKEN);
-
-export const registerEvent = <TEvent extends keyof ClientEvents>(
-  event: TEvent,
+type RegisterEventParams<
+  TEvent extends keyof ClientEvents = keyof ClientEvents,
+> = {
+  event: TEvent;
   listener: (...args: ClientEvents[TEvent]) => Awaitable<
     { metadata?: Record<string, string> } & (
       | {
@@ -24,11 +15,17 @@ export const registerEvent = <TEvent extends keyof ClientEvents>(
         }
       | { status: "skipped"; reason: string }
     )
-  >,
+  >;
   metadataSelector?: (
     ...args: ClientEvents[TEvent]
-  ) => Record<string, string | null | undefined>,
-) => {
+  ) => Record<string, string | null | undefined>;
+};
+
+export const registerEvent = <TEvent extends keyof ClientEvents>({
+  event,
+  listener,
+  metadataSelector,
+}: RegisterEventParams<TEvent>) => {
   client.on(event, async (...eventArgs) => {
     const metadata = metadataSelector?.(...eventArgs) || {};
     const eventLogger = logger.child({ ...metadata, event: String(event) });
@@ -62,4 +59,12 @@ export const registerEvent = <TEvent extends keyof ClientEvents>(
       eventLogger.error(err, `${String(event)}: Failed to handle event`);
     }
   });
+};
+
+export const extractRoleIdFromEventDescription = (
+  description: string | null,
+) => {
+  const regex = /roleId="([^"]+)"/;
+  const match = description?.match(regex);
+  return match?.[1];
 };

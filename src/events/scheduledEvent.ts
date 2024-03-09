@@ -1,13 +1,7 @@
 import { addRole, removeRole } from "~/lib/roles";
-import { registerEvent } from "./client";
 import { assertIsDefined } from "~/lib/validation";
 import { ClientEvents } from "discord.js";
-
-const extractRoleIdFromEventDescription = (description: string | null) => {
-  const regex = /roleId="([^"]+)"/;
-  const match = description?.match(regex);
-  return match?.[1];
-};
+import { extractRoleIdFromEventDescription, registerEvent } from "./utils";
 
 const metadataSelector = (
   ...[event, user]: ClientEvents["guildScheduledEventUserAdd"]
@@ -18,9 +12,9 @@ const metadataSelector = (
 });
 
 export const registerScheduledEvents = () => {
-  registerEvent(
-    "guildScheduledEventUserAdd",
-    async (event, user) => {
+  registerEvent({
+    event: "guildScheduledEventUserAdd",
+    listener: async (event, user) => {
       const roleId = extractRoleIdFromEventDescription(event.description);
       assertIsDefined(roleId, "Unable to find roleId in event description");
       assertIsDefined(event.guild, "Event triggered outside guild");
@@ -33,11 +27,11 @@ export const registerScheduledEvents = () => {
       };
     },
     metadataSelector,
-  );
+  });
 
-  registerEvent(
-    "guildScheduledEventUserRemove",
-    async (event, user) => {
+  registerEvent({
+    event: "guildScheduledEventUserRemove",
+    listener: async (event, user) => {
       const roleId = extractRoleIdFromEventDescription(event.description);
       assertIsDefined(roleId, "Unable to find roleId in event description");
       assertIsDefined(event.guild, "Event triggered outside guild");
@@ -50,5 +44,5 @@ export const registerScheduledEvents = () => {
       };
     },
     metadataSelector,
-  );
+  });
 };

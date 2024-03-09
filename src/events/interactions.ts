@@ -1,9 +1,9 @@
-import { registerEvent } from "./client";
+import { registerEvent } from "./utils";
 
 export const registerInteractionEvent = () => {
-  registerEvent(
-    "interactionCreate",
-    async (interaction) => {
+  registerEvent({
+    event: "interactionCreate",
+    listener: async (interaction) => {
       if (!interaction.isChatInputCommand()) {
         return {
           status: "skipped",
@@ -24,11 +24,11 @@ export const registerInteractionEvent = () => {
         reason: "Unknown command",
       };
     },
-    (interaction) => ({
+    metadataSelector: (interaction) => ({
       user: interaction.user.tag,
       command: interaction.isChatInputCommand()
         ? interaction.commandName
         : null,
     }),
-  );
+  });
 };
