@@ -61,10 +61,17 @@ export const registerEvent = <TEvent extends keyof ClientEvents>({
   });
 };
 
-export const extractRoleIdFromEventDescription = (
-  description: string | null,
-) => {
-  const regex = /roleId="([^"]+)"/;
+export const extractDataFromEventDescription = ({
+  description,
+  selector,
+}: {
+  description: string | null;
+  selector: string;
+}) => {
+  const regex = new RegExp(`${selector}="([^"]+)"`);
   const match = description?.match(regex);
   return match?.[1];
 };
+
+export const extractRoleIdFromEventDescription = (description: string | null) =>
+  extractDataFromEventDescription({ description, selector: "roleId" });
