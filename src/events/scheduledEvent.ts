@@ -2,6 +2,7 @@ import { addRole, removeRole } from "~/lib/roles";
 import { assertIsDefined } from "~/lib/validation";
 import { ClientEvents } from "discord.js";
 import { extractRoleIdFromEventDescription, registerEvent } from "./utils";
+import { DoraException } from "~/lib/exceptions/DoraException";
 
 const metadataSelector = (
   ...[event, user]: ClientEvents["guildScheduledEventUserAdd"]
@@ -16,8 +17,12 @@ export const registerScheduledEvents = () => {
     event: "guildScheduledEventUserAdd",
     listener: async (event, user) => {
       const roleId = extractRoleIdFromEventDescription(event.description);
-      assertIsDefined(roleId, "Unable to find roleId in event description");
-      assertIsDefined(event.guild, "Event triggered outside guild");
+      assertIsDefined(
+        roleId,
+        "Unable to find roleId in event description",
+        DoraException.Severity.Info,
+      );
+      assertIsDefined(event.guild, "Event triggered without associated guild");
 
       const roleAdded = await addRole({ roleId, guild: event.guild, user });
       return {
@@ -33,8 +38,12 @@ export const registerScheduledEvents = () => {
     event: "guildScheduledEventUserRemove",
     listener: async (event, user) => {
       const roleId = extractRoleIdFromEventDescription(event.description);
-      assertIsDefined(roleId, "Unable to find roleId in event description");
-      assertIsDefined(event.guild, "Event triggered outside guild");
+      assertIsDefined(
+        roleId,
+        "Unable to find roleId in event description",
+        DoraException.Severity.Info,
+      );
+      assertIsDefined(event.guild, "Event triggered without associated guild");
 
       const roleAdded = await removeRole({ roleId, guild: event.guild, user });
       return {

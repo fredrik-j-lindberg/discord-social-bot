@@ -5,16 +5,17 @@ const typeOptions = {
 } as const;
 type ExceptionType = keyof typeof typeOptions;
 
-const responsible = {
-  External: "External",
-  Internal: "Internal",
+const severity = {
+  Info: "Info",
+  Warn: "Warn",
+  Error: "Error",
 } as const;
-type ResponsibleForException = keyof typeof responsible;
+export type Severity = keyof typeof severity;
 
 export class DoraException extends Error {
   static readonly Type = typeOptions;
-  readonly responsible?: ResponsibleForException;
-  static readonly Responsible = responsible;
+  readonly severity: Severity;
+  static readonly Severity = severity;
   readonly type: ExceptionType;
 
   constructor(
@@ -22,12 +23,12 @@ export class DoraException extends Error {
     type: ExceptionType,
     options?: {
       cause?: unknown;
-      responsible?: ResponsibleForException;
+      severity?: Severity;
     },
   ) {
     super(message, { cause: options?.cause });
     this.name = "DoraException";
     this.type = type;
-    this.responsible = options?.responsible;
+    this.severity = options?.severity || severity.Error;
   }
 }

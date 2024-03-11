@@ -47,8 +47,7 @@ export const registerEvent = <TEvent extends keyof ClientEvents>({
       );
     } catch (err) {
       if (err instanceof DoraException) {
-        // If the error is external, we don't want to log it as an error as we did nothing wrong on our end
-        if (err.responsible === DoraException.Responsible.External) {
+        if (err.severity === DoraException.Severity.Info) {
           eventLogger.info(
             { reason: err.message },
             `${String(event)}: Skipped handling event`,
