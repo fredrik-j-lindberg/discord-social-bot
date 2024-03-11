@@ -17,6 +17,7 @@ export class DoraException extends Error {
   readonly severity: Severity;
   static readonly Severity = severity;
   readonly type: ExceptionType;
+  readonly metadata?: Record<string, unknown>;
 
   constructor(
     message: string,
@@ -24,11 +25,13 @@ export class DoraException extends Error {
     options?: {
       cause?: unknown;
       severity?: Severity;
+      metadata?: Record<string, unknown>;
     },
   ) {
     super(message, { cause: options?.cause });
     this.name = "DoraException";
     this.type = type;
     this.severity = options?.severity || severity.Error;
+    this.metadata = options?.metadata;
   }
 }
