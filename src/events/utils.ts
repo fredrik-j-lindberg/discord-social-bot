@@ -3,19 +3,25 @@ import { client } from "~/client";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 
+type EventListenerReturnValue = {
+  metadata?: Record<string, string>;
+} & (
+  | {
+      status: "completed";
+      actionTaken: string;
+    }
+  | { status: "skipped"; reason: string }
+);
+
+type EventListener<TEvent extends keyof ClientEvents> = (
+  ...args: ClientEvents[TEvent]
+) => Awaitable<EventListenerReturnValue>;
+
 type RegisterEventParams<
   TEvent extends keyof ClientEvents = keyof ClientEvents,
 > = {
   event: TEvent;
-  listener: (...args: ClientEvents[TEvent]) => Awaitable<
-    { metadata?: Record<string, string> } & (
-      | {
-          status: "completed";
-          actionTaken: string;
-        }
-      | { status: "skipped"; reason: string }
-    )
-  >;
+  listener: EventListener<TEvent>;
   metadataSelector?: (
     ...args: ClientEvents[TEvent]
   ) => Record<string, string | null | undefined>;
