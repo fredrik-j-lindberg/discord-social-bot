@@ -2,6 +2,8 @@ const typeOptions = {
   NotFound: "NotFound",
   NotDefined: "NotDefined",
   Unknown: "Unknown",
+  DateRange: "DateRange",
+  TypeError: "TypeError",
 } as const;
 type ExceptionType = keyof typeof typeOptions;
 
