@@ -13,6 +13,7 @@ import {
   assertChannelIsTextBased,
   assertIsTruthy,
 } from "./validation";
+import { sendEventReminder } from "./sendMessage";
 
 export const announceRelevantScheduledEventsForAllGuilds = async () => {
   const oAuth2Guilds = await client.guilds.fetch();
@@ -29,7 +30,7 @@ const announceRelevantScheduledEvents = async ({ guild }: { guild: Guild }) => {
       scheduledEvent: scheduledEvent.name,
     });
     try {
-      await announceScheduledEventIfRelevant({ guild, scheduledEvent });
+      await remindOfScheduledEvent({ guild, scheduledEvent });
       reminderLogger.info("Successfully reminded of event");
     } catch (err) {
       if (!(err instanceof DoraException)) {
@@ -55,7 +56,7 @@ const announceRelevantScheduledEvents = async ({ guild }: { guild: Guild }) => {
   }
 };
 
-const announceScheduledEventIfRelevant = async ({
+const remindOfScheduledEvent = async ({
   guild,
   scheduledEvent,
 }: {
@@ -67,7 +68,7 @@ const announceScheduledEventIfRelevant = async ({
   );
   assertIsDefined(
     channelId,
-    "No channelId found in event description, skipping potential event reminder",
+    "No channelId found in event description",
     DoraException.Severity.Info,
   );
   const shouldRemind = extractShouldRemindFromEventDescription(
@@ -75,10 +76,37 @@ const announceScheduledEventIfRelevant = async ({
   );
   assertIsTruthy(
     shouldRemind,
-    "No shouldRemind flag in event description was not found or it was set to false, skipping pontential event reminder",
+    "No shouldRemind flag in event description was not found or it was set to false",
     DoraException.Severity.Info,
   );
 
+  assertThatEventIsWithinReminderWindow({ scheduledEvent });
+
+  const channel = await guild.channels.fetch(channelId);
+  assertChannelIsTextBased(
+    channel,
+    "Channel in event description does not exist or is not a text based channel",
+    DoraException.Severity.Warn,
+  );
+  await sendEventReminder({ scheduledEvent, channel });
+  await updateLatestReminderAt(scheduledEvent);
+};
+
+const updateLatestReminderAt = async (scheduledEvent: GuildScheduledEvent) => {
+  const scheduledEventDescription = scheduledEvent.description?.replace(
+    /\nlatestReminderAt=".*"/,
+    "",
+  );
+  await scheduledEvent.setDescription(
+    scheduledEventDescription + `\nlatestReminderAt="${Date.now()}"`,
+  );
+};
+
+const assertThatEventIsWithinReminderWindow = ({
+  scheduledEvent,
+}: {
+  scheduledEvent: GuildScheduledEvent;
+}) => {
   const eventStartTimestamp = scheduledEvent.scheduledStartTimestamp;
   assertIsDefined(eventStartTimestamp, "No start timestamp found for event");
 
@@ -112,36 +140,4 @@ const announceScheduledEventIfRelevant = async ({
       reminderWindow: new Date(reminderWindowTimestamp).toISOString(),
     },
   );
-
-  const channel = await guild.channels.fetch(channelId);
-  assertChannelIsTextBased(
-    channel,
-    "Channel in event description does not exist or is not a text based channel",
-    DoraException.Severity.Warn,
-  );
-  const hoursAway = Math.round(
-    (eventStartTimestamp - currentTime) / (60 * 60 * 1000),
-  );
-  const scheduledEventDescription = scheduledEvent.description?.replace(
-    /\nlatestReminderAt=".*"/,
-    "",
-  );
-  await scheduledEvent.setDescription(
-    scheduledEventDescription + `\nlatestReminderAt="${Date.now()}"`,
-  );
-  const subscribers = await scheduledEvent.fetchSubscribers();
-  const interestedUsers = subscribers.map((subscriber) => subscriber.user);
-  const nameWithoutEmojis = removeEmojis(scheduledEvent.name); // Emojis break the markdown link
-  await channel.send(
-    `[${nameWithoutEmojis}](${scheduledEvent.url}) will take place in ${hoursAway} hours. Currently set as interested: ${interestedUsers.join(" ")}`,
-  );
-};
-
-const removeEmojis = (input: string) => {
-  // Stolen from here: https://stackoverflow.com/a/40763403
-  const regex =
-    /(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff])[\ufe0e\ufe0f]?(?:[\u0300-\u036f\ufe20-\ufe23\u20d0-\u20f0]|\ud83c[\udffb-\udfff])?(?:\u200d(?:[^\ud800-\udfff]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff])[\ufe0e\ufe0f]?(?:[\u0300-\u036f\ufe20-\ufe23\u20d0-\u20f0]|\ud83c[\udffb-\udfff])?)*/g;
-  const withoutEmojis = input.replace(regex, "");
-  const withoutDoubleSpaces = withoutEmojis.replace("  ", " "); // <text> <emoji> <text> will result in double spaces
-  return withoutDoubleSpaces.trim();
 };
