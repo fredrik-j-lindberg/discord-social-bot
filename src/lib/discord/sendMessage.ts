@@ -1,5 +1,5 @@
 import { GuildScheduledEvent, TextChannel } from "discord.js";
-import { assertIsDefined } from "./validation";
+import { assertIsDefined } from "../validation";
 
 export const sendEventReminder = async ({
   scheduledEvent,

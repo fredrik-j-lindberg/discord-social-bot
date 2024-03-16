@@ -1,6 +1,6 @@
 import schedule from "node-schedule";
 import { logger } from "./lib/logger";
-import { announceRelevantScheduledEventsForAllGuilds } from "./lib/scheduledEvents";
+import { announceRelevantScheduledEventsForAllGuilds } from "./lib/discord/scheduledEvents";
 
 export const registerCronJobs = () => {
   // Run every hour

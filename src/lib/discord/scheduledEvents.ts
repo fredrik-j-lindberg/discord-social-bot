@@ -5,14 +5,14 @@ import {
   extractLatestReminderFromEventDescription,
   extractShouldRemindFromEventDescription,
 } from "~/events/utils";
-import { DoraException } from "./exceptions/DoraException";
-import { logger } from "./logger";
+import { DoraException } from "../exceptions/DoraException";
+import { logger } from "../logger";
 import {
   assertIsDefined,
   assertIsBefore,
   assertChannelIsTextBased,
   assertIsTruthy,
-} from "./validation";
+} from "../validation";
 import { sendEventReminder } from "./sendMessage";
 
 export const announceRelevantScheduledEventsForAllGuilds = async () => {

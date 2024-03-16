@@ -1,4 +1,4 @@
-import { addRole, removeRole } from "~/lib/roles";
+import { addRole, removeRole } from "~/lib/discord/roles";
 import { assertIsDefined } from "~/lib/validation";
 import { ClientEvents } from "discord.js";
 import { extractRoleIdFromEventDescription, registerEvent } from "./utils";

@@ -1,5 +1,5 @@
 import { Guild, User } from "discord.js";
-import { DoraException } from "./exceptions/DoraException";
+import { DoraException } from "../exceptions/DoraException";
 
 const getRole = async ({ guild, roleId }: { guild: Guild; roleId: string }) => {
   try {
