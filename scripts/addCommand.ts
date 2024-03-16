@@ -1,5 +1,5 @@
 import { REST, Routes } from "discord.js";
-import { env } from "../env";
+import { env } from "../src/env";
 import { logger } from "~/lib/logger";
 
 const commands = [

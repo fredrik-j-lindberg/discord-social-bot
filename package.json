@@ -8,7 +8,7 @@
     "dev": "tsx watch --env-file=.env ./src/index.ts",
     "start": "tsx --env-file=.env ./src/index.ts",
     "lint": "eslint .",
-    "addCommand": "tsx --env-file=.env ./src/addCommand.ts"
+    "addCommand": "tsx --env-file=.env ./scripts/addCommand.ts"
   },
   "keywords": [],
   "author": "",
