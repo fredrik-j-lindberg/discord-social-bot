@@ -1,27 +1,16 @@
+import { commandRouter } from "~/commands/commandRouter";
 import { registerEvent } from "./utils";
 
 export const registerInteractionEvent = () => {
   registerEvent({
     event: "interactionCreate",
     listener: async (interaction) => {
-      if (!interaction.isChatInputCommand()) {
-        return {
-          status: "skipped",
-          reason: "Not a command",
-        };
+      if (interaction.isChatInputCommand()) {
+        return await commandRouter(interaction);
       }
-
-      if (interaction.commandName === "ping") {
-        await interaction.reply("Pong!");
-        return {
-          status: "completed",
-          actionTaken: "Replied with pong",
-        };
-      }
-
       return {
         status: "skipped",
-        reason: "Unknown command",
+        reason: "Not a command",
       };
     },
     metadataSelector: (interaction) => ({

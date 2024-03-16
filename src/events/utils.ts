@@ -3,7 +3,7 @@ import { client } from "~/client";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 
-type EventListenerReturnValue = {
+export type EventListenerReturnValue = {
   metadata?: Record<string, string>;
 } & (
   | {
