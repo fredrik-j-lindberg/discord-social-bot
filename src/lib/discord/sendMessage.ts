@@ -10,18 +10,34 @@ export const sendEventReminder = async ({
 }) => {
   const subscribers = await scheduledEvent.fetchSubscribers();
   const interestedUsers = subscribers.map((subscriber) => subscriber.user);
-  const nameWithoutEmojis = removeEmojis(scheduledEvent.name); // Emojis break the markdown link
 
   const eventStartTimestamp = scheduledEvent.scheduledStartTimestamp;
   assertIsDefined(eventStartTimestamp, "No start timestamp found for event");
-  const currentTime = Date.now();
 
-  const hoursAway = Math.round(
-    (eventStartTimestamp - currentTime) / (60 * 60 * 1000),
-  );
+  const nameWithoutEmojis = removeEmojis(scheduledEvent.name); // Emojis break the markdown link
   await channel.send(
-    `[${nameWithoutEmojis}](${scheduledEvent.url}) will take place in ${hoursAway} hours. Currently set as interested: ${interestedUsers.join(" ")}`,
+    `[${nameWithoutEmojis}](${scheduledEvent.url}) will take place ${getTimeAwayString(eventStartTimestamp)}. Currently set as interested: ${interestedUsers.join(" ")}`,
   );
+};
+
+const getTimeAwayString = (eventStartTimestamp: number) => {
+  const daysAway = Math.round(
+    (eventStartTimestamp - Date.now()) / (24 * 60 * 60 * 1000),
+  );
+
+  const timeStart = getTimeFormatted(eventStartTimestamp);
+  if (!daysAway) {
+    return `today at ${timeStart}`;
+  }
+  if (daysAway === 1) {
+    return `tomorrow at ${timeStart}`;
+  }
+  return "in " + daysAway + " days at " + timeStart;
+};
+
+const getTimeFormatted = (date: Date | number) => {
+  const timeFormat = new Intl.DateTimeFormat("en", { timeStyle: "short" });
+  return timeFormat.format(new Date(date));
 };
 
 const removeEmojis = (input: string) => {
