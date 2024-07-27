@@ -20,8 +20,11 @@ type EventListener<TEvent extends keyof ClientEvents> = (
 type RegisterEventParams<
   TEvent extends keyof ClientEvents = keyof ClientEvents,
 > = {
+  /** Discord event to listen for */
   event: TEvent;
+  /** Callback that will be called when the event is triggered */
   listener: EventListener<TEvent>;
+  /** Selector that picks relevant data from event to serve as context for logs */
   metadataSelector?: (
     ...args: ClientEvents[TEvent]
   ) => Record<string, string | null | undefined>;
