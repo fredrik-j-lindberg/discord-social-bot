@@ -83,6 +83,7 @@ const assertThatEventIsWithinReminderWindow = ({
   assertIsDefined(eventStartTimestamp, "No start timestamp found for event");
 
   const currentTime = Date.now();
+  // TODO: Make this adjustable via event description
   const oneDay = 24 * 60 * 60 * 1000;
   const reminderWindowTimestamp = currentTime + oneDay;
   const previousReminderWindowTimestamp = eventStartTimestamp - oneDay;
