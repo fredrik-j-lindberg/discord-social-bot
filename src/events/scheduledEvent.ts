@@ -1,5 +1,5 @@
 import { addRole, removeRole } from "~/lib/discord/roles";
-import { assertIsDefined } from "~/lib/validation";
+import { assertHasDefinedProperty, assertIsDefined } from "~/lib/validation";
 import { ClientEvents } from "discord.js";
 import { extractRoleIdFromEventDescription, registerEvent } from "./utils";
 import { DoraException } from "~/lib/exceptions/DoraException";
@@ -43,7 +43,11 @@ export const registerScheduledEvents = () => {
         "Unable to find roleId in event description",
         DoraException.Severity.Info,
       );
-      assertIsDefined(event.guild, "Event triggered without associated guild");
+      assertHasDefinedProperty(
+        event,
+        "guild",
+        "Event triggered without associated guild",
+      );
 
       const roleAdded = await removeRole({ roleId, guild: event.guild, user });
       return {
