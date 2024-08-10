@@ -76,7 +76,7 @@ export const extractDataFromEventDescription = ({
   description: string | null;
   selector: string;
 }) => {
-  const regex = new RegExp(`${selector}="([^"]+)"`);
+  const regex = new RegExp(`${selector}="([^"]+)"`); // Matches for example: roleId="12345", channelId="12345" or shouldRemind="true"
   const match = description?.match(regex);
   return match?.[1];
 };

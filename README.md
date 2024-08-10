@@ -12,7 +12,7 @@ This is a Discord bot built to cater to some specific needs I had a hard time fi
 
 - **Event reminders**
 
-  If your event has a `channelId="<idhere>"` as well as `shouldRemind=true` in its description, a reminder will be sent before the event ~24 hours before pinging the ones set as interested
+  If your event has a `channelId="<idhere>"` as well as `shouldRemind="true"` in its description, a reminder for the event will be sent ~24 hours before, pinging the ones set as interested
 
 ## Getting Started
 
