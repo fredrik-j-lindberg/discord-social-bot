@@ -15,29 +15,10 @@ export const sendEventReminder = async ({
   assertIsDefined(eventStartTimestamp, "No start timestamp found for event");
 
   const nameWithoutEmojis = removeEmojis(scheduledEvent.name); // Emojis break the markdown link
+  const relativeDateFormat = `<t:${Math.round(eventStartTimestamp / 1000)}:R>`; // Discord's native relative date format.
   await channel.send(
-    `[${nameWithoutEmojis}](${scheduledEvent.url}) will take place ${getTimeAwayString(eventStartTimestamp)}. Currently set as interested: ${interestedUsers.join(" ")}`,
+    `[${nameWithoutEmojis}](${scheduledEvent.url}) will take place ${relativeDateFormat}. Currently set as interested: ${interestedUsers.join(" ")}`,
   );
-};
-
-const getTimeAwayString = (eventStartTimestamp: number) => {
-  const daysAway = Math.round(
-    (eventStartTimestamp - Date.now()) / (24 * 60 * 60 * 1000),
-  );
-
-  const timeStart = getTimeFormatted(eventStartTimestamp);
-  if (!daysAway) {
-    return `today at ${timeStart}`;
-  }
-  if (daysAway === 1) {
-    return `tomorrow at ${timeStart}`;
-  }
-  return "in " + daysAway + " days at " + timeStart;
-};
-
-const getTimeFormatted = (date: Date | number) => {
-  const timeFormat = new Intl.DateTimeFormat("sv-SE", { timeStyle: "short" });
-  return timeFormat.format(new Date(date));
 };
 
 const removeEmojis = (input: string) => {
