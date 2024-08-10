@@ -36,7 +36,7 @@ const getTimeAwayString = (eventStartTimestamp: number) => {
 };
 
 const getTimeFormatted = (date: Date | number) => {
-  const timeFormat = new Intl.DateTimeFormat("en", { timeStyle: "short" });
+  const timeFormat = new Intl.DateTimeFormat("sv-SE", { timeStyle: "short" });
   return timeFormat.format(new Date(date));
 };
 
