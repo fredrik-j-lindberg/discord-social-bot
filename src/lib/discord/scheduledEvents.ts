@@ -6,7 +6,6 @@ import {
   extractShouldRemindFromEventDescription,
 } from "~/events/utils";
 import { DoraException } from "../exceptions/DoraException";
-import { logger } from "../logger";
 import {
   assertIsDefined,
   assertIsBefore,
@@ -14,45 +13,18 @@ import {
   assertIsTruthy,
 } from "../validation";
 import { sendEventReminder } from "./sendMessage";
+import { scheduledEventIterator } from "./scheduledEvents/utils";
 
 export const announceRelevantScheduledEventsForAllGuilds = async () => {
   const oAuth2Guilds = await client.guilds.fetch();
   for (const [, oAuth2Guild] of oAuth2Guilds) {
     const guild = await oAuth2Guild.fetch();
-    await announceRelevantScheduledEvents({ guild });
-  }
-};
-
-const announceRelevantScheduledEvents = async ({ guild }: { guild: Guild }) => {
-  const scheduledEvents = await guild.scheduledEvents.fetch();
-  for (const [, scheduledEvent] of scheduledEvents) {
-    const reminderLogger = logger.child({
-      scheduledEvent: scheduledEvent.name,
+    await scheduledEventIterator({
+      guild,
+      action: (scheduledEvent) =>
+        remindOfScheduledEvent({ guild, scheduledEvent }),
+      meta: { purpose: "AnnounceEvents" },
     });
-    try {
-      await remindOfScheduledEvent({ guild, scheduledEvent });
-      reminderLogger.info("Successfully reminded of event");
-    } catch (err) {
-      if (!(err instanceof DoraException)) {
-        reminderLogger.error(err, "Failed to handle potential event reminder");
-        continue;
-      }
-      if (err.severity === DoraException.Severity.Info) {
-        reminderLogger.info(
-          { reason: err.message, error: err },
-          "Skipped reminding of event",
-        );
-        continue;
-      }
-      if (err.severity === DoraException.Severity.Warn) {
-        reminderLogger.warn(
-          { reason: err.message, error: err },
-          "Was not able to handle potential event event",
-        );
-        continue;
-      }
-      reminderLogger.error(err, "Failed to handle potential event reminder");
-    }
   }
 };
 
