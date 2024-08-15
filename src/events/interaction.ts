@@ -1,6 +1,7 @@
 import { commandRouter } from "~/commands/commandRouter";
 import { registerEvent } from "../lib/discord/events/registerEvent";
 import { DoraException } from "~/lib/exceptions/DoraException";
+import { modalRouter } from "~/modals/modalRouter";
 
 export const registerInteractionEvent = () => {
   registerEvent({
@@ -8,6 +9,10 @@ export const registerInteractionEvent = () => {
     listener: async (interaction) => {
       if (interaction.isChatInputCommand()) {
         await commandRouter(interaction);
+        return;
+      }
+      if (interaction.isModalSubmit()) {
+        await modalRouter(interaction);
         return;
       }
 
@@ -22,6 +27,7 @@ export const registerInteractionEvent = () => {
       command: interaction.isChatInputCommand()
         ? interaction.commandName
         : null,
+      modal: interaction.isModalSubmit() ? interaction.customId : null,
     }),
   });
 };

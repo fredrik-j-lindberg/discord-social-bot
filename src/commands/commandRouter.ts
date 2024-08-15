@@ -2,8 +2,9 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { pingCommand } from "./ping";
 import { Command } from "./types";
+import { piiCommand } from "./pii";
 
-export const commands: Command[] = [pingCommand];
+export const commands: Command[] = [pingCommand, piiCommand];
 
 export const commandRouter = async (
   interaction: ChatInputCommandInteraction,
@@ -14,6 +15,7 @@ export const commandRouter = async (
   if (!command) {
     throw new DoraException("Unknown command", DoraException.Type.NotFound, {
       severity: DoraException.Severity.Info,
+      metadata: { commandName: interaction.commandName },
     });
   }
   await command.listener(interaction);
