@@ -13,6 +13,7 @@ import {
   extractChannelIdFromEventDescription,
   extractShouldRemindFromEventDescription,
   extractLatestReminderFromEventDescription,
+  setLatestReminderAtInEventDescription,
 } from "../lib/discord/scheduledEvents/eventDescriptionUtils";
 
 export const announceRelevantScheduledEventsForAllGuilds = async () => {
@@ -57,17 +58,7 @@ const remindOfScheduledEvent = async ({
     DoraException.Severity.Warn,
   );
   await sendEventReminder({ scheduledEvent, channel });
-  await updateLatestReminderAt(scheduledEvent);
-};
-
-const updateLatestReminderAt = async (scheduledEvent: GuildScheduledEvent) => {
-  const scheduledEventDescription = scheduledEvent.description?.replace(
-    /\nlatestReminderAt=".*"/,
-    "",
-  );
-  await scheduledEvent.setDescription(
-    scheduledEventDescription + `\nlatestReminderAt="${Date.now()}"`,
-  );
+  await setLatestReminderAtInEventDescription(scheduledEvent);
 };
 
 const assertThatEventIsWithinReminderWindow = ({

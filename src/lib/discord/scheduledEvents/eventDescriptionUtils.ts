@@ -45,3 +45,18 @@ export const extractLatestReminderFromEventDescription = (
   if (!latestReminderAt) return undefined;
   return parseInt(latestReminderAt);
 };
+
+export const setLatestReminderAtInEventDescription = async (
+  scheduledEvent: ScheduledEventDescriptionProps,
+) => {
+  // Get description without current value if it exists
+  const scheduledEventDescription = scheduledEvent.description?.replace(
+    /\nlatestReminderAt=".*"/,
+    "",
+  );
+
+  // Set new description with new value
+  await scheduledEvent.setDescription(
+    scheduledEventDescription + `\nlatestReminderAt="${Date.now()}"`,
+  );
+};
