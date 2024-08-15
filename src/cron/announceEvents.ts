@@ -13,7 +13,7 @@ import {
   extractChannelIdFromEventDescription,
   extractShouldRemindFromEventDescription,
   extractLatestReminderFromEventDescription,
-} from "../lib/discord/scheduledEvents/extractDescriptionValues";
+} from "../lib/discord/scheduledEvents/eventDescriptionUtils";
 
 export const announceRelevantScheduledEventsForAllGuilds = async () => {
   const oAuth2Guilds = await client.guilds.fetch();

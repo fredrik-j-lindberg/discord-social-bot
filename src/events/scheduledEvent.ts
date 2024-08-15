@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { actionWrapper } from "~/lib/actionWrapper";
-import { extractRoleIdFromEventDescription } from "~/lib/discord/scheduledEvents/extractDescriptionValues";
+import { extractRoleIdFromEventDescription } from "~/lib/discord/scheduledEvents/eventDescriptionUtils";
 import { registerEvent } from "../lib/discord/events/registerEvent";
 
 const metadataSelector = (
