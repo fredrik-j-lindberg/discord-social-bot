@@ -1,21 +1,10 @@
-import { ClientEvents, Awaitable } from "discord.js";
+import { ClientEvents } from "discord.js";
 import { client } from "~/client";
-import { DoraException } from "~/lib/exceptions/DoraException";
-import { logger } from "~/lib/logger";
-
-export type EventListenerReturnValue = {
-  metadata?: Record<string, string>;
-} & (
-  | {
-      status: "completed";
-      actionTaken: string;
-    }
-  | { status: "skipped"; reason: string }
-);
+import { actionWrapper } from "~/lib/actionWrapper";
 
 type EventListener<TEvent extends keyof ClientEvents> = (
   ...args: ClientEvents[TEvent]
-) => Awaitable<EventListenerReturnValue>;
+) => Promise<void> | void;
 
 type RegisterEventParams<
   TEvent extends keyof ClientEvents = keyof ClientEvents,
@@ -37,35 +26,13 @@ export const registerEvent = <TEvent extends keyof ClientEvents>({
 }: RegisterEventParams<TEvent>) => {
   client.on(event, async (...eventArgs) => {
     const metadata = metadataSelector?.(...eventArgs) || {};
-    const eventLogger = logger.child({ ...metadata, event: String(event) });
-    eventLogger.info(`${String(event)}: Registered event`);
 
-    try {
-      const result = await listener(...eventArgs);
-
-      if (result.status === "skipped") {
-        eventLogger.info(
-          { reason: result.reason, ...result.metadata },
-          `${String(event)}: Skipped handling event`,
-        );
-        return;
-      }
-      eventLogger.info(
-        { ...result.metadata, actionTaken: result.actionTaken },
-        `${String(event)}: Successfully handled event`,
-      );
-    } catch (err) {
-      if (err instanceof DoraException) {
-        if (err.severity === DoraException.Severity.Info) {
-          eventLogger.info(
-            { reason: err.message },
-            `${String(event)}: Skipped handling event`,
-          );
-          return;
-        }
-      }
-      eventLogger.error(err, `${String(event)}: Failed to handle event`);
-    }
+    await actionWrapper({
+      action: () => listener(...eventArgs),
+      meta: { ...metadata, event: String(event) },
+      actionDescription: "Handling discord.js event",
+      swallowError: true,
+    });
   });
 };
 

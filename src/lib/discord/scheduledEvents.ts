@@ -23,7 +23,7 @@ export const announceRelevantScheduledEventsForAllGuilds = async () => {
       guild,
       action: (scheduledEvent) =>
         remindOfScheduledEvent({ guild, scheduledEvent }),
-      meta: { purpose: "AnnounceEvents" },
+      actionDescription: "Announcing scheduled events",
     });
   }
 };

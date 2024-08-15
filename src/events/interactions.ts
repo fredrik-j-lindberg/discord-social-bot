@@ -1,17 +1,21 @@
 import { commandRouter } from "~/commands/commandRouter";
 import { registerEvent } from "./utils";
+import { DoraException } from "~/lib/exceptions/DoraException";
 
 export const registerInteractionEvent = () => {
   registerEvent({
     event: "interactionCreate",
     listener: async (interaction) => {
       if (interaction.isChatInputCommand()) {
-        return await commandRouter(interaction);
+        await commandRouter(interaction);
+        return;
       }
-      return {
-        status: "skipped",
-        reason: "Not a command",
-      };
+
+      throw new DoraException(
+        "Interaction was not deemed relevant",
+        DoraException.Type.Unknown,
+        { severity: DoraException.Severity.Info },
+      );
     },
     metadataSelector: (interaction) => ({
       user: interaction.user.tag,
