@@ -13,6 +13,35 @@ export function assertIsDefined<T>(
   }
 }
 
+type NonNullRequired<T> = Required<{
+  [P in keyof T]-?: NonNullable<T[P]>;
+}>;
+
+type ObjectWithProperty<
+  TObject extends object,
+  TPropertyKey extends keyof TObject,
+> = Exclude<TObject, TPropertyKey> &
+  NonNullRequired<Pick<TObject, TPropertyKey>>;
+
+export function assertHasDefinedProperty<
+  TObject extends object,
+  TPropertyKey extends keyof TObject,
+>(
+  objectValue: TObject,
+  propertyKey: TPropertyKey,
+  message: string,
+  severity: Severity = DoraException.Severity.Error,
+): asserts objectValue is ObjectWithProperty<TObject, TPropertyKey> {
+  if (
+    objectValue[propertyKey] === undefined ||
+    objectValue[propertyKey] === null
+  ) {
+    throw new DoraException(message, DoraException.Type.NotDefined, {
+      severity,
+    });
+  }
+}
+
 export function assertIsTruthy<T>(
   value: T,
   message: string,
