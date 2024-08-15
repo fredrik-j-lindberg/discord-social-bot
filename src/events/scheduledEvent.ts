@@ -1,6 +1,10 @@
 import { addRole, removeRole } from "~/lib/discord/roles";
 import { assertHasDefinedProperty, assertIsDefined } from "~/lib/validation";
-import { ClientEvents } from "discord.js";
+import {
+  ClientEvents,
+  GuildScheduledEvent,
+  PartialGuildScheduledEvent,
+} from "discord.js";
 import { extractRoleIdFromEventDescription, registerEvent } from "./utils";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { actionWrapper } from "~/lib/actionWrapper";
@@ -13,23 +17,37 @@ const metadataSelector = (
   scheduledEvent: scheduledEvent.name,
 });
 
+/**
+ * Validates that scheduled event is relevant for adding/removing roles
+ *
+ * @returns The validated scheduled event and role id
+ * @throws DoraException of varying severity if the event does not pass assertions needed to proceed
+ */
+const validateScheduledEventForRoleChange = (
+  scheduledEvent: GuildScheduledEvent | PartialGuildScheduledEvent,
+) => {
+  assertHasDefinedProperty(
+    scheduledEvent,
+    "guild",
+    "Event triggered without associated guild",
+  );
+
+  const roleId = extractRoleIdFromEventDescription(scheduledEvent.description);
+  assertIsDefined(
+    roleId,
+    "Unable to find roleId in scheduled event description",
+    DoraException.Severity.Info,
+  );
+
+  return { scheduledEvent, roleId };
+};
+
 export const registerScheduledEvents = () => {
   registerEvent({
     event: "guildScheduledEventUserAdd",
-    listener: async (scheduledEvent, user) => {
-      assertHasDefinedProperty(
-        scheduledEvent,
-        "guild",
-        "Event triggered without associated guild",
-      );
-
-      const roleId = extractRoleIdFromEventDescription(
-        scheduledEvent.description,
-      );
-      assertIsDefined(
-        roleId,
-        "Unable to find roleId in scheduled event description",
-        DoraException.Severity.Info,
+    listener: async (unparsedScheduledEvent, user) => {
+      const { scheduledEvent, roleId } = validateScheduledEventForRoleChange(
+        unparsedScheduledEvent,
       );
 
       await actionWrapper({
@@ -43,20 +61,9 @@ export const registerScheduledEvents = () => {
 
   registerEvent({
     event: "guildScheduledEventUserRemove",
-    listener: async (scheduledEvent, user) => {
-      assertHasDefinedProperty(
-        scheduledEvent,
-        "guild",
-        "Event triggered without associated guild",
-      );
-
-      const roleId = extractRoleIdFromEventDescription(
-        scheduledEvent.description,
-      );
-      assertIsDefined(
-        roleId,
-        "Unable to find roleId in scheduled event description",
-        DoraException.Severity.Info,
+    listener: async (unparsedScheduledEvent, user) => {
+      const { scheduledEvent, roleId } = validateScheduledEventForRoleChange(
+        unparsedScheduledEvent,
       );
 
       await actionWrapper({
