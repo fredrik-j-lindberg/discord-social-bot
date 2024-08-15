@@ -33,7 +33,7 @@ const validateScheduledEventForRoleChange = (
     "Event triggered without associated guild",
   );
 
-  const roleId = extractRoleIdFromEventDescription(scheduledEvent.description);
+  const roleId = extractRoleIdFromEventDescription(scheduledEvent);
   assertIsDefined(
     roleId,
     "Unable to find roleId in scheduled event description",

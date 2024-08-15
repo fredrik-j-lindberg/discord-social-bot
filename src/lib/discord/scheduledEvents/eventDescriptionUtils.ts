@@ -1,8 +1,14 @@
+import { GuildScheduledEvent } from "discord.js";
+
+type ScheduledEventDescriptionProps = Pick<
+  GuildScheduledEvent,
+  "description" | "setDescription"
+>;
 const extractDataFromEventDescription = ({
-  description,
+  scheduledEvent: { description },
   selector,
 }: {
-  description: string | null;
+  scheduledEvent: ScheduledEventDescriptionProps;
   selector: string;
 }) => {
   const regex = new RegExp(`${selector}="([^"]+)"`); // Matches for example: roleId="12345", channelId="12345" or shouldRemind="true"
@@ -10,28 +16,29 @@ const extractDataFromEventDescription = ({
   return match?.[1];
 };
 
-export const extractRoleIdFromEventDescription = (description: string | null) =>
-  extractDataFromEventDescription({ description, selector: "roleId" });
+export const extractRoleIdFromEventDescription = (
+  scheduledEvent: ScheduledEventDescriptionProps,
+) => extractDataFromEventDescription({ scheduledEvent, selector: "roleId" });
 
 export const extractChannelIdFromEventDescription = (
-  description: string | null,
-) => extractDataFromEventDescription({ description, selector: "channelId" });
+  scheduledEvent: ScheduledEventDescriptionProps,
+) => extractDataFromEventDescription({ scheduledEvent, selector: "channelId" });
 
 export const extractShouldRemindFromEventDescription = (
-  description: string | null,
+  scheduledEvent: ScheduledEventDescriptionProps,
 ) => {
   const shouldRemind = extractDataFromEventDescription({
-    description,
+    scheduledEvent,
     selector: "shouldRemind",
   });
   return shouldRemind === "true";
 };
 
 export const extractLatestReminderFromEventDescription = (
-  description: string | null,
+  scheduledEvent: ScheduledEventDescriptionProps,
 ) => {
   const latestReminderAt = extractDataFromEventDescription({
-    description,
+    scheduledEvent,
     selector: "latestReminderAt",
   });
 

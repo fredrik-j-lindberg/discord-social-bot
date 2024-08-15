@@ -35,17 +35,13 @@ const remindOfScheduledEvent = async ({
   guild: Guild;
   scheduledEvent: GuildScheduledEvent;
 }) => {
-  const channelId = extractChannelIdFromEventDescription(
-    scheduledEvent.description,
-  );
+  const channelId = extractChannelIdFromEventDescription(scheduledEvent);
   assertIsDefined(
     channelId,
     "No channelId found in event description",
     DoraException.Severity.Info,
   );
-  const shouldRemind = extractShouldRemindFromEventDescription(
-    scheduledEvent.description,
-  );
+  const shouldRemind = extractShouldRemindFromEventDescription(scheduledEvent);
   assertIsTruthy(
     shouldRemind,
     "No shouldRemind flag in event description was not found or it was set to false",
@@ -87,9 +83,8 @@ const assertThatEventIsWithinReminderWindow = ({
   const oneDay = 24 * 60 * 60 * 1000;
   const reminderWindowTimestamp = currentTime + oneDay;
   const previousReminderWindowTimestamp = eventStartTimestamp - oneDay;
-  const latestReminderAtTimestamp = extractLatestReminderFromEventDescription(
-    scheduledEvent.description,
-  );
+  const latestReminderAtTimestamp =
+    extractLatestReminderFromEventDescription(scheduledEvent);
   assertIsBefore(
     latestReminderAtTimestamp || 0,
     previousReminderWindowTimestamp,
