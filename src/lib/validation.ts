@@ -17,7 +17,7 @@ type NonNullRequired<T> = Required<{
   [P in keyof T]-?: NonNullable<T[P]>;
 }>;
 
-type ObjectWithProperty<
+export type ObjectWithProperty<
   TObject extends object,
   TPropertyKey extends keyof TObject,
 > = Exclude<TObject, TPropertyKey> &
