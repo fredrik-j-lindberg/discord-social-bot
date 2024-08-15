@@ -1,13 +1,7 @@
 import { REST, Routes } from "discord.js";
 import { env } from "../src/env";
 import { logger } from "~/lib/logger";
-
-const commands = [
-  {
-    name: "ping",
-    description: "Replies with Pong!",
-  },
-];
+import { commands } from "~/commands/commandRouter";
 
 const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
 

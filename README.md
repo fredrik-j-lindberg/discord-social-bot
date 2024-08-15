@@ -44,3 +44,9 @@ To run the bot locally, follow the steps below:
    ```bash
    pnpm start
    ```
+
+# Adding new commands
+
+1. Add your command file containing relevant logic. See the [ping command](./src/commands/ping.ts) as example
+2. Add a reference to your command file in the [commandRouter](./src/commands/commandRouter.ts) commands list
+3. Run `pnpm refreshCommands`

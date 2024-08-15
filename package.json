@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
     "verify": "pnpm lint && pnpm check-types",
-    "addCommand": "tsx --env-file=.env ./scripts/addCommand.ts"
+    "refreshCommands": "tsx --env-file=.env ./scripts/refreshCommands.ts"
   },
   "keywords": [],
   "author": "",
