@@ -23,7 +23,7 @@ export const announceRelevantScheduledEventsForAllGuilds = async () => {
       guild,
       action: (scheduledEvent) =>
         remindOfScheduledEvent({ guild, scheduledEvent }),
-      actionDescription: "Announcing scheduled events",
+      actionDescription: "Announce scheduled event",
     });
   }
 };

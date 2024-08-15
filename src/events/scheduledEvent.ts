@@ -53,7 +53,7 @@ export const registerScheduledEvents = () => {
 
       await actionWrapper({
         action: () => addRole({ roleId, guild: scheduledEvent.guild, user }),
-        actionDescription: "Adding role to user",
+        actionDescription: "Add role to user",
         meta: { roleId: roleId },
       });
     },
@@ -69,7 +69,7 @@ export const registerScheduledEvents = () => {
 
       await actionWrapper({
         action: () => removeRole({ roleId, guild: scheduledEvent.guild, user }),
-        actionDescription: "Removing role from user",
+        actionDescription: "Remove role from user",
         meta: { roleId: roleId },
       });
     },
