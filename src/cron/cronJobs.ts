@@ -1,6 +1,6 @@
 import schedule from "node-schedule";
-import { logger } from "./lib/logger";
-import { announceRelevantScheduledEventsForAllGuilds } from "./lib/discord/scheduledEvents";
+import { logger } from "../lib/logger";
+import { announceRelevantScheduledEventsForAllGuilds } from "./announceEvents";
 
 /**
  * Interval options for cron job. A scheduled job with the minute format

@@ -1,5 +1,5 @@
 import { commandRouter } from "~/commands/commandRouter";
-import { registerEvent } from "./utils";
+import { registerEvent } from "../lib/discord/events/registerEvent";
 import { DoraException } from "~/lib/exceptions/DoraException";
 
 export const registerInteractionEvent = () => {

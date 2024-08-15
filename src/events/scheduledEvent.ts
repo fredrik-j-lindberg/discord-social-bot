@@ -5,9 +5,10 @@ import {
   GuildScheduledEvent,
   PartialGuildScheduledEvent,
 } from "discord.js";
-import { extractRoleIdFromEventDescription, registerEvent } from "./utils";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { actionWrapper } from "~/lib/actionWrapper";
+import { extractRoleIdFromEventDescription } from "~/lib/discord/scheduledEvents/extractDescriptionValues";
+import { registerEvent } from "../lib/discord/events/registerEvent";
 
 const metadataSelector = (
   ...[scheduledEvent, user]: ClientEvents["guildScheduledEventUserAdd"]

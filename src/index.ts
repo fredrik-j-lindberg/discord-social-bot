@@ -1,6 +1,6 @@
 import { registerEvents } from "./events";
 import { client } from "./client";
-import { registerCronJobs } from "./cronJobs";
+import { registerCronJobs } from "./cron/cronJobs";
 import { logger } from "./lib/logger";
 import { env } from "./env";
 

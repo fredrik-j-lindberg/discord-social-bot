@@ -1,6 +1,6 @@
 import { registerScheduledEvents } from "./scheduledEvent";
-import { registerInteractionEvent } from "./interactions";
-import { registerEvent } from "./utils";
+import { registerInteractionEvent } from "./interaction";
+import { registerEvent } from "../lib/discord/events/registerEvent";
 import { logger } from "~/lib/logger";
 
 export const registerEvents = () => {
