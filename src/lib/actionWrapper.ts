@@ -28,11 +28,15 @@ export const actionWrapper = async <TActionResponse>({
       return;
     }
     if (err.severity === DoraException.Severity.Info) {
-      actionLogger.info({ reason: err.message }, `Skipped action`);
+      // Spreading err automatically skips stack trace and message. Change to not spread (just err) to include them.
+      actionLogger.info({ reason: err.message, ...err }, `Skipped action`);
       return;
     }
     if (err.severity === DoraException.Severity.Warn) {
-      actionLogger.warn({ reason: err.message }, `Skipped action with warning`);
+      actionLogger.warn(
+        { reason: err.message, err },
+        `Skipped action with warning`,
+      );
       return;
     }
     actionLogger.error(err, `Failed action`);
