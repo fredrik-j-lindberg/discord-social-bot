@@ -3,8 +3,9 @@ import { DoraException } from "~/lib/exceptions/DoraException";
 import { pingCommand } from "./ping";
 import { Command } from "./types";
 import { piiCommand } from "./pii";
+import { birthdaysCommand } from "./birthdays";
 
-export const commands: Command[] = [pingCommand, piiCommand];
+export const commands: Command[] = [pingCommand, piiCommand, birthdaysCommand];
 
 export const commandRouter = async (
   interaction: ChatInputCommandInteraction,
