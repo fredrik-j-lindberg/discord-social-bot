@@ -7,11 +7,14 @@ import {
 import { ModalData } from "./types";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { setUserData } from "~/lib/airtable/userData";
+import { UserData } from "~/lib/airtable/types";
+import { formatDate } from "~/lib/helpers/date";
 
 const modalId = "userDataModal";
 const fieldNames = { birthday: "birthdayInput" };
+
 // https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
-const createModal = () => {
+const createModal = (userData: UserData | undefined) => {
   const modal = new ModalBuilder()
     .setCustomId(modalId)
     .setTitle("User data form. Optional!");
@@ -19,7 +22,9 @@ const createModal = () => {
   const birthdayInput = new TextInputBuilder()
     .setCustomId(fieldNames.birthday)
     .setLabel("What's your birthday? (YYYY-MM-DD)")
-    .setValue("1990-01-01")
+    .setValue(
+      formatDate(userData?.birthday, { dateStyle: "short" }) || "1990-01-01",
+    )
     .setStyle(TextInputStyle.Short);
 
   const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(

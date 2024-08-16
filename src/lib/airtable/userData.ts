@@ -17,9 +17,16 @@ const getByUserId = async (userId: string, guildId: string) => {
     throw new DoraException(
       "Multiple records found",
       DoraException.Type.Unknown,
+      { metadata: { userId, guildId } },
     );
   }
   return records[0];
+};
+
+export const getUserData = async (userId: string, guildId: string) => {
+  const record = await getByUserId(userId, guildId);
+  if (!record) return;
+  return record.fields;
 };
 
 export const setUserData = async ({
