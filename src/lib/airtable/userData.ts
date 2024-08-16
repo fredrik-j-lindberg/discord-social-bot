@@ -53,7 +53,7 @@ export const getUsersWithUpcomingBirthday = async (guildId: string) => {
       maxRecords: 10,
       view: "Grid view",
       filterByFormula: `{guildId} = '${guildId}'`,
-      sort: [{ field: "birthday", direction: "desc" }],
+      sort: [{ field: "nextBirthday", direction: "asc" }],
     })
     .firstPage();
   return records.map((record) => record.fields);
