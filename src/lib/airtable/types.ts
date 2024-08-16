@@ -1,6 +1,6 @@
 export type UserData = {
-  guild_id: string;
-  user_id: string;
+  guildId: string;
+  userId: string;
   username: string;
   nickname?: string;
   birthday?: string;

@@ -9,7 +9,7 @@ const getByUserId = async (userId: string, guildId: string) => {
     .select({
       maxRecords: 2,
       view: "Grid view",
-      filterByFormula: `AND({user_id} = '${userId}', {guild_id} = '${guildId}')`,
+      filterByFormula: `AND({userId} = '${userId}', {guildId} = '${guildId}')`,
     })
     .firstPage();
   if (records.length === 0) return;
@@ -36,10 +36,10 @@ export const setUserData = async ({
 }: {
   userId: string;
   guildId: string;
-  userData: Omit<UserData, "user_id" | "guild_id">;
+  userData: Omit<UserData, "userId" | "guildId">;
 }) => {
   const record = await getByUserId(userId, guildId);
-  const fullUserData = { ...userData, user_id: userId, guild_id: guildId };
+  const fullUserData = { ...userData, userId: userId, guildId: guildId };
   if (record) {
     await tables.userData.update(record.id, fullUserData);
   } else {
@@ -52,7 +52,7 @@ export const getUsersWithUpcomingBirthday = async (guildId: string) => {
     .select({
       maxRecords: 10,
       view: "Grid view",
-      filterByFormula: `{guild_id} = '${guildId}'`,
+      filterByFormula: `{guildId} = '${guildId}'`,
       sort: [{ field: "birthday", direction: "desc" }],
     })
     .firstPage();
