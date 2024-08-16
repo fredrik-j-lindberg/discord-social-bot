@@ -3,7 +3,9 @@ export type UserData = {
   userId: string;
   username: string;
   nickname?: string;
+  firstName?: string;
   birthday?: string;
-  phone_number?: string;
+  phoneNumber?: string;
   email?: string;
+  height?: number;
 };

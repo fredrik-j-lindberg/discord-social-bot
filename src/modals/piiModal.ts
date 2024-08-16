@@ -9,33 +9,89 @@ import { assertHasDefinedProperty } from "~/lib/validation";
 import { setUserData } from "~/lib/airtable/userData";
 import { UserData } from "~/lib/airtable/types";
 import { formatDate } from "~/lib/helpers/date";
+import { guildConfigs } from "../../guildConfigs";
+import { DoraException } from "~/lib/exceptions/DoraException";
 
 const modalId = "userDataModal";
-const fieldNames = { birthday: "birthdayInput" };
+export const piiFieldNames = {
+  birthday: "birthdayInput",
+  firstName: "firstNameInput",
+  height: "heightInput",
+} as const;
+export type PiiFieldName = (typeof piiFieldNames)[keyof typeof piiFieldNames];
+const generateComponents = (
+  userData: UserData | undefined,
+): TextInputBuilder[] => {
+  return [
+    new TextInputBuilder()
+      .setCustomId(piiFieldNames.birthday)
+      .setLabel("Birthday (YYYY-MM-DD)")
+      .setValue(
+        formatDate(userData?.birthday, { dateStyle: "short" }) || "1990-01-01",
+      )
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false),
+    new TextInputBuilder()
+      .setCustomId(piiFieldNames.firstName)
+      .setLabel("First name")
+      .setValue(userData?.firstName || "")
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false),
+    new TextInputBuilder()
+      .setCustomId(piiFieldNames.height)
+      .setLabel("Height cm, Eckron want you to know he is tall")
+      .setValue(userData?.height?.toString() || "170")
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false),
+  ];
+};
+const componentsRelevantForGuild = (
+  guildId: string,
+  components: TextInputBuilder[],
+) => {
+  const guildConfig = Object.values(guildConfigs).find(
+    (guildConfig) => guildConfig.guildId === guildId,
+  );
+  if (!guildConfig) {
+    throw new DoraException(
+      "Guild config not found",
+      DoraException.Type.NotFound,
+      { metadata: { guildId } },
+    );
+  }
+  if (guildConfig.piiFields === "all") return components;
+  return components.filter(
+    (component) =>
+      component.data.custom_id &&
+      // https://github.com/microsoft/TypeScript/issues/26255
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+      guildConfig.piiFields.includes(component.data.custom_id as any),
+  );
+};
 
 // https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
-const createModal = (userData: UserData | undefined) => {
+const createModal = ({
+  guildId,
+  userData,
+}: {
+  guildId: string;
+  userData: UserData | undefined;
+}) => {
   const modal = new ModalBuilder()
     .setCustomId(modalId)
     .setTitle("User data form. Optional!");
 
-  const birthdayInput = new TextInputBuilder()
-    .setCustomId(fieldNames.birthday)
-    .setLabel("What's your birthday? (YYYY-MM-DD)")
-    .setValue(
-      formatDate(userData?.birthday, { dateStyle: "short" }) || "1990-01-01",
-    )
-    .setStyle(TextInputStyle.Short);
+  const components = generateComponents(userData);
+  const relevantComponents = componentsRelevantForGuild(guildId, components);
+  const rows = relevantComponents.map((component) => {
+    return new ActionRowBuilder<TextInputBuilder>().addComponents(component);
+  });
 
-  const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    birthdayInput,
-  );
-
-  modal.addComponents(firstActionRow);
+  modal.addComponents(rows);
   return modal;
 };
 
-export const piiModal: ModalData = {
+export const piiModal = {
   id: modalId,
   createModal,
   listener: async (interaction) => {
@@ -54,13 +110,19 @@ export const piiModal: ModalData = {
       userId: interaction.user.id,
       guildId: interaction.guild.id,
       userData: {
-        birthday: interaction.fields.getTextInputValue(fieldNames.birthday),
+        birthday: interaction.fields.getTextInputValue(piiFieldNames.birthday),
         username: interaction.user.username,
         nickname: nickname || undefined,
+        firstName: interaction.fields.getTextInputValue(
+          piiFieldNames.firstName,
+        ),
+        height: parseInt(
+          interaction.fields.getTextInputValue(piiFieldNames.height),
+        ),
       },
     });
     await interaction.editReply({
       content: "Your user data was submitted successfully!",
     });
   },
-};
+} satisfies ModalData;

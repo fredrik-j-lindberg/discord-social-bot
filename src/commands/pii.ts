@@ -16,7 +16,10 @@ export const piiCommand: Command = {
       interaction.user.id,
       interaction.guild.id,
     );
-    const modal = piiModal.createModal(userData);
+    const modal = piiModal.createModal({
+      guildId: interaction.guild.id,
+      userData,
+    });
     await interaction.showModal(modal);
   },
 };
