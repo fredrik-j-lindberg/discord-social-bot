@@ -15,7 +15,7 @@ export const birthdaysCommand: Command = {
     const birthdays = await getUsersWithUpcomingBirthday(interaction.guild.id);
     const content = birthdays
       .map(({ username, nickname, birthday }) => {
-        return `${nickname || username} - ${formatDate(birthday)}`;
+        return `**${nickname || username}** - ${formatDate(birthday)}`;
       })
       .join("\n");
     await interaction.reply(content);
