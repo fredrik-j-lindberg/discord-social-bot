@@ -3,10 +3,12 @@ import { client } from "./client";
 import { registerCronJobs } from "./cron/cronJobs";
 import { logger } from "./lib/logger";
 import { env } from "./env";
+import { initSpreadsheet } from "./lib/sheets/spreadsheet";
 
 (async () => {
   registerEvents();
   registerCronJobs();
+  await initSpreadsheet();
   await client.login(env.DISCORD_BOT_TOKEN);
   logger.info("Bot successfully initialized & logged in");
 })().catch((err) => {
