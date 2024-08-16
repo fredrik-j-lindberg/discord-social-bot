@@ -17,10 +17,10 @@ export const actionWrapper = async <TActionResponse>({
   swallowError?: boolean;
 }): Promise<TActionResponse | undefined> => {
   const actionLogger = logger.child({ ...meta, action: actionDescription });
-  actionLogger.info(`Running action`);
+  actionLogger.debug(`Running action`);
   try {
     const actionResult = await action();
-    actionLogger.info(`Successfully ran action`);
+    actionLogger.debug(`Successfully ran action`);
     return actionResult;
   } catch (err) {
     if (!(err instanceof DoraException)) {
@@ -29,7 +29,7 @@ export const actionWrapper = async <TActionResponse>({
     }
     if (err.severity === DoraException.Severity.Info) {
       // Spreading err automatically skips stack trace and message. Change to not spread (just err) to include them.
-      actionLogger.info({ reason: err.message, ...err }, `Skipped action`);
+      actionLogger.debug({ reason: err.message, ...err }, `Skipped action`);
       return;
     }
     if (err.severity === DoraException.Severity.Warn) {

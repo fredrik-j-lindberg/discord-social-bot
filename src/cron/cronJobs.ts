@@ -16,4 +16,5 @@ export const registerCronJobs = () => {
     logger.info("Running hourly cron job");
     await announceRelevantScheduledEventsForAllGuilds();
   });
+  logger.info("Cron jobs successfully registered");
 };

@@ -12,4 +12,5 @@ export const registerEvents = () => {
   });
   registerInteractionEvent();
   registerScheduledEvents();
+  logger.info("Events successfully registered");
 };

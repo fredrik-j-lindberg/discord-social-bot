@@ -8,6 +8,7 @@ import { env } from "./env";
   registerEvents();
   registerCronJobs();
   await client.login(env.DISCORD_BOT_TOKEN);
+  logger.info("Bot successfully initialized & logged in");
 })().catch((err) => {
   logger.error(err, "Failed to initialize bot");
 });
