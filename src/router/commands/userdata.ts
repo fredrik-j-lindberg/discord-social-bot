@@ -22,7 +22,7 @@ export default {
   deferReply: true,
   data: new SlashCommandBuilder()
     .setName("userdata")
-    .setDescription("Triggers form for adding user data about yourself")
+    .setDescription("Lists user data by field")
     .addStringOption((option) =>
       option
         .setName(userDataTypeOptions.name)
