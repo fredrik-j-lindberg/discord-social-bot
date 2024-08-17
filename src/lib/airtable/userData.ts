@@ -2,6 +2,7 @@ import { z, ZodSchema } from "zod";
 import { DoraException } from "../exceptions/DoraException";
 import { tables } from "./table";
 import { UserDataPost } from "./types";
+import { ukDateToIso } from "../helpers/date";
 
 const userDataPostSchema: ZodSchema<UserDataPost> = z.object({
   guildId: z.string(),
@@ -61,15 +62,22 @@ export const setUserData = async ({
     userId: userId,
     guildId: guildId,
   });
+
+  const formattedUserData = {
+    ...validatedUserData,
+    birthday:
+      validatedUserData.birthday && ukDateToIso(validatedUserData.birthday),
+  };
+
   if (record) {
     // https://github.com/Airtable/airtable.js/issues/272
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    void tables.userData.update(record.id, validatedUserData);
+    void tables.userData.update(record.id, formattedUserData);
   } else {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    void tables.userData.create(validatedUserData);
+    void tables.userData.create(formattedUserData);
   }
 };
 

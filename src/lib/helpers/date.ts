@@ -1,6 +1,6 @@
 import { logger } from "../logger";
 
-const DEFAULT_LOCALE = "sv-SE";
+const DEFAULT_LOCALE = "en-GB";
 
 type FormatDateOptions = {
   date?: string | number | Date | null;
@@ -38,3 +38,8 @@ export const formatDate = (
     date,
     format,
   });
+
+export const ukDateToIso = (date: string) => {
+  const [day, month, year] = date.split("/");
+  return `${year}-${month}-${day}`;
+};

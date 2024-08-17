@@ -22,13 +22,12 @@ export type PiiFieldName = (typeof piiFieldNames)[keyof typeof piiFieldNames];
 const generateComponents = (
   userData: UserData | undefined,
 ): TextInputBuilder[] => {
+  const preFilledBirthday = userData?.birthday || "1990-01-01";
   return [
     new TextInputBuilder()
       .setCustomId(piiFieldNames.birthday)
-      .setLabel("Birthday (YYYY-MM-DD)")
-      .setValue(
-        formatDate(userData?.birthday, { dateStyle: "short" }) || "1990-01-01",
-      )
+      .setLabel("Birthday (DD/MM/YYYY)")
+      .setValue(formatDate(preFilledBirthday, { dateStyle: "short" }) || "")
       .setStyle(TextInputStyle.Short)
       .setRequired(false),
     new TextInputBuilder()
