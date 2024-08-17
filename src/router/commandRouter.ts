@@ -1,6 +1,5 @@
 import path from "node:path";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { z } from "zod";
 import { logger } from "~/lib/logger";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { fileURLToPath } from "url";
@@ -8,7 +7,15 @@ import { importFolderModules } from "~/lib/helpers/files";
 import type { ClientWithCommands } from "~/client";
 
 export type Command = {
-  data: SlashCommandBuilder;
+  /**
+   * This contains a lot more properties than what has been set so far in the interest of keeing the type narrow
+   *
+   * Grab more properties from SlashCommandBuilder if needed
+   */
+  data: {
+    name: SlashCommandBuilder["name"];
+    toJSON: SlashCommandBuilder["toJSON"];
+  };
   execute: (interaction: ChatInputCommandInteraction) => Promise<void> | void;
 };
 
@@ -16,17 +23,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const folderPath = path.join(__dirname, "commands");
 
-const commandSchema = z.object({
-  data: z.object({ name: z.string(), toJSON: z.function() }).passthrough(),
-  execute: z.function(),
-});
-
 export const getAllCommands = async () => {
-  const commands = await importFolderModules(folderPath);
-  return commands.map((command) => {
-    const parsedCommand = commandSchema.parse(command);
-    return parsedCommand as unknown as Command; // This is to avoid specifying all required props of Command in the schema
-  });
+  return await importFolderModules<Command>(folderPath);
 };
 
 const commands: Record<string, Command> = {};

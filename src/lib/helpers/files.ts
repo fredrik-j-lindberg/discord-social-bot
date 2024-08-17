@@ -2,7 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { DoraException } from "~/lib/exceptions/DoraException";
 
-export const importFolderModules = async (folderPath: string) => {
+export const importFolderModules = async <TDefaultExport>(
+  folderPath: string,
+) => {
   try {
     const filesToImport = fs.readdirSync(folderPath);
 
@@ -10,7 +12,7 @@ export const importFolderModules = async (folderPath: string) => {
     for (const file of filesToImport) {
       const filePath = path.join(folderPath, file);
       const command = (await import(filePath)) as {
-        default: unknown;
+        default: TDefaultExport;
       };
       commandModules.push(command.default);
     }
