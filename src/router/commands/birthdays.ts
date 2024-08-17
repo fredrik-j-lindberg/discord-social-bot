@@ -1,12 +1,14 @@
 import { getUsersWithUpcomingBirthday } from "~/lib/airtable/userData";
 import { assertHasDefinedProperty } from "~/lib/validation";
-import { Command } from "./types";
 import { formatDate } from "~/lib/helpers/date";
+import { SlashCommandBuilder } from "discord.js";
+import type { Command } from "../commandRouter";
 
-export const birthdaysCommand: Command = {
-  name: "birthdays",
-  description: "Lists the upcoming birthdays in the server",
-  listener: async (interaction) => {
+export default {
+  data: new SlashCommandBuilder()
+    .setName("birthdays")
+    .setDescription("Lists the upcoming birthdays in the server"),
+  execute: async (interaction) => {
     assertHasDefinedProperty(
       interaction,
       "guild",
@@ -20,4 +22,4 @@ export const birthdaysCommand: Command = {
       .join("\n");
     await interaction.reply(content);
   },
-};
+} satisfies Command;

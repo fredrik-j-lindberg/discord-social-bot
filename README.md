@@ -55,7 +55,7 @@ To run the bot locally, follow the steps below:
 
 - Feats:
   - Command to get user data of person
-  - Change pii to userdata?
+  - Validate userdata
 - Docs
   - Add router section to readme
   - Add userdata features to readme

@@ -1,12 +1,14 @@
 import { getUserData } from "~/lib/airtable/userData";
-import { Command } from "./types";
 import { piiModal } from "~/modals/piiModal";
 import { assertHasDefinedProperty } from "~/lib/validation";
+import { SlashCommandBuilder } from "discord.js";
+import { Command } from "../commandRouter";
 
-export const piiCommand: Command = {
-  name: "pii",
-  description: "Triggers form for adding user data about yourself",
-  listener: async (interaction) => {
+export default {
+  data: new SlashCommandBuilder()
+    .setName("userdata")
+    .setDescription("Triggers form for adding user data about yourself"),
+  execute: async (interaction) => {
     assertHasDefinedProperty(
       interaction,
       "guild",
@@ -22,4 +24,4 @@ export const piiCommand: Command = {
     });
     await interaction.showModal(modal);
   },
-};
+} satisfies Command;
