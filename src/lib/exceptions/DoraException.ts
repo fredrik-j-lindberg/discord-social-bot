@@ -14,6 +14,12 @@ const severity = {
 } as const;
 export type Severity = keyof typeof severity;
 
+const getCauseMetadata = (cause: unknown) => {
+  if (cause instanceof Error) {
+    return { ...cause, message: cause.message };
+  }
+};
+
 export class DoraException extends Error {
   static readonly Type = typeOptions;
   readonly severity: Severity;
@@ -34,6 +40,9 @@ export class DoraException extends Error {
     this.name = "DoraException";
     this.type = type;
     this.severity = options?.severity || severity.Error;
-    this.metadata = options?.metadata;
+    this.metadata = {
+      ...options?.metadata,
+      cause: getCauseMetadata(options?.cause),
+    };
   }
 }
