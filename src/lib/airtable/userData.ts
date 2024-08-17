@@ -1,6 +1,23 @@
+import { z, ZodSchema } from "zod";
 import { DoraException } from "../exceptions/DoraException";
 import { tables } from "./table";
-import { UserData } from "./types";
+import { UserDataPost } from "./types";
+
+const userDataPostSchema: ZodSchema<UserDataPost> = z.object({
+  guildId: z.string(),
+  userId: z.string(),
+  username: z.string(),
+  nickname: z.string().optional().nullable(),
+  firstName: z.string().optional().nullable(),
+  birthday: z
+    .string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+    .optional()
+    .nullable(),
+  phoneNumber: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
+  height: z.number().optional().nullable(),
+});
 
 // https://airtable.com/apprNJNQHQMYPO2Gg/tblxWYOeTPjfwyl3m/viwOl6KDtl6yUVm2K?blocks=hide
 
@@ -36,14 +53,23 @@ export const setUserData = async ({
 }: {
   userId: string;
   guildId: string;
-  userData: Omit<UserData, "userId" | "guildId">;
+  userData: Omit<UserDataPost, "userId" | "guildId">;
 }) => {
   const record = await getByUserId(userId, guildId);
-  const fullUserData = { ...userData, userId: userId, guildId: guildId };
+  const validatedUserData = userDataPostSchema.parse({
+    ...userData,
+    userId: userId,
+    guildId: guildId,
+  });
   if (record) {
-    await tables.userData.update(record.id, fullUserData);
+    // https://github.com/Airtable/airtable.js/issues/272
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    void tables.userData.update(record.id, validatedUserData);
   } else {
-    await tables.userData.create(fullUserData);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    void tables.userData.create(validatedUserData);
   }
 };
 
@@ -52,7 +78,7 @@ export const getUsersWithUpcomingBirthday = async (guildId: string) => {
     .select({
       maxRecords: 10,
       view: "Grid view",
-      filterByFormula: `{guildId} = '${guildId}'`,
+      filterByFormula: `AND({guildId} = '${guildId}', {birthday})`,
       sort: [{ field: "nextBirthday", direction: "asc" }],
     })
     .firstPage();

@@ -106,20 +106,22 @@ export const piiModal = {
         ? interaction.member.nickname
         : undefined;
 
+    const userData = {
+      birthday:
+        interaction.fields.getTextInputValue(piiFieldNames.birthday) || null,
+      username: interaction.user.username,
+      nickname: nickname || undefined,
+      firstName:
+        interaction.fields.getTextInputValue(piiFieldNames.firstName) || null,
+      height:
+        parseInt(interaction.fields.getTextInputValue(piiFieldNames.height)) ||
+        null,
+    };
+
     await setUserData({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
-      userData: {
-        birthday: interaction.fields.getTextInputValue(piiFieldNames.birthday),
-        username: interaction.user.username,
-        nickname: nickname || undefined,
-        firstName: interaction.fields.getTextInputValue(
-          piiFieldNames.firstName,
-        ),
-        height: parseInt(
-          interaction.fields.getTextInputValue(piiFieldNames.height),
-        ),
-      },
+      userData: userData,
     });
     await interaction.editReply({
       content: "Your user data was submitted successfully!",

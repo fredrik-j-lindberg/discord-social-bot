@@ -3,7 +3,7 @@ import { logger } from "../logger";
 const DEFAULT_LOCALE = "sv-SE";
 
 type FormatDateOptions = {
-  date?: string | number | Date;
+  date?: string | number | Date | null;
   locale?: string;
   format: Intl.DateTimeFormatOptions;
 };
