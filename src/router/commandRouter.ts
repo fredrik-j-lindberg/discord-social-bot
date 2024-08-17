@@ -17,6 +17,7 @@ export type Command = {
     toJSON: SlashCommandBuilder["toJSON"];
   };
   execute: (interaction: ChatInputCommandInteraction) => Promise<void> | void;
+  deferReply: boolean;
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -60,5 +61,19 @@ export const commandRouter = async (
       metadata: { commandName: interaction.commandName },
     });
   }
-  await command.execute(interaction);
+
+  if (command.deferReply) {
+    await interaction.deferReply();
+  }
+  try {
+    await command.execute(interaction);
+  } catch (err) {
+    const errorMessage = `Failed to process command :(`;
+    if (command.deferReply) {
+      await interaction.editReply(errorMessage);
+      throw err;
+    }
+    await interaction.reply(errorMessage);
+    throw err;
+  }
 };

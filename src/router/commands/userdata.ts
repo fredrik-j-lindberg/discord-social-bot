@@ -5,6 +5,7 @@ import { SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
 
 export default {
+  deferReply: true,
   data: new SlashCommandBuilder()
     .setName("userdata")
     .setDescription("Triggers form for adding user data about yourself"),

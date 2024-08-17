@@ -93,8 +93,8 @@ const createModal = ({
 export const piiModal = {
   id: modalId,
   createModal,
+  deferReply: true,
   listener: async (interaction) => {
-    await interaction.deferReply();
     assertHasDefinedProperty(
       interaction,
       "guild",

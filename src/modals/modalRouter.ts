@@ -13,5 +13,18 @@ export const modalRouter = async (interaction: ModalSubmitInteraction) => {
       metadata: { customId: interaction.customId },
     });
   }
-  await modal.listener(interaction);
+  if (modal.deferReply) {
+    await interaction.deferReply();
+  }
+  try {
+    await modal.listener(interaction);
+  } catch (err) {
+    const errorMessage = `Failed to process modal sumission :(`;
+    if (modal.deferReply) {
+      await interaction.editReply(errorMessage);
+      throw err;
+    }
+    await interaction.reply(errorMessage);
+    throw err;
+  }
 };
