@@ -4,8 +4,14 @@ import { pingCommand } from "./ping";
 import { Command } from "./types";
 import { piiCommand } from "./pii";
 import { birthdaysCommand } from "./birthdays";
+import { botInfoCommand } from "./botInfo";
 
-export const commands: Command[] = [pingCommand, piiCommand, birthdaysCommand];
+export const commands: Command[] = [
+  botInfoCommand,
+  pingCommand,
+  piiCommand,
+  birthdaysCommand,
+];
 
 export const commandRouter = async (
   interaction: ChatInputCommandInteraction,
