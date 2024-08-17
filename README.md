@@ -50,3 +50,18 @@ To run the bot locally, follow the steps below:
 1. Add your command file containing relevant logic. See the [ping command](./src/commands/ping.ts) as example
 2. Add a reference to your command file in the [commandRouter](./src/commands/commandRouter.ts) commands list
 3. Run `pnpm refreshCommands`
+
+# TODO
+
+- Feats:
+  - Command to get user data of person
+  - Change pii to userdata?
+- Docs
+  - Add router section to readme
+  - Add userdata features to readme
+- Improved devx
+  - Enforce import type syntax
+  - Look into linting improvements
+    - import order
+    - circular dependencies
+    - unnecessary conditionals?
