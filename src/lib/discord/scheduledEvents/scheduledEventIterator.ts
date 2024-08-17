@@ -5,6 +5,12 @@ type ScheduledEventIterationResult<TActionResult> = {
   result: TActionResult | undefined;
   scheduledEvent: GuildScheduledEvent;
 };
+
+/**
+ * Runs specified action for each individual event
+ *
+ * @returns Array of objects, containing the result from each action and the corresponding event
+ */
 export const scheduledEventIterator = async <TActionResult>({
   guild,
   action,
