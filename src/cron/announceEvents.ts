@@ -36,16 +36,17 @@ const remindOfScheduledEvent = async ({
   guild: Guild;
   scheduledEvent: GuildScheduledEvent;
 }) => {
-  const channelId = extractChannelIdFromEventDescription(scheduledEvent);
-  assertIsDefined(
-    channelId,
-    "No channelId found in event description",
-    DoraException.Severity.Info,
-  );
   const shouldRemind = extractShouldRemindFromEventDescription(scheduledEvent);
   assertIsTruthy(
     shouldRemind,
     "No shouldRemind flag in event description was not found or it was set to false",
+    DoraException.Severity.Info,
+  );
+
+  const channelId = extractChannelIdFromEventDescription(scheduledEvent);
+  assertIsDefined(
+    channelId,
+    "No channelId found in event description",
     DoraException.Severity.Info,
   );
 
