@@ -19,7 +19,7 @@ export const modalRouter = async (interaction: ModalSubmitInteraction) => {
   try {
     await modal.listener(interaction);
   } catch (err) {
-    const errorMessage = `Failed to process modal sumission :(`;
+    const errorMessage = `Failed to process modal submission :(`;
     if (modal.deferReply) {
       await interaction.editReply(errorMessage);
       throw err;
