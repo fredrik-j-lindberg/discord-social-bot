@@ -1,6 +1,7 @@
 import schedule from "node-schedule";
 import { logger } from "../lib/logger";
 import { announceRelevantScheduledEventsForAllGuilds } from "./announceEvents";
+import { actionWrapper } from "~/lib/actionWrapper";
 
 /**
  * Interval options for cron job. A scheduled job with the minute format
@@ -14,7 +15,11 @@ const CRON_INTERVAL = {
 export const registerCronJobs = () => {
   schedule.scheduleJob(CRON_INTERVAL.HOUR, async () => {
     logger.info("Running hourly cron job");
-    await announceRelevantScheduledEventsForAllGuilds();
+    await actionWrapper({
+      action: announceRelevantScheduledEventsForAllGuilds,
+      actionDescription: "Announce relevant scheduled events for all guilds",
+      swallowError: true,
+    });
   });
   logger.info("Cron jobs successfully registered");
 };
