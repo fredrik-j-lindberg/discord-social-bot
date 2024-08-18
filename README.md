@@ -14,6 +14,17 @@ This is a Discord bot built to cater to some specific needs I had a hard time fi
 
   If your event has a `channelId="<idhere>"` as well as `shouldRemind="true"` in its description, a reminder for the event will be sent ~24 hours before, pinging the ones set as interested
 
+- **User data**
+
+  - Via /pii a user can enter user data about themselves
+  - Via /userdata you can view users data that they have shared
+
+    _Note: This requires the guild config to have enabled the birthdayInput field in "piiFields"_
+
+  - Bot will wish happy birthday to those who have their birthday today
+
+    _Note: This requires the birthdayWishes channel to be set in the guild config_
+
 ## Getting Started
 
 ### Pre-requisites:
@@ -62,7 +73,6 @@ To run the bot locally, follow the steps below:
     - Make it configurable via commands
 - Docs
   - Add router section to readme
-  - Add userdata features to readme
 - Improved devx
   - Enforce import type syntax
   - Look into linting improvements
