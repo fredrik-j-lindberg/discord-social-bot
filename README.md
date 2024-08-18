@@ -58,9 +58,15 @@ To run the bot locally, follow the steps below:
 
 # Adding new commands
 
-1. Add your command file containing relevant logic. See the [ping command](./src/commands/ping.ts) as example
-2. Add a reference to your command file in the [commandRouter](./src/commands/commandRouter.ts) commands list
-3. Run `pnpm refreshCommands`
+1. Add your command file containing relevant logic. Example files as reference:
+
+   - [ping](./src/router/commands/ping.ts) - Very basic command
+   - [userdata](./src/router/commands/userdata.ts) - Command with argument
+   - [pii](./src/router/commands/pii.ts) - Command which triggers modal
+
+2. Run `pnpm refreshCommands`
+
+   Note that it refreshes it with the credentials currently stored in `.env`, if you for example run the local version of the bot you'll need to make sure to refresh the commands for the production bot as well when you are ready to do so
 
 # TODO
 
@@ -74,6 +80,7 @@ To run the bot locally, follow the steps below:
 - Docs
   - Add router section to readme
 - Improved devx
+  - Move modals and crons to router folder as well?
   - Enforce import type syntax
   - Look into linting improvements
     - import order
