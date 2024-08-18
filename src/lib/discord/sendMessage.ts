@@ -1,6 +1,16 @@
 import { GuildScheduledEvent, TextChannel } from "discord.js";
 import { assertIsDefined } from "../validation";
 
+export const sendBirthdayWish = async ({
+  userId,
+  channel,
+}: {
+  userId: string;
+  channel: TextChannel;
+}) => {
+  await channel.send(`Happy birthday, <@${userId}>! 🎉`);
+};
+
 export const sendEventReminder = async ({
   scheduledEvent,
   channel,

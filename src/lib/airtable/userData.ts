@@ -93,6 +93,17 @@ export const setUserData = async ({
   }
 };
 
+export const getUsersWithBirthdayToday = async () => {
+  const records = await tables.userData
+    .select({
+      maxRecords: 10,
+      view: "Grid view",
+      filterByFormula: `{nextBirthday} = TODAY()`,
+    })
+    .firstPage();
+  return records.map((record) => record.fields);
+};
+
 export const getUsersWithUpcomingBirthday = async (guildId: string) => {
   const records = await tables.userData
     .select({
