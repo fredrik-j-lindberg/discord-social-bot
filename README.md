@@ -55,7 +55,11 @@ To run the bot locally, follow the steps below:
 
 - Feats:
   - Command to get user data of person
-  - Validate userdata
+  - Support getting height (and other) data from /userdata
+  - Update nickname when user is updated via events
+  - Guild config improvements
+    - Move guildconfigs to airtable (new base)
+    - Make it configurable via commands
 - Docs
   - Add router section to readme
   - Add userdata features to readme
@@ -65,3 +69,7 @@ To run the bot locally, follow the steps below:
     - import order
     - circular dependencies
     - unnecessary conditionals?
+  - Formatting improvements
+    - No semi?
+- Debug
+  - Why does not everyone get their nickname set correctly?
