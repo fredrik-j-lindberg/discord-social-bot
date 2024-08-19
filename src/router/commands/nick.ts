@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import type { Command } from "../commandRouter";
-import { DoraException } from "~/lib/exceptions/DoraException";
+import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 
 export default {
   deferReply: false,
@@ -10,23 +10,18 @@ export default {
   execute: async (interaction) => {
     const member = interaction.member;
     if (!member) {
-      throw new DoraException(
-        "Discord event lack member object",
-        DoraException.Type.NotFound,
-      );
+      throw new DoraUserException("Discord event lack member object");
     }
 
     if (!("nickname" in member)) {
-      throw new DoraException(
+      throw new DoraUserException(
         "Discord event contained the member object but it lacks nickname prop",
-        DoraException.Type.NotFound,
       );
     }
 
     if (member.nickname === null) {
-      throw new DoraException(
+      throw new DoraUserException(
         "Discord event contained the member object but its nickname prop is null",
-        DoraException.Type.NotFound,
       );
     }
     await interaction.reply(member.nickname);

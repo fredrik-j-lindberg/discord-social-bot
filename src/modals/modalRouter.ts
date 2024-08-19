@@ -2,6 +2,7 @@ import { ModalSubmitInteraction } from "discord.js";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { ModalData } from "./types";
 import { piiModal } from "./piiModal";
+import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 
 export const modals: ModalData[] = [piiModal];
 
@@ -19,7 +20,10 @@ export const modalRouter = async (interaction: ModalSubmitInteraction) => {
   try {
     await modal.listener(interaction);
   } catch (err) {
-    const errorMessage = `Failed to process modal submission :(`;
+    let errorMessage = `Failed to process modal submission :(`;
+    if (err instanceof DoraUserException) {
+      errorMessage = err.message;
+    }
     if (modal.deferReply) {
       await interaction.editReply(errorMessage);
       throw err;

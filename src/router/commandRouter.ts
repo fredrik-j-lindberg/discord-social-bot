@@ -5,6 +5,7 @@ import { DoraException } from "~/lib/exceptions/DoraException";
 import { fileURLToPath } from "url";
 import { importFolderModules } from "~/lib/helpers/files";
 import type { ClientWithCommands } from "~/client";
+import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 
 export type Command = {
   /**
@@ -68,7 +69,10 @@ export const commandRouter = async (
   try {
     await command.execute(interaction);
   } catch (err) {
-    const errorMessage = `Failed to process command :(`;
+    let errorMessage = `Failed to process command :(`;
+    if (err instanceof DoraUserException) {
+      errorMessage = err.message;
+    }
     if (command.deferReply) {
       await interaction.editReply(errorMessage);
       throw err;

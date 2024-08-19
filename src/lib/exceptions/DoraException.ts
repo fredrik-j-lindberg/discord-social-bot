@@ -4,6 +4,7 @@ const typeOptions = {
   Unknown: "Unknown",
   DateRange: "DateRange",
   TypeError: "TypeError",
+  UserFacing: "UserFacing",
 } as const;
 type ExceptionType = keyof typeof typeOptions;
 
