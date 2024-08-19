@@ -81,6 +81,7 @@ To run the bot locally, follow the steps below:
   - Add router section to readme
 - Improved devx
   - Move modals and crons to router folder as well?
+  - Make routers handle replies to avoid conflicting replies (return string from execute?)
   - Enforce import type syntax
   - Look into linting improvements
     - import order
