@@ -5,7 +5,7 @@ import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 export default {
   deferReply: false,
   data: new SlashCommandBuilder()
-    .setName("nick")
+    .setName("debugnick")
     .setDescription("Debug command to help see why Osyx is broken"),
   execute: async (interaction) => {
     const member = interaction.member;
