@@ -100,27 +100,26 @@ export const piiModal = {
       "guild",
       "Modal submitted without associated guild",
     );
-    const nickname =
+    const displayName =
       interaction.member && "displayName" in interaction.member
         ? interaction.member.displayName
         : undefined;
 
-    const userData = {
-      birthday:
-        interaction.fields.getTextInputValue(piiFieldNames.birthday) || null,
-      username: interaction.user.username,
-      nickname: nickname || undefined,
-      firstName:
-        interaction.fields.getTextInputValue(piiFieldNames.firstName) || null,
-      height:
-        parseInt(interaction.fields.getTextInputValue(piiFieldNames.height)) ||
-        null,
-    };
-
     await setUserData({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
-      userData: userData,
+      userData: {
+        birthday:
+          interaction.fields.getTextInputValue(piiFieldNames.birthday) || null,
+        username: interaction.user.username,
+        displayName: displayName || undefined,
+        firstName:
+          interaction.fields.getTextInputValue(piiFieldNames.firstName) || null,
+        height:
+          parseInt(
+            interaction.fields.getTextInputValue(piiFieldNames.height),
+          ) || null,
+      },
     });
     await interaction.editReply({
       content: "Your user data was submitted successfully!",

@@ -2,7 +2,7 @@ export type UserData = {
   guildId: string;
   userId: string;
   username: string;
-  nickname?: string;
+  displayName?: string;
   firstName?: string;
   birthday?: string;
   birthdayMonth?: string; // Formatted birthday column as "MM-DD"
@@ -16,7 +16,7 @@ export type UserDataPost = {
   guildId: string;
   userId: string;
   username: string;
-  nickname?: string | null;
+  displayName?: string | null;
   firstName?: string | null;
   birthday?: string | null;
   phoneNumber?: string | null;

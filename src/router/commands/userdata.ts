@@ -69,8 +69,8 @@ const handleFieldChoice = async (
       );
     }
     const content = birthdays
-      .map(({ username, nickname, birthday }) => {
-        return `**${nickname || username}** - ${formatDate(birthday)}`;
+      .map(({ username, displayName, birthday }) => {
+        return `**${displayName || username}** - ${formatDate(birthday)}`;
       })
       .join("\n");
     await interaction.editReply(content);
