@@ -101,8 +101,8 @@ export const piiModal = {
       "Modal submitted without associated guild",
     );
     const nickname =
-      interaction.member && "nickname" in interaction.member
-        ? interaction.member.nickname
+      interaction.member && "displayName" in interaction.member
+        ? interaction.member.displayName
         : undefined;
 
     const userData = {

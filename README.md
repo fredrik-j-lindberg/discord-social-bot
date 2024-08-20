@@ -89,5 +89,3 @@ To run the bot locally, follow the steps below:
     - unnecessary conditionals?
   - Formatting improvements
     - No semi?
-- Debug
-  - Why does not everyone get their nickname set correctly?
