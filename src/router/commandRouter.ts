@@ -4,7 +4,6 @@ import { logger } from "~/lib/logger";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { fileURLToPath } from "url";
 import { importFolderModules } from "~/lib/helpers/files";
-import type { ClientWithCommands } from "~/client";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 
 export type Command = {
@@ -33,14 +32,11 @@ const commands: Record<string, Command> = {};
 /**
  * Imports the relevant command files and sets them on the client
  */
-export const initCommands = async (client: ClientWithCommands) => {
+export const initCommands = async () => {
   try {
     const allCommands = await getAllCommands();
     allCommands.forEach((command) => {
       commands[command.data.name] = command;
-      // TODO: do I really need to set the commands on the client?
-      // Keeping for now to see if it is used later in guide. When removing, revert client type as well
-      client.commands.set(command.data.name, command);
     });
     logger.info("Commands initialized");
   } catch (err) {
