@@ -4,6 +4,7 @@ import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
 import { formatDate } from "~/lib/helpers/date";
 import { DoraException } from "~/lib/exceptions/DoraException";
+import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 
 const userDataTypeOptions = {
   name: "field",
@@ -64,7 +65,7 @@ const handleFieldChoice = async (
   if (field === "birthdays") {
     const birthdays = await getUsersWithUpcomingBirthday(interaction.guild.id);
     if (birthdays.length === 0) {
-      await interaction.editReply(
+      throw new DoraUserException(
         "No upcoming birthdays found, add yours via the /userdata form",
       );
     }
@@ -78,7 +79,7 @@ const handleFieldChoice = async (
   }
   if (field === "height") {
     // TODO: Fix height view
-    await interaction.editReply(
+    throw new DoraUserException(
       "Not implemented yet. Eckron is the tallest though",
     );
     return;
