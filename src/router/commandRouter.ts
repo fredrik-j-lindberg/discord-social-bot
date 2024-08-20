@@ -1,10 +1,10 @@
-import path from "node:path";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { logger } from "~/lib/logger";
 import { DoraException } from "~/lib/exceptions/DoraException";
-import { fileURLToPath } from "url";
-import { importFolderModules } from "~/lib/helpers/files";
-import { DoraUserException } from "~/lib/exceptions/DoraUserException";
+import {
+  importFolderModules,
+  triggerExecutionMappedToInteraction,
+} from "./routerHelper";
 
 export type Command = {
   /**
@@ -20,32 +20,14 @@ export type Command = {
   deferReply: boolean;
 };
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const folderPath = path.join(__dirname, "commands");
-
 export const getAllCommands = async () => {
-  return await importFolderModules<Command>(folderPath);
+  return await importFolderModules<Command>("commands");
 };
 
-const commands: Record<string, Command> = {};
-/**
- * Imports the relevant command files and sets them on the client
- */
+let commands: Record<string, Command>;
 export const initCommands = async () => {
-  try {
-    const allCommands = await getAllCommands();
-    allCommands.forEach((command) => {
-      commands[command.data.name] = command;
-    });
-    logger.info("Commands initialized");
-  } catch (err) {
-    throw new DoraException(
-      "Failed to initialize commands",
-      DoraException.Type.Unknown,
-      { cause: err },
-    );
-  }
+  commands = await getAllCommands();
+  logger.info("Commands initialized");
 };
 
 export const commandRouter = async (
@@ -59,21 +41,10 @@ export const commandRouter = async (
     });
   }
 
-  if (command.deferReply) {
-    await interaction.deferReply();
-  }
-  try {
-    await command.execute(interaction);
-  } catch (err) {
-    let errorMessage = `Failed to process command :(`;
-    if (err instanceof DoraUserException) {
-      errorMessage = err.message;
-    }
-    if (command.deferReply) {
-      await interaction.editReply(errorMessage);
-      throw err;
-    }
-    await interaction.reply(errorMessage);
-    throw err;
-  }
+  await triggerExecutionMappedToInteraction({
+    execute: command.execute,
+    deferReply: command.deferReply,
+    interaction,
+    context: "command",
+  });
 };

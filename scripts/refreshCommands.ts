@@ -22,15 +22,16 @@ const makeCmdsRestFriendly = (commands: Command[]) => {
 };
 
 (async () => {
-  const commands = await getAllCommands();
+  const commandsMap = await getAllCommands();
+  const commandsArray = Object.values(commandsMap);
   logger.info(
     {
-      commands: commands.map((cmd) => cmd.data.name),
+      commands: commandsArray.map((cmd) => cmd.data.name),
       clientId: env.DISCORD_BOT_CLIENT_ID,
     },
     "Started refreshing application (/) commands.",
   );
-  const jsonCommands = makeCmdsRestFriendly(commands);
+  const jsonCommands = makeCmdsRestFriendly(commandsArray);
   await rest.put(Routes.applicationCommands(env.DISCORD_BOT_CLIENT_ID), {
     body: jsonCommands,
   });
