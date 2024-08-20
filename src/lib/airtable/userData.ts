@@ -87,11 +87,11 @@ export const setUserData = async ({
     // https://github.com/Airtable/airtable.js/issues/272
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    void tables.userData.update(record.id, formattedUserData);
+    await tables.userData.update(record.id, formattedUserData);
   } else {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    void tables.userData.create(formattedUserData);
+    await tables.userData.create(formattedUserData);
   }
 };
 
