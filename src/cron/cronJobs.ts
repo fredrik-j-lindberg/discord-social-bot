@@ -27,7 +27,7 @@ export const registerCronJobs = () => {
     logger.info("Running daily 9 am cron job");
     await actionWrapper({
       action: happyBirthday,
-      actionDescription: "Wish users happy birthday",
+      actionDescription: "Handle birthday cron job",
       swallowError: true,
     });
   });

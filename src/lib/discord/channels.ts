@@ -7,14 +7,14 @@ export const getChannel = async ({
 }: {
   guild: Guild;
   channelId: string;
-}): Promise<GuildBasedChannel> => {
-  const channel = await guild.channels.fetch(channelId);
-  if (!channel) {
+}): Promise<GuildBasedChannel | null> => {
+  try {
+    return await guild.channels.fetch(channelId);
+  } catch (err) {
     throw new DoraException(
       `Failed to fetch guild channel`,
-      DoraException.Type.NotFound,
-      { metadata: { channelId, guildId: guild.id } },
+      DoraException.Type.Unknown,
+      { cause: err, metadata: { channelId, guildId: guild.id } },
     );
   }
-  return channel;
 };

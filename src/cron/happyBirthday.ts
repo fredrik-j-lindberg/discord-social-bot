@@ -6,7 +6,8 @@ import { guildConfigs } from "../../guildConfigs";
 import { addRole } from "~/lib/discord/roles";
 import { Guild, GuildMember } from "discord.js";
 import { getChannel } from "~/lib/discord/channels";
-import { logger } from "~/lib/logger";
+import { assertIsDefined } from "~/lib/validation";
+import { actionWrapper } from "~/lib/actionWrapper";
 
 export const happyBirthday = async () => {
   const userData = await getUsersWithBirthdayToday();
@@ -28,15 +29,28 @@ export const happyBirthday = async () => {
       );
     }
     const member = await guild.members.fetch(user.userId);
-    await handleBirthdayRole({
-      guild,
-      roleId: guildConfig.birthdays.roleId,
-      member,
+    await actionWrapper({
+      action: () =>
+        handleBirthdayRole({
+          guild,
+          roleId: guildConfig.birthdays.roleId,
+          member,
+        }),
+      actionDescription: "Add birthday role",
+      meta: { userId: user.userId, guildId: guild.id },
+      swallowError: true,
     });
-    await handleBirthdayWish({
-      guild,
-      channelId: guildConfig.birthdays.channelId,
-      member,
+
+    await actionWrapper({
+      action: () =>
+        handleBirthdayWish({
+          guild,
+          channelId: guildConfig.birthdays.channelId,
+          member,
+        }),
+      actionDescription: "Send birthday wish",
+      meta: { userId: user.userId, guildId: guild.id },
+      swallowError: true,
     });
   }
 };
@@ -50,10 +64,11 @@ const handleBirthdayRole = async ({
   roleId?: string;
   member: GuildMember;
 }) => {
-  if (!roleId) {
-    logger.warn({ guildId: guild.id }, "No birthday role configured");
-    return;
-  }
+  assertIsDefined(
+    roleId,
+    "No birthday role configured",
+    DoraException.Severity.Warn,
+  );
   await addRole({ user: member.user, guild, roleId });
 };
 
@@ -66,10 +81,17 @@ const handleBirthdayWish = async ({
   channelId?: string;
   member: GuildMember;
 }) => {
-  if (!channelId) {
-    logger.warn({ guildId: guild.id }, "No birthday channel configured");
-    return;
-  }
+  assertIsDefined(
+    channelId,
+    "No birthday channel configured",
+    DoraException.Severity.Warn,
+  );
   const channel = await getChannel({ guild, channelId });
+  assertIsDefined(
+    channel,
+    "Birthday channel not found",
+    DoraException.Severity.Warn,
+  );
+
   await sendBirthdayWish({ userId: member.user.id, channel });
 };
