@@ -1,25 +1,19 @@
-import { client } from "~/client";
 import { getUsersWithBirthdayToday } from "~/lib/airtable/userData";
 import { sendBirthdayWish } from "~/lib/discord/sendMessage";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { guildConfigs } from "../../guildConfigs";
-import { addRole } from "~/lib/discord/roles";
+import { addRole, getRole } from "~/lib/discord/roles";
 import { Guild, GuildMember } from "discord.js";
 import { getChannel } from "~/lib/discord/channels";
 import { assertIsDefined } from "~/lib/validation";
 import { actionWrapper } from "~/lib/actionWrapper";
+import { getGuild } from "~/lib/discord/guilds";
 
 export const happyBirthday = async () => {
+  await resetBirthdayRole();
   const userData = await getUsersWithBirthdayToday();
-  const oAuth2Guilds = await client.guilds.fetch();
   for (const user of userData) {
-    const oAuth2Guild = oAuth2Guilds.get(user.guildId);
-    if (!oAuth2Guild) {
-      throw new DoraException("Guild not found", DoraException.Type.Unknown, {
-        metadata: { guildId: user.guildId },
-      });
-    }
-    const guild = await oAuth2Guild.fetch();
+    const guild = await getGuild(user.guildId);
     const guildConfig = guildConfigs[guild.id];
     if (!guildConfig) {
       throw new DoraException(
@@ -52,6 +46,23 @@ export const happyBirthday = async () => {
       meta: { userId: user.userId, guildId: guild.id },
       swallowError: true,
     });
+  }
+};
+
+const resetBirthdayRole = async () => {
+  for (const guildConfig of Object.values(guildConfigs)) {
+    const guild = await getGuild(guildConfig.guildId);
+    const roleId = guildConfig.birthdays.roleId;
+    if (!roleId) return; // Ignore reset since no birthday role is configured
+    const role = await getRole({ guild, roleId });
+    assertIsDefined(
+      role,
+      "Birthday role not found",
+      DoraException.Severity.Warn,
+    );
+    for (const [, member] of role.members) {
+      await member.roles.remove(role);
+    }
   }
 };
 
