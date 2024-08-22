@@ -4,7 +4,6 @@ import { DoraException } from "../lib/exceptions/DoraException";
 import {
   assertIsDefined,
   assertIsBefore,
-  assertChannelIsTextBased,
   assertIsTruthy,
 } from "../lib/validation";
 import { sendEventReminder } from "../lib/discord/sendMessage";
@@ -53,11 +52,6 @@ const remindOfScheduledEvent = async ({
   assertThatEventIsWithinReminderWindow({ scheduledEvent });
 
   const channel = await guild.channels.fetch(channelId);
-  assertChannelIsTextBased(
-    channel,
-    "Channel in event description does not exist or is not a text based channel",
-    DoraException.Severity.Warn,
-  );
   await sendEventReminder({ scheduledEvent, channel });
   await setLatestReminderAtInEventDescription(scheduledEvent);
 };

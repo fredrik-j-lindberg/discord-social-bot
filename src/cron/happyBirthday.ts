@@ -2,7 +2,6 @@ import { client } from "~/client";
 import { getUsersWithBirthdayToday } from "~/lib/airtable/userData";
 import { sendBirthdayWish } from "~/lib/discord/sendMessage";
 import { DoraException } from "~/lib/exceptions/DoraException";
-import { assertChannelIsTextBased } from "~/lib/validation";
 import { guildConfigs } from "../../guildConfigs";
 
 export const happyBirthday = async () => {
@@ -26,10 +25,6 @@ export const happyBirthday = async () => {
     }
     const channel = await guild.channels.fetch(
       guildConfig.channelIds.birthdayWishes,
-    );
-    assertChannelIsTextBased(
-      channel,
-      "Birthday channel was not found or is not a text based channel",
     );
     await sendBirthdayWish({ userId: user.userId, channel });
   }
