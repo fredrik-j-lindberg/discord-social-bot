@@ -77,6 +77,8 @@ To run the bot locally, follow the steps below:
   - Guild config improvements
     - Move guildconfigs to airtable (new base)
     - Make it configurable via commands
+  - Add discord native timestamp of next birthday to /userdata birthdays output
+  - Event gcal syncing?
 - Docs
   - Add router section to readme
 - Improved devx
