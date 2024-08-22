@@ -3,6 +3,10 @@ import { getUsersWithBirthdayToday } from "~/lib/airtable/userData";
 import { sendBirthdayWish } from "~/lib/discord/sendMessage";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { guildConfigs } from "../../guildConfigs";
+import { addRole } from "~/lib/discord/roles";
+import { Guild, GuildMember } from "discord.js";
+import { getChannel } from "~/lib/discord/channels";
+import { logger } from "~/lib/logger";
 
 export const happyBirthday = async () => {
   const userData = await getUsersWithBirthdayToday();
@@ -23,9 +27,49 @@ export const happyBirthday = async () => {
         { metadata: { guildId: guild.id } },
       );
     }
-    const channel = await guild.channels.fetch(
-      guildConfig.channelIds.birthdayWishes,
-    );
-    await sendBirthdayWish({ userId: user.userId, channel });
+    const member = await guild.members.fetch(user.userId);
+    await handleBirthdayRole({
+      guild,
+      roleId: guildConfig.birthdays.roleId,
+      member,
+    });
+    await handleBirthdayWish({
+      guild,
+      channelId: guildConfig.birthdays.channelId,
+      member,
+    });
   }
+};
+
+const handleBirthdayRole = async ({
+  guild,
+  roleId,
+  member,
+}: {
+  guild: Guild;
+  roleId?: string;
+  member: GuildMember;
+}) => {
+  if (!roleId) {
+    logger.warn({ guildId: guild.id }, "No birthday role configured");
+    return;
+  }
+  await addRole({ user: member.user, guild, roleId });
+};
+
+const handleBirthdayWish = async ({
+  guild,
+  channelId,
+  member,
+}: {
+  guild: Guild;
+  channelId?: string;
+  member: GuildMember;
+}) => {
+  if (!channelId) {
+    logger.warn({ guildId: guild.id }, "No birthday channel configured");
+    return;
+  }
+  const channel = await getChannel({ guild, channelId });
+  await sendBirthdayWish({ userId: member.user.id, channel });
 };
