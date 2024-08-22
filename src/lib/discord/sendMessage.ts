@@ -1,12 +1,20 @@
-import { GuildBasedChannel, GuildScheduledEvent } from "discord.js";
+import {
+  GuildBasedChannel,
+  GuildScheduledEvent,
+  MessageCreateOptions,
+  MessageFlags,
+} from "discord.js";
 import { assertChannelIsTextBased, assertIsDefined } from "../validation";
 
-const sendMsg = async (channel: GuildBasedChannel | null, message: string) => {
+const sendMsg = async (
+  channel: GuildBasedChannel | null,
+  messagePayload: MessageCreateOptions,
+) => {
   assertChannelIsTextBased(
     channel,
     "Channel was not found or is not a text based channel",
   );
-  await channel.send(message);
+  await channel.send(messagePayload);
 };
 
 export const sendBirthdayWish = async ({
@@ -16,7 +24,10 @@ export const sendBirthdayWish = async ({
   userId: string;
   channel: GuildBasedChannel | null;
 }) => {
-  await sendMsg(channel, `Happy birthday, <@${userId}>! 🎉`);
+  await sendMsg(channel, {
+    content: `Happy birthday, <@${userId}>! 🎉`,
+    flags: MessageFlags.SuppressNotifications,
+  });
 };
 
 export const sendEventReminder = async ({
@@ -34,10 +45,9 @@ export const sendEventReminder = async ({
 
   const nameWithoutEmojis = removeEmojis(scheduledEvent.name); // Emojis break the markdown link
   const relativeDateFormat = `<t:${Math.round(eventStartTimestamp / 1000)}:R>`; // Discord's native relative date format.
-  await sendMsg(
-    channel,
-    `[${nameWithoutEmojis}](${scheduledEvent.url}) will take place ${relativeDateFormat}. Currently set as interested: ${interestedUsers.join(" ")}`,
-  );
+  await sendMsg(channel, {
+    content: `[${nameWithoutEmojis}](${scheduledEvent.url}) will take place ${relativeDateFormat}. Currently set as interested: ${interestedUsers.join(" ")}`,
+  });
 };
 
 const removeEmojis = (input: string) => {

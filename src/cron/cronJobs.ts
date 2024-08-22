@@ -11,7 +11,7 @@ import { actionWrapper } from "~/lib/actionWrapper";
 const CRON_INTERVAL = {
   MINUTE: "* * * * *", // Helpful when running locally to test an action
   HOUR: "0 * * * *",
-  DAILY_9: "0 9 * * *", // 9am daily
+  MIDNIGHT: "0 0 * * *", // 00.00 daily
 };
 
 export const registerCronJobs = () => {
@@ -23,8 +23,8 @@ export const registerCronJobs = () => {
       swallowError: true,
     });
   });
-  schedule.scheduleJob(CRON_INTERVAL.DAILY_9, async () => {
-    logger.info("Running daily 9 am cron job");
+  schedule.scheduleJob(CRON_INTERVAL.MIDNIGHT, async () => {
+    logger.info("Running daily cron job");
     await actionWrapper({
       action: happyBirthday,
       actionDescription: "Handle birthday cron job",
