@@ -1,5 +1,5 @@
 import { getUserData } from "~/lib/airtable/userData";
-import { piiModal } from "~/modals/piiModal";
+import piiModal from "../modals/piiModal";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";

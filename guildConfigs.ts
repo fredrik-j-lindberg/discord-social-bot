@@ -1,4 +1,4 @@
-import type { PiiFieldName } from "~/modals/piiModal";
+import type { PiiFieldName } from "~/router/modals/piiModal";
 
 type GuildConfig = {
   guildId: string;

@@ -4,13 +4,13 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { ModalData } from "./types";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { setUserData } from "~/lib/airtable/userData";
 import { UserData } from "~/lib/airtable/types";
 import { formatDate } from "~/lib/helpers/date";
-import { guildConfigs } from "../../guildConfigs";
+import { guildConfigs } from "../../../guildConfigs";
 import { DoraException } from "~/lib/exceptions/DoraException";
+import { ModalData } from "../modalRouter";
 
 const modalId = "userDataModal";
 export const piiFieldNames = {
@@ -69,13 +69,11 @@ const componentsRelevantForGuild = (
 };
 
 // https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
-const createModal = ({
-  guildId,
-  userData,
-}: {
+type CreateModalProps = {
   guildId: string;
   userData: UserData | undefined;
-}) => {
+};
+const createModal = ({ guildId, userData }: CreateModalProps) => {
   const modal = new ModalBuilder()
     .setCustomId(modalId)
     .setTitle("User data form. Optional!");
@@ -90,11 +88,11 @@ const createModal = ({
   return modal;
 };
 
-export const piiModal = {
-  id: modalId,
+export default {
+  data: { name: modalId },
   createModal,
   deferReply: true,
-  listener: async (interaction) => {
+  handleSubmit: async (interaction) => {
     assertHasDefinedProperty(
       interaction,
       "guild",

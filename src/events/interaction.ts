@@ -1,6 +1,6 @@
 import { registerEvent } from "../lib/discord/events/registerEvent";
 import { DoraException } from "~/lib/exceptions/DoraException";
-import { modalRouter } from "~/modals/modalRouter";
+import { modalRouter } from "~/router/modalRouter";
 import { commandRouter } from "~/router/commandRouter";
 
 export const registerInteractionEvent = () => {
