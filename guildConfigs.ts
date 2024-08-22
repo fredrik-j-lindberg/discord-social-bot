@@ -1,3 +1,5 @@
+import { env } from "~/env";
+import { logger } from "~/lib/logger";
 import type { PiiFieldName } from "~/router/modals/piiModal";
 
 type GuildConfig = {
@@ -10,15 +12,23 @@ type GuildConfig = {
     roleId?: string;
   };
 };
-export const guildConfigs: { [guildId: string]: GuildConfig } = {
+
+type GuildConfigs = { [guildId: string]: GuildConfig };
+
+// Configurations for guilds that the local bot is in, to avoid trying to fetch data from production guilds etc
+const devGuildConfigs: GuildConfigs = {
   // Local bot testing
   "1211309484811485264": {
     guildId: "1211309484811485264",
     piiFields: "all",
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
+      roleId: "1276262193515593780",
     },
   },
+};
+
+export const prodGuildConfigs: GuildConfigs = {
   // Climbing (Dora the Explorer)
   "1193809867232772126": {
     guildId: "1193809867232772126",
@@ -37,3 +47,8 @@ export const guildConfigs: { [guildId: string]: GuildConfig } = {
     },
   },
 };
+
+logger.info({ devMode: env.USE_DEV_GUILD_CONFIGS }, "Loaded guild configs");
+export const guildConfigs: GuildConfigs = env.USE_DEV_GUILD_CONFIGS
+  ? devGuildConfigs
+  : prodGuildConfigs;
