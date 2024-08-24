@@ -17,6 +17,7 @@ export const piiFieldNames = {
   birthday: "birthdayInput",
   firstName: "firstNameInput",
   height: "heightInput",
+  switchFriendCode: "switchFriendCodeInput",
 } as const;
 export type PiiFieldName = (typeof piiFieldNames)[keyof typeof piiFieldNames];
 const generateComponents = (
@@ -40,6 +41,12 @@ const generateComponents = (
       .setCustomId(piiFieldNames.height)
       .setLabel("Height (cm)")
       .setValue(userData?.height?.toString() || "")
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false),
+    new TextInputBuilder()
+      .setCustomId(piiFieldNames.switchFriendCode)
+      .setLabel("Nintendo Switch friend code")
+      .setValue(userData?.switchFriendCode || "")
       .setStyle(TextInputStyle.Short)
       .setRequired(false),
   ];
@@ -116,6 +123,10 @@ export default {
         height:
           parseInt(
             interaction.fields.getTextInputValue(piiFieldNames.height),
+          ) || null,
+        switchFriendCode:
+          interaction.fields.getTextInputValue(
+            piiFieldNames.switchFriendCode,
           ) || null,
       },
     });

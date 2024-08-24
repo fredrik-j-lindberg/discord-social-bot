@@ -31,6 +31,11 @@ const userDataPostSchema: ZodSchema<UserDataPost> = z
       .optional()
       .nullable(),
     height: z.number().max(300).min(50).optional().nullable(),
+    switchFriendCode: z
+      .string()
+      .regex(/SW-\d{4}-\d{4}-\d{4}/)
+      .optional()
+      .nullable(),
   })
   .strict();
 

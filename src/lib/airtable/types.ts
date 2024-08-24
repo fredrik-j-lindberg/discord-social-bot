@@ -10,6 +10,7 @@ export type UserData = {
   phoneNumber?: string;
   email?: string;
   height?: number;
+  switchFriendCode?: string; // Nintendo switch friend code, SW-XXXX-XXXX-XXXX
 };
 
 export type UserDataPost = {
@@ -22,4 +23,5 @@ export type UserDataPost = {
   phoneNumber?: string | null;
   email?: string | null;
   height?: number | null;
+  switchFriendCode?: string | null;
 };

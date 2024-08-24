@@ -40,7 +40,12 @@ export const prodGuildConfigs: GuildConfigs = {
   // Eithon
   "106099890320330752": {
     guildId: "106099890320330752",
-    piiFields: ["birthdayInput", "firstNameInput", "heightInput"],
+    piiFields: [
+      "birthdayInput",
+      "firstNameInput",
+      "heightInput",
+      "switchFriendCodeInput",
+    ],
     birthdays: {
       channelId: "106099890320330752", // #general
       roleId: "1276240769975324692",

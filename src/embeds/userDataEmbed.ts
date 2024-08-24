@@ -26,6 +26,11 @@ export const getUserDataEmbed = ({
         value: userData.height?.toString() || "-",
         inline: true,
       },
+      {
+        name: "Switch friend code",
+        value: userData.switchFriendCode || "-",
+        inline: true,
+      },
     )
     .setFooter({
       text: "Add or update your user data with the /pii command",
