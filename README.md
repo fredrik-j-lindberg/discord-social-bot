@@ -71,7 +71,6 @@ To run the bot locally, follow the steps below:
 # TODO
 
 - Feats:
-  - Command to get user data of person
   - Support getting height (and other) data from /userdata
   - Update nickname when user is updated via events
   - Guild config improvements
@@ -82,7 +81,6 @@ To run the bot locally, follow the steps below:
 - Docs
   - Add router section to readme
 - Improved devx
-  - Make routers handle replies to avoid conflicting replies (return string from execute?)
   - Enforce import type syntax
   - Look into linting improvements
     - import order
