@@ -76,7 +76,7 @@ const handleFieldChoice = async (
   if (field === "height") {
     // TODO: Fix height view
     throw new DoraUserException(
-      "Not implemented yet. Eckron is the tallest though",
+      "Not implemented yet. Anti is the tallest though",
     );
   }
   throw new Error(`Unknown field: ${field}`);

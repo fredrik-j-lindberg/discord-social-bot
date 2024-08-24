@@ -38,8 +38,8 @@ const generateComponents = (
       .setRequired(false),
     new TextInputBuilder()
       .setCustomId(piiFieldNames.height)
-      .setLabel("Height cm, Eckron want you to know he is tall")
-      .setValue(userData?.height?.toString() || "170")
+      .setLabel("Height (cm)")
+      .setValue(userData?.height?.toString() || "")
       .setStyle(TextInputStyle.Short)
       .setRequired(false),
   ];
