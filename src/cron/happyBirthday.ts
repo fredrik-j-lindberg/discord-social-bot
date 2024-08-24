@@ -10,7 +10,11 @@ import { actionWrapper } from "~/lib/actionWrapper";
 import { getGuild } from "~/lib/discord/guilds";
 
 export const happyBirthday = async () => {
-  await resetBirthdayRole();
+  await actionWrapper({
+    action: () => resetBirthdayRole(),
+    actionDescription: "Reset birthday role",
+    swallowError: true,
+  });
   const userData = await getUsersWithBirthdayToday();
   for (const user of userData) {
     const guild = await getGuild(user.guildId);
@@ -61,7 +65,12 @@ const resetBirthdayRole = async () => {
       DoraException.Severity.Warn,
     );
     for (const [, member] of role.members) {
-      await member.roles.remove(role);
+      await actionWrapper({
+        action: () => member.roles.remove(role),
+        actionDescription: "Remove birthday role from member",
+        meta: { userId: member.user.id, guildId: guild.id },
+        swallowError: true,
+      });
     }
   }
 };
