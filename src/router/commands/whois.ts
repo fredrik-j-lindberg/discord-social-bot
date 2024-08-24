@@ -3,6 +3,7 @@ import { assertHasDefinedProperty } from "~/lib/validation";
 import { SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
+import { getUserDataEmbed } from "~/embeds/userDataEmbed";
 
 const userOptionName = "user";
 export default {
@@ -29,6 +30,8 @@ export default {
     }
 
     const userData = await getUserData(user.id, interaction.guild.id);
-    return JSON.stringify(userData) || "No data found";
+    if (!userData) return "No data found";
+    const embed = getUserDataEmbed({ user, userData });
+    return { embeds: [embed] };
   },
 } satisfies Command;
