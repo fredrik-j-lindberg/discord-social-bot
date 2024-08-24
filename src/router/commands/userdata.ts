@@ -3,7 +3,6 @@ import { assertHasDefinedProperty } from "~/lib/validation";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
 import { formatDate } from "~/lib/helpers/date";
-import { DoraException } from "~/lib/exceptions/DoraException";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 
 const userDataTypeOptions = {
@@ -43,10 +42,8 @@ export default {
 
     const field = interaction.options.getString(userDataTypeOptions.name);
     if (!field) {
-      throw new DoraException(
-        "Required cmd option is missing",
-        DoraException.Type.Unknown,
-        { metadata: { missingOption: userDataTypeOptions.name } },
+      throw new DoraUserException(
+        `Required option '${userDataTypeOptions.name}' is missing`,
       );
     }
 
