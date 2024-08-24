@@ -2,7 +2,11 @@ import path from "node:path";
 import { fileURLToPath } from "url";
 import fs from "node:fs";
 import { DoraException } from "~/lib/exceptions/DoraException";
-import { CommandInteraction, ModalSubmitInteraction } from "discord.js";
+import {
+  CommandInteraction,
+  InteractionReplyOptions,
+  ModalSubmitInteraction,
+} from "discord.js";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,14 +39,35 @@ export const importFolderModules = async <
   }
 };
 
-type Data<TInteraction extends CommandInteraction | ModalSubmitInteraction> = {
-  execute: (interaction: TInteraction) => Promise<void> | void;
+const reply = async ({
+  interaction,
+  deferReply,
+  replyOptions,
+}: {
+  interaction: RouterInteraction;
+  deferReply: boolean;
+  replyOptions: InteractionReplyOptions | string;
+}) => {
+  if (deferReply) {
+    await interaction.editReply(replyOptions);
+    return;
+  }
+  await interaction.reply(replyOptions);
+};
+
+type RouterInteraction = CommandInteraction | ModalSubmitInteraction;
+type ExecuteResult = InteractionReplyOptions | string | undefined;
+export type RouterInteractionExecute<TInteraction extends RouterInteraction> = (
+  interaction: TInteraction,
+) => Promise<ExecuteResult> | ExecuteResult;
+type Data<TInteraction extends RouterInteraction> = {
+  execute: RouterInteractionExecute<TInteraction>;
   deferReply: boolean;
   interaction: TInteraction;
   context: "command" | "modal";
 };
 export const triggerExecutionMappedToInteraction = async <
-  TInteraction extends CommandInteraction | ModalSubmitInteraction,
+  TInteraction extends RouterInteraction,
 >({
   execute,
   deferReply,
@@ -53,17 +78,23 @@ export const triggerExecutionMappedToInteraction = async <
     await interaction.deferReply();
   }
   try {
-    await execute(interaction);
+    const result = await execute(interaction);
+    if (result) {
+      await reply({
+        interaction,
+        deferReply,
+        replyOptions: result,
+      });
+    }
   } catch (err) {
     let userFacingErrorMsg = `Failed to process ${context} :(`;
     if (err instanceof DoraUserException) {
       userFacingErrorMsg = err.message;
     }
-    if (deferReply) {
-      await interaction.editReply(userFacingErrorMsg);
-      throw err;
-    }
-    await interaction.reply(userFacingErrorMsg);
-    throw err;
+    await reply({
+      interaction,
+      deferReply,
+      replyOptions: { content: userFacingErrorMsg },
+    });
   }
 };

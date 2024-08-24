@@ -25,5 +25,6 @@ export default {
       userData,
     });
     await interaction.showModal(modal);
+    return undefined; // Modal submission will handle response
   },
 } satisfies Command;

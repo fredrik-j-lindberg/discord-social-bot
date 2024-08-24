@@ -47,7 +47,7 @@ export default {
       );
     }
 
-    await handleFieldChoice(interaction, field);
+    return await handleFieldChoice(interaction, field);
   },
 } satisfies Command;
 
@@ -71,15 +71,13 @@ const handleFieldChoice = async (
         return `**${displayName || username}** - ${formatDate(birthday)}`;
       })
       .join("\n");
-    await interaction.editReply(content);
-    return;
+    return content;
   }
   if (field === "height") {
     // TODO: Fix height view
     throw new DoraUserException(
       "Not implemented yet. Eckron is the tallest though",
     );
-    return;
   }
   throw new Error(`Unknown field: ${field}`);
 };

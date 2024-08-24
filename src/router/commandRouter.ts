@@ -3,6 +3,7 @@ import { logger } from "~/lib/logger";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import {
   importFolderModules,
+  RouterInteractionExecute,
   triggerExecutionMappedToInteraction,
 } from "./routerHelper";
 
@@ -16,7 +17,11 @@ export type Command = {
     name: SlashCommandBuilder["name"];
     toJSON: SlashCommandBuilder["toJSON"];
   };
-  execute: (interaction: ChatInputCommandInteraction) => Promise<void> | void;
+  /**
+   * Function to run when command is issued
+   * @returns The reply to the command
+   */
+  execute: RouterInteractionExecute<ChatInputCommandInteraction>;
   deferReply: boolean;
 };
 

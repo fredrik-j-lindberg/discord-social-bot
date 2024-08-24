@@ -119,8 +119,6 @@ export default {
           ) || null,
       },
     });
-    await interaction.editReply({
-      content: "Your user data was submitted successfully!",
-    });
+    return "Your user data was submitted successfully!";
   },
 } satisfies ModalData;

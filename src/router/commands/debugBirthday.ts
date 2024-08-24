@@ -9,8 +9,8 @@ export default {
     .setDescription(
       "Should remove role from existing members, and re-add it to anyone whose birthday is today",
     ),
-  execute: async (interaction) => {
+  execute: async () => {
     await happyBirthday();
-    await interaction.reply("Ran happy birthday cron manually");
+    return "Ran happy birthday cron manually";
   },
 } satisfies Command;

@@ -3,6 +3,7 @@ import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 import {
   importFolderModules,
+  RouterInteractionExecute,
   triggerExecutionMappedToInteraction,
 } from "./routerHelper";
 
@@ -10,7 +11,11 @@ import {
 export type ModalData<TModelInput = any> = {
   data: { name: string };
   createModal: ((input: TModelInput) => ModalBuilder) | (() => ModalBuilder);
-  handleSubmit: (interaction: ModalSubmitInteraction) => Promise<void> | void;
+  /**
+   * Function to run when modal is submitted
+   * @returns The reply to the user submitting the modal
+   */
+  handleSubmit: RouterInteractionExecute<ModalSubmitInteraction>;
   deferReply: boolean;
 };
 

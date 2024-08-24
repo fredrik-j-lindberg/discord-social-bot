@@ -29,6 +29,6 @@ export default {
     }
 
     const userData = await getUserData(user.id, interaction.guild.id);
-    await interaction.editReply(JSON.stringify(userData) || "No data found");
+    return JSON.stringify(userData) || "No data found";
   },
 } satisfies Command;
