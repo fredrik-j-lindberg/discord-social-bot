@@ -5,8 +5,8 @@ export type UserData = {
   displayName?: string;
   firstName?: string;
   birthday?: string;
-  birthdayMonth?: string; // Formatted birthday column as "MM-DD"
-  nextBirthday?: string; // Formula based next birthday
+  nextBirthday?: string; // Formula based on birthday
+  age?: string; // Formula based on birthday
   phoneNumber?: string;
   email?: string;
   height?: number;
