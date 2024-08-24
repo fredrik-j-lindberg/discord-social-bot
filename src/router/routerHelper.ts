@@ -96,5 +96,6 @@ export const triggerExecutionMappedToInteraction = async <
       deferReply,
       replyOptions: { content: userFacingErrorMsg },
     });
+    throw err;
   }
 };
