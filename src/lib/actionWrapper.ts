@@ -27,7 +27,10 @@ export const actionWrapper = async <TActionResponse>({
       actionLogger.error(err, `Failed action`);
       return;
     }
-    if (err.severity === DoraException.Severity.Info) {
+    if (
+      err.severity === DoraException.Severity.Info ||
+      err.severity === DoraException.Severity.Debug
+    ) {
       // Spreading err automatically skips stack trace and message. Change to not spread (just err) to include them.
       actionLogger.debug({ reason: err.message, ...err }, `Skipped action`);
       return;

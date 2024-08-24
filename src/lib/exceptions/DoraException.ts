@@ -9,6 +9,7 @@ const typeOptions = {
 type ExceptionType = keyof typeof typeOptions;
 
 const severity = {
+  Debug: "Debug",
   Info: "Info",
   Warn: "Warn",
   Error: "Error",

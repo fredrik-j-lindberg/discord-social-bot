@@ -1,21 +1,23 @@
 import { getUsersWithBirthdayToday } from "~/lib/airtable/userData";
 import { sendBirthdayWish } from "~/lib/discord/sendMessage";
 import { DoraException } from "~/lib/exceptions/DoraException";
-import { guildConfigs } from "../../guildConfigs";
+import { GuildConfig, guildConfigs } from "../../guildConfigs";
 import { addRole, getRole } from "~/lib/discord/roles";
 import { Guild, GuildMember } from "discord.js";
 import { getChannel } from "~/lib/discord/channels";
 import { assertIsDefined } from "~/lib/validation";
 import { actionWrapper } from "~/lib/actionWrapper";
 import { getGuild } from "~/lib/discord/guilds";
-import { logger } from "~/lib/logger";
 
 export const happyBirthday = async () => {
-  await actionWrapper({
-    action: () => resetBirthdayRole(),
-    actionDescription: "Reset birthday role",
-    swallowError: true,
-  });
+  for (const guildConfig of Object.values(guildConfigs)) {
+    await actionWrapper({
+      action: () => resetBirthdayRole({ guildConfig }),
+      actionDescription: "Reset birthday role",
+      swallowError: true,
+    });
+  }
+
   const userData = await getUsersWithBirthdayToday();
   for (const user of userData) {
     const guild = await getGuild(user.guildId);
@@ -54,36 +56,32 @@ export const happyBirthday = async () => {
   }
 };
 
-const resetBirthdayRole = async () => {
-  logger.debug({ guildConfigs }, "TEMP: Resetting birthday role");
-  for (const guildConfig of Object.values(guildConfigs)) {
-    const guild = await getGuild(guildConfig.guildId);
-    const roleId = guildConfig.birthdays.roleId;
-    if (!roleId) {
-      logger.debug(
-        { guildId: guild.id },
-        "No birthday role configured, skipping reset",
-      );
-      return;
-    }
-    const role = await getRole({ guild, roleId });
-    assertIsDefined(
-      role,
-      "Birthday role not found",
-      DoraException.Severity.Warn,
+const resetBirthdayRole = async ({
+  guildConfig,
+}: {
+  guildConfig: GuildConfig;
+}) => {
+  const guild = await getGuild(guildConfig.guildId);
+  const roleId = guildConfig.birthdays.roleId;
+  if (!roleId) {
+    throw new DoraException(
+      "No birthday role configured, skipping reset",
+      DoraException.Type.NotFound,
+      {
+        severity: DoraException.Severity.Debug,
+        metadata: { guildId: guild.id },
+      },
     );
-    logger.debug(
-      { memberIds: role.members.map((m) => m.id), guildId: guild.id },
-      "Removing role from members",
-    );
-    for (const [, member] of role.members) {
-      await actionWrapper({
-        action: () => member.roles.remove(role),
-        actionDescription: "Remove birthday role from member",
-        meta: { userId: member.user.id, guildId: guild.id },
-        swallowError: true,
-      });
-    }
+  }
+  const role = await getRole({ guild, roleId });
+  assertIsDefined(role, "Birthday role not found", DoraException.Severity.Warn);
+  for (const [, member] of role.members) {
+    await actionWrapper({
+      action: () => member.roles.remove(role),
+      actionDescription: "Remove birthday role from member",
+      meta: { userId: member.user.id, guildId: guild.id },
+      swallowError: true,
+    });
   }
 };
 

@@ -2,7 +2,7 @@ import { env } from "~/env";
 import { logger } from "~/lib/logger";
 import type { PiiFieldName } from "~/router/modals/piiModal";
 
-type GuildConfig = {
+export type GuildConfig = {
   guildId: string;
   piiFields: PiiFieldName[] | "all";
   birthdays: {
