@@ -8,6 +8,7 @@ import { getChannel } from "~/lib/discord/channels";
 import { assertIsDefined } from "~/lib/validation";
 import { actionWrapper } from "~/lib/actionWrapper";
 import { getGuild } from "~/lib/discord/guilds";
+import { logger } from "~/lib/logger";
 
 export const happyBirthday = async () => {
   await actionWrapper({
@@ -54,15 +55,26 @@ export const happyBirthday = async () => {
 };
 
 const resetBirthdayRole = async () => {
+  logger.debug({ guildConfigs }, "TEMP: Resetting birthday role");
   for (const guildConfig of Object.values(guildConfigs)) {
     const guild = await getGuild(guildConfig.guildId);
     const roleId = guildConfig.birthdays.roleId;
-    if (!roleId) return; // Ignore reset since no birthday role is configured
+    if (!roleId) {
+      logger.debug(
+        { guildId: guild.id },
+        "No birthday role configured, skipping reset",
+      );
+      return;
+    }
     const role = await getRole({ guild, roleId });
     assertIsDefined(
       role,
       "Birthday role not found",
       DoraException.Severity.Warn,
+    );
+    logger.debug(
+      { memberIds: role.members.map((m) => m.id), guildId: guild.id },
+      "Removing role from members",
     );
     for (const [, member] of role.members) {
       await actionWrapper({
