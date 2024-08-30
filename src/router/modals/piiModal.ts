@@ -1,6 +1,7 @@
 import {
   ActionRowBuilder,
   ModalBuilder,
+  ModalSubmitInteraction,
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
@@ -11,6 +12,10 @@ import { formatDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
 import { ModalData } from "../modalRouter";
 
+type ModalSubmitInteractionWithGuild = Omit<ModalSubmitInteraction, "guild"> & {
+  guild: { id: string };
+};
+
 const modalId = "userDataModal";
 export const piiFieldNames = {
   birthday: "birthdayInput",
@@ -19,6 +24,7 @@ export const piiFieldNames = {
   switchFriendCode: "switchFriendCodeInput",
 } as const;
 export type PiiFieldName = (typeof piiFieldNames)[keyof typeof piiFieldNames];
+
 const generateComponents = (
   userData: UserData | undefined,
 ): TextInputBuilder[] => {
@@ -85,6 +91,21 @@ const createModal = ({ guildId, userData }: CreateModalProps) => {
   return modal;
 };
 
+const getSubmittedFieldValue = (
+  interaction: ModalSubmitInteractionWithGuild,
+  fieldName: PiiFieldName,
+) => {
+  const guildConfig = getGuildConfigById(interaction.guild.id);
+  const fieldIsEnabledForGuild =
+    guildConfig.piiFields === "all" ||
+    guildConfig.piiFields.includes(fieldName);
+
+  // Important to early exit here, as otherwise discord js throws an error due
+  // to the component for the field not being found
+  if (!fieldIsEnabledForGuild) return null;
+  return interaction.fields.getTextInputValue(fieldName) || null;
+};
+
 export default {
   data: { name: modalId },
   createModal,
@@ -100,24 +121,20 @@ export default {
         ? interaction.member.displayName
         : undefined;
 
+    const height = getSubmittedFieldValue(interaction, piiFieldNames.height);
     await setUserData({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
       userData: {
-        birthday:
-          interaction.fields.getTextInputValue(piiFieldNames.birthday) || null,
         username: interaction.user.username,
         displayName: displayName || undefined,
-        firstName:
-          interaction.fields.getTextInputValue(piiFieldNames.firstName) || null,
-        height:
-          parseInt(
-            interaction.fields.getTextInputValue(piiFieldNames.height),
-          ) || null,
-        switchFriendCode:
-          interaction.fields.getTextInputValue(
-            piiFieldNames.switchFriendCode,
-          ) || null,
+        birthday: getSubmittedFieldValue(interaction, piiFieldNames.birthday),
+        firstName: getSubmittedFieldValue(interaction, piiFieldNames.firstName),
+        height: height !== null ? parseInt(height) : null,
+        switchFriendCode: getSubmittedFieldValue(
+          interaction,
+          piiFieldNames.switchFriendCode,
+        ),
       },
     });
     return "Your user data was submitted successfully!";
