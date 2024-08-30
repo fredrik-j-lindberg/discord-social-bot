@@ -8,8 +8,7 @@ import { assertHasDefinedProperty } from "~/lib/validation";
 import { setUserData } from "~/lib/airtable/userData";
 import { UserData } from "~/lib/airtable/types";
 import { formatDate } from "~/lib/helpers/date";
-import { guildConfigs } from "../../../guildConfigs";
-import { DoraException } from "~/lib/exceptions/DoraException";
+import { getGuildConfigById } from "../../../guildConfigs";
 import { ModalData } from "../modalRouter";
 
 const modalId = "userDataModal";
@@ -55,16 +54,7 @@ const componentsRelevantForGuild = (
   guildId: string,
   components: TextInputBuilder[],
 ) => {
-  const guildConfig = Object.values(guildConfigs).find(
-    (guildConfig) => guildConfig.guildId === guildId,
-  );
-  if (!guildConfig) {
-    throw new DoraException(
-      "Guild config not found",
-      DoraException.Type.NotFound,
-      { metadata: { guildId } },
-    );
-  }
+  const guildConfig = getGuildConfigById(guildId);
   if (guildConfig.piiFields === "all") return components;
   return components.filter(
     (component) =>

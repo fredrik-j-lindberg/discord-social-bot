@@ -1,4 +1,5 @@
 import { env } from "~/env";
+import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 import type { PiiFieldName } from "~/router/modals/piiModal";
 
@@ -57,3 +58,17 @@ logger.info({ devMode: env.USE_DEV_GUILD_CONFIGS }, "Loaded guild configs");
 export const guildConfigs: GuildConfigs = env.USE_DEV_GUILD_CONFIGS
   ? devGuildConfigs
   : prodGuildConfigs;
+
+export const getGuildConfigById = (guildId: string) => {
+  const guildConfig = Object.values(guildConfigs).find(
+    (guildConfig) => guildConfig.guildId === guildId,
+  );
+  if (!guildConfig) {
+    throw new DoraException(
+      `Guild config not found for guildId`,
+      DoraException.Type.NotFound,
+      { metadata: { guildId } },
+    );
+  }
+  return guildConfig;
+};
