@@ -10,6 +10,12 @@ export const registerEvents = () => {
       logger.info(`Bot ${client.user.tag} logged in and ready!`);
     },
   });
+  registerEvent({
+    event: "error",
+    listener: (error) => {
+      logger.info(`Websocket triggered an error event: ${error.message}`);
+    },
+  });
   registerInteractionEvent();
   registerScheduledEvents();
   logger.info("Events successfully registered");

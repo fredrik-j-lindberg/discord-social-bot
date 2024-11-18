@@ -3,6 +3,7 @@ import { initCommands } from "./router/commandRouter";
 import { registerEvents } from "./events";
 import { env } from "./env";
 import { initModals } from "./router/modalRouter";
+import { logger } from "./lib/logger";
 
 export const client = new Client({
   intents: [
@@ -17,5 +18,11 @@ export const initDiscordClient = async () => {
   await initCommands();
   await initModals();
   registerEvents();
-  await client.login(env.DISCORD_BOT_TOKEN);
+  logger.info("Logging in to Discord...");
+  try {
+    await client.login(env.DISCORD_BOT_TOKEN);
+    logger.info("Logged in to Discord!");
+  } catch (e) {
+    logger.error(e);
+  }
 };
