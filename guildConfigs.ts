@@ -36,6 +36,7 @@ export const prodGuildConfigs: GuildConfigs = {
     piiFields: ["birthdayInput"],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
+      roleId: "1308163163149307955",
     },
   },
   // Eithon
