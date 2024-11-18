@@ -31,7 +31,11 @@ export default {
 
     const userData = await getUserData(user.id, interaction.guild.id);
     if (!userData) return "No data found";
-    const embed = getUserDataEmbed({ user, userData });
+    const embed = getUserDataEmbed({
+      guildId: interaction.guild.id,
+      user,
+      userData,
+    });
     return { embeds: [embed] };
   },
 } satisfies Command;
