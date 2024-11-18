@@ -63,7 +63,7 @@ const handleFieldChoice = async (
     const birthdays = await getUsersWithUpcomingBirthday(interaction.guild.id);
     if (birthdays.length === 0) {
       throw new DoraUserException(
-        "No upcoming birthdays found, add yours via the /userdata form",
+        "No upcoming birthdays found, add yours via the /pii form",
       );
     }
     const content = birthdays

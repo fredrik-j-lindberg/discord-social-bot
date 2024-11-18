@@ -16,10 +16,11 @@ This is a Discord bot built to cater to some specific needs I had a hard time fi
 
 - **User data**
 
-  - Via /pii a user can enter user data about themselves
-  - Via /userdata you can view users data that they have shared
+  _Note: This feature requires that you have enabled pii fields in the guild config._
 
-    _Note: This requires the guild config to have enabled the birthdayInput field in "piiFields"_
+  - Via /pii a user can enter user data about themselves
+  - Via /whois you can view info about a user
+  - Via /userdata you can list specific userdata
 
   - Bot will wish happy birthday to those who have their birthday today
 
