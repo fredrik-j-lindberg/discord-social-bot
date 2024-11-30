@@ -13,6 +13,7 @@ export const env = createEnv({
     DISCORD_BOT_TOKEN: z.string(),
     DISCORD_BOT_CLIENT_ID: z.string(),
     AIRTABLE_API_KEY: z.string(),
+    DATABASE_URL: z.string(),
     USE_DEV_GUILD_CONFIGS: booleanSchema.optional(),
   },
   runtimeEnv: process.env,
