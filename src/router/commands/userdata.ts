@@ -1,4 +1,4 @@
-import { getUsersWithUpcomingBirthday } from "~/lib/airtable/userData";
+import { getUsersWithUpcomingBirthday } from "~/lib/database/tempRouter";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
@@ -60,7 +60,9 @@ const handleFieldChoice = async (
   field: string,
 ) => {
   if (field === "birthdays") {
-    const birthdays = await getUsersWithUpcomingBirthday(interaction.guild.id);
+    const birthdays = await getUsersWithUpcomingBirthday({
+      guildId: interaction.guild.id,
+    });
     if (birthdays.length === 0) {
       throw new DoraUserException(
         "No upcoming birthdays found, add yours via the /pii form",

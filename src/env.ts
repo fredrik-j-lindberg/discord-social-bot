@@ -15,6 +15,7 @@ export const env = createEnv({
     AIRTABLE_API_KEY: z.string(),
     DATABASE_URL: z.string(),
     USE_DEV_GUILD_CONFIGS: booleanSchema.optional(),
+    USE_POSTGRES: booleanSchema.optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

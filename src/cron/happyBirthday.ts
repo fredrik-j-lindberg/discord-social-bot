@@ -1,4 +1,4 @@
-import { getUsersWithBirthdayToday } from "~/lib/airtable/userData";
+import { getUsersWithBirthdayTodayForAllGuilds } from "~/lib/database/tempRouter";
 import { sendBirthdayWish } from "~/lib/discord/sendMessage";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { GuildConfig, guildConfigs } from "../../guildConfigs";
@@ -18,7 +18,7 @@ export const happyBirthday = async () => {
     });
   }
 
-  const userData = await getUsersWithBirthdayToday();
+  const userData = await getUsersWithBirthdayTodayForAllGuilds();
   for (const user of userData) {
     const guild = await getGuild(user.guildId);
     const guildConfig = guildConfigs[guild.id];

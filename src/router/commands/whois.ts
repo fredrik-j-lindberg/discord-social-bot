@@ -1,4 +1,4 @@
-import { getUserData } from "~/lib/airtable/userData";
+import { getUserData } from "~/lib/database/tempRouter";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
@@ -29,7 +29,10 @@ export default {
       throw new DoraUserException("Required user option is missing");
     }
 
-    const userData = await getUserData(user.id, interaction.guild.id);
+    const userData = await getUserData({
+      userId: user.id,
+      guildId: interaction.guild.id,
+    });
     if (!userData) return "No data found";
     const embed = getUserDataEmbed({
       guildId: interaction.guild.id,

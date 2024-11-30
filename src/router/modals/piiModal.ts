@@ -6,11 +6,53 @@ import {
   TextInputStyle,
 } from "discord.js";
 import { assertHasDefinedProperty } from "~/lib/validation";
-import { setUserData } from "~/lib/airtable/userData";
-import { UserData } from "~/lib/airtable/types";
-import { formatDate } from "~/lib/helpers/date";
+import { setUserData } from "~/lib/database/tempRouter";
+import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
 import { ModalData } from "../modalRouter";
+import { UserData, UserDataPost } from "~/lib/database/schema";
+import { UserData as LegacyUserData } from "~/lib/airtable/types";
+import { z, ZodSchema, ZodTypeDef } from "zod";
+
+const userDataPostSchema: ZodSchema<
+  UserDataPost, // Output
+  ZodTypeDef, // Ignore (default)
+  Omit<UserDataPost, "birthday"> & { birthday?: string | null } // Input
+> = z
+  .object({
+    guildId: z.string(),
+    userId: z.string(),
+    username: z.string(),
+    displayName: z.string().optional().nullable(),
+    firstName: z
+      .string()
+      .regex(/^[a-zA-ZäöåÄÖÅ]+$/)
+      .optional()
+      .nullable(),
+    birthday: z
+      .string()
+      .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+      .transform((value) => new Date(ukDateStringToDate(value))) // Transforms for example 01/01/1990 to 1990-01-01 and then converts it to a Date object
+      .optional()
+      .nullable(),
+    phoneNumber: z.string().max(10).optional().nullable(),
+    email: z
+      .string()
+      .regex(
+        // https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression
+        // eslint-disable-next-line no-control-regex
+        /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/,
+      )
+      .optional()
+      .nullable(),
+    height: z.number().max(300).min(50).optional().nullable(),
+    switchFriendCode: z
+      .string()
+      .regex(/SW-\d{4}-\d{4}-\d{4}/)
+      .optional()
+      .nullable(),
+  })
+  .strict();
 
 type ModalSubmitInteractionWithGuild = Omit<ModalSubmitInteraction, "guild"> & {
   guild: { id: string };
@@ -26,7 +68,7 @@ export const piiFieldNames = {
 export type PiiFieldName = (typeof piiFieldNames)[keyof typeof piiFieldNames];
 
 const generateComponents = (
-  userData: UserData | undefined,
+  userData: UserData | LegacyUserData | undefined,
 ): TextInputBuilder[] => {
   const preFilledBirthday = userData?.birthday || "1990-01-01";
   return [
@@ -74,7 +116,7 @@ const componentsRelevantForGuild = (
 // https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
 type CreateModalProps = {
   guildId: string;
-  userData: UserData | undefined;
+  userData: UserData | LegacyUserData | undefined;
 };
 const createModal = ({ guildId, userData }: CreateModalProps) => {
   const modal = new ModalBuilder()
@@ -121,20 +163,32 @@ export default {
         ? interaction.member.displayName
         : undefined;
 
+    const firstName = getSubmittedFieldValue(
+      interaction,
+      piiFieldNames.firstName,
+    );
     const height = getSubmittedFieldValue(interaction, piiFieldNames.height);
-    await setUserData({
+    const birthday = getSubmittedFieldValue(
+      interaction,
+      piiFieldNames.birthday,
+    );
+    const switchFriendCode = getSubmittedFieldValue(
+      interaction,
+      piiFieldNames.switchFriendCode,
+    );
+    const validatedUserData = userDataPostSchema.parse({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
+      username: interaction.user.username,
+      displayName: displayName || null,
+      birthday: birthday,
+      firstName,
+      height: height ? parseInt(height) : null,
+      switchFriendCode,
+    });
+    await setUserData({
       userData: {
-        username: interaction.user.username,
-        displayName: displayName || undefined,
-        birthday: getSubmittedFieldValue(interaction, piiFieldNames.birthday),
-        firstName: getSubmittedFieldValue(interaction, piiFieldNames.firstName),
-        height: height !== null ? parseInt(height) : null,
-        switchFriendCode: getSubmittedFieldValue(
-          interaction,
-          piiFieldNames.switchFriendCode,
-        ),
+        ...validatedUserData,
       },
     });
     return "Your user data was submitted successfully!";

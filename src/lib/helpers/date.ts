@@ -39,7 +39,8 @@ export const formatDate = (
     format,
   });
 
-export const ukDateToIso = (date: string) => {
-  const [day, month, year] = date.split("/");
-  return `${year}-${month}-${day}`;
+export const ukDateStringToDate = (ukDateString: string) => {
+  const [day, month, year] = ukDateString.split("/").map(Number);
+  if (!day || !month || !year) throw new Error("Missing day, month or year");
+  return new Date(Date.UTC(year, month - 1, day));
 };

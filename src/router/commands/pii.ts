@@ -1,8 +1,8 @@
-import { getUserData } from "~/lib/airtable/userData";
 import piiModal from "../modals/piiModal";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
+import { getUserData } from "~/lib/database/tempRouter";
 
 export default {
   deferReply: false,
@@ -16,10 +16,10 @@ export default {
       "Command issued without associated guild",
     );
 
-    const userData = await getUserData(
-      interaction.user.id,
-      interaction.guild.id,
-    );
+    const userData = await getUserData({
+      userId: interaction.user.id,
+      guildId: interaction.guild.id,
+    });
     const modal = piiModal.createModal({
       guildId: interaction.guild.id,
       userData,
