@@ -57,7 +57,7 @@ To run the bot locally, follow the steps below:
    pnpm start
    ```
 
-# Adding new commands
+## Adding new commands
 
 1. Add your command file containing relevant logic. Example files as reference:
 
@@ -79,6 +79,9 @@ To run the bot locally, follow the steps below:
     - Make it configurable via commands
   - Add discord native timestamp of next birthday to /userdata birthdays output
   - Event gcal syncing?
+- Refactoring:
+  - Make it easier to add a new field
+  - Delete airtable integration
 - Docs
   - Add router section to readme
 - Improved devx
