@@ -1,9 +1,9 @@
-import { getUsersWithUpcomingBirthday } from "~/lib/database/tempRouter";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
 import { formatDate } from "~/lib/helpers/date";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
+import { getUsersWithUpcomingBirthday } from "~/lib/database/userData";
 
 const userDataTypeOptions = {
   name: "field",

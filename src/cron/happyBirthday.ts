@@ -1,4 +1,3 @@
-import { getUsersWithBirthdayTodayForAllGuilds } from "~/lib/database/tempRouter";
 import { sendBirthdayWish } from "~/lib/discord/sendMessage";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { GuildConfig, guildConfigs } from "../../guildConfigs";
@@ -8,6 +7,7 @@ import { getChannel } from "~/lib/discord/channels";
 import { assertIsDefined } from "~/lib/validation";
 import { actionWrapper } from "~/lib/actionWrapper";
 import { getGuild } from "~/lib/discord/guilds";
+import { getUsersWithBirthdayTodayForAllGuilds } from "~/lib/database/userData";
 
 export const happyBirthday = async () => {
   for (const guildConfig of Object.values(guildConfigs)) {

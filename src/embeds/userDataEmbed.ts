@@ -1,6 +1,5 @@
 import { APIEmbedField, EmbedBuilder, User } from "discord.js";
 import { UserData } from "~/lib/database/schema";
-import { UserData as LegacyUserData } from "~/lib/airtable/types";
 import { formatDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../guildConfigs";
 import { PiiFieldName } from "~/router/modals/piiModal";
@@ -10,7 +9,7 @@ const getFieldsRelevantForGuilds = ({
   userData,
 }: {
   guildId: string;
-  userData: UserData | LegacyUserData;
+  userData: UserData;
 }): APIEmbedField[] => {
   const piiFieldsMappedToEmbedFields: Record<PiiFieldName, APIEmbedField[]> = {
     firstNameInput: [
@@ -63,7 +62,7 @@ export const getUserDataEmbed = ({
 }: {
   guildId: string;
   user: User;
-  userData: UserData | LegacyUserData;
+  userData: UserData;
 }) =>
   new EmbedBuilder()
     .setColor(0x0099ff)

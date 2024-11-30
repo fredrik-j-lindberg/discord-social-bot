@@ -75,13 +75,12 @@ To run the bot locally, follow the steps below:
   - Support getting height (and other) data from /userdata
   - Update nickname when user is updated via events
   - Guild config improvements
-    - Move guildconfigs to airtable (new base)
+    - Move guildconfigs to database?
     - Make it configurable via commands
   - Add discord native timestamp of next birthday to /userdata birthdays output
   - Event gcal syncing?
 - Refactoring:
   - Make it easier to add a new field
-  - Delete airtable integration
 - Docs
   - Add router section to readme
 - Improved devx

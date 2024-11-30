@@ -6,13 +6,12 @@ import {
   TextInputStyle,
 } from "discord.js";
 import { assertHasDefinedProperty } from "~/lib/validation";
-import { setUserData } from "~/lib/database/tempRouter";
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
 import { ModalData } from "../modalRouter";
 import { UserData, UserDataPost } from "~/lib/database/schema";
-import { UserData as LegacyUserData } from "~/lib/airtable/types";
 import { z, ZodSchema, ZodTypeDef } from "zod";
+import { setUserData } from "~/lib/database/userData";
 
 const userDataPostSchema: ZodSchema<
   UserDataPost, // Output
@@ -68,7 +67,7 @@ export const piiFieldNames = {
 export type PiiFieldName = (typeof piiFieldNames)[keyof typeof piiFieldNames];
 
 const generateComponents = (
-  userData: UserData | LegacyUserData | undefined,
+  userData: UserData | undefined,
 ): TextInputBuilder[] => {
   const preFilledBirthday = userData?.birthday || "1990-01-01";
   return [
@@ -116,7 +115,7 @@ const componentsRelevantForGuild = (
 // https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
 type CreateModalProps = {
   guildId: string;
-  userData: UserData | LegacyUserData | undefined;
+  userData: UserData | undefined;
 };
 const createModal = ({ guildId, userData }: CreateModalProps) => {
   const modal = new ModalBuilder()
@@ -187,9 +186,7 @@ export default {
       switchFriendCode,
     });
     await setUserData({
-      userData: {
-        ...validatedUserData,
-      },
+      userData: validatedUserData,
     });
     return "Your user data was submitted successfully!";
   },
