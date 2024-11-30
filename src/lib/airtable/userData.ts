@@ -66,3 +66,7 @@ export const getUsersWithUpcomingBirthday = async (guildId: string) => {
     .firstPage();
   return records.map((record) => record.fields);
 };
+
+export const getAllUsers = () => {
+  return tables.userData.select({ view: "Grid view" }).all();
+};
