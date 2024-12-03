@@ -9,20 +9,12 @@ import { assertHasDefinedProperty } from "~/lib/validation";
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
 import { ModalData } from "../modalRouter";
-import { UserData, UserDataPost } from "~/lib/database/schema";
-import { z, ZodSchema, ZodTypeDef } from "zod";
+import { UserData } from "~/lib/database/schema";
+import { z } from "zod";
 import { setUserData } from "~/lib/database/userData";
 
-const userDataPostSchema: ZodSchema<
-  UserDataPost, // Output
-  ZodTypeDef, // Ignore (default)
-  Omit<UserDataPost, "birthday"> & { birthday?: string | null } // Input
-> = z
+const piiModalInputSchema = z
   .object({
-    guildId: z.string(),
-    userId: z.string(),
-    username: z.string(),
-    displayName: z.string().optional().nullable(),
     firstName: z
       .string()
       .regex(/^[a-zA-ZäöåÄÖÅ]+$/)
@@ -44,7 +36,7 @@ const userDataPostSchema: ZodSchema<
       )
       .optional()
       .nullable(),
-    height: z.number().max(300).min(50).optional().nullable(),
+    height: z.coerce.number().max(300).min(50).optional().nullable(),
     switchFriendCode: z
       .string()
       .regex(/SW-\d{4}-\d{4}-\d{4}/)
@@ -160,33 +152,25 @@ export default {
     const displayName =
       interaction.member && "displayName" in interaction.member
         ? interaction.member.displayName
-        : undefined;
+        : null;
 
-    const firstName = getSubmittedFieldValue(
-      interaction,
-      piiFieldNames.firstName,
-    );
-    const height = getSubmittedFieldValue(interaction, piiFieldNames.height);
-    const birthday = getSubmittedFieldValue(
-      interaction,
-      piiFieldNames.birthday,
-    );
-    const switchFriendCode = getSubmittedFieldValue(
-      interaction,
-      piiFieldNames.switchFriendCode,
-    );
-    const validatedUserData = userDataPostSchema.parse({
-      userId: interaction.user.id,
-      guildId: interaction.guild.id,
-      username: interaction.user.username,
-      displayName: displayName || null,
-      birthday: birthday,
-      firstName,
-      height: height ? parseInt(height) : null,
-      switchFriendCode,
+    const validatedInput = piiModalInputSchema.parse({
+      birthday: getSubmittedFieldValue(interaction, piiFieldNames.birthday),
+      firstName: getSubmittedFieldValue(interaction, piiFieldNames.firstName),
+      height: getSubmittedFieldValue(interaction, piiFieldNames.height),
+      switchFriendCode: getSubmittedFieldValue(
+        interaction,
+        piiFieldNames.switchFriendCode,
+      ),
     });
     await setUserData({
-      userData: validatedUserData,
+      userData: {
+        userId: interaction.user.id,
+        guildId: interaction.guild.id,
+        username: interaction.user.username,
+        displayName,
+        ...validatedInput,
+      },
     });
     return "Your user data was submitted successfully!";
   },

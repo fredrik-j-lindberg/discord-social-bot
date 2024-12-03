@@ -28,7 +28,7 @@ export const usersTable = pgTable(
   }),
 );
 
-export type UserDataPost = typeof usersTable.$inferInsert;
+export type UserDataPost = Omit<typeof usersTable.$inferInsert, "id">;
 
 export type UserDataSelect = typeof usersTable.$inferSelect & {
   /** Optionally computed field on select */
