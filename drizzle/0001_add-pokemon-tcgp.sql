@@ -1,0 +1,1 @@
+ALTER TABLE "member_data" ADD COLUMN "pokemonTcgpFriendCode" varchar(255);
