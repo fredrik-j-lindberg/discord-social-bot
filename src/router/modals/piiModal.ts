@@ -1,7 +1,6 @@
 import {
   ActionRowBuilder,
   ModalBuilder,
-  ModalSubmitInteraction,
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
@@ -10,24 +9,90 @@ import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
 import { ModalData } from "../modalRouter";
 import { UserData } from "~/lib/database/schema";
-import { z } from "zod/v4";
+import { z, ZodType } from "zod/v4";
 import { setUserData } from "~/lib/database/userData";
+import {
+  extractAndValidateModalValues,
+  generateModalSchema,
+  getComponentsRelevantForGuild,
+} from "~/lib/helpers/modals";
 
-const piiModalInputSchema = z
-  .object({
-    firstNameInput: z
+type PiiModalFieldConfig = {
+  fieldName: string;
+  label: string;
+  getPrefilledValue: (
+    userData: UserData | undefined,
+  ) => string | null | undefined;
+  style: TextInputStyle;
+  validation: ZodType;
+  isRequired: boolean;
+};
+
+const piiFieldConfigsMap = {
+  firstName: {
+    fieldName: "firstName",
+    label: "First name",
+    getPrefilledValue: (userData) => userData?.firstName || "",
+    style: TextInputStyle.Short,
+    validation: z
       .string()
       .regex(/^[a-zA-ZäöåÄÖÅ]+$/)
       .optional()
       .nullable(),
-    birthdayInput: z
+    isRequired: false,
+  },
+  birthday: {
+    fieldName: "birthday",
+    label: "Birthday (DD/MM/YYYY)",
+    getPrefilledValue: (userData) =>
+      formatDate(userData?.birthday || "1990-01-01", { dateStyle: "short" }),
+    style: TextInputStyle.Short,
+    validation: z
       .string()
       .regex(/^\d{2}\/\d{2}\/\d{4}$/)
-      .transform((value) => new Date(ukDateStringToDate(value))) // Transforms for example 01/01/1990 to 1990-01-01 and then converts it to a Date object
+      .transform((value) => new Date(ukDateStringToDate(value)))
       .optional()
       .nullable(),
-    phoneNumberInput: z.string().max(10).optional().nullable(),
-    emailInput: z
+    isRequired: false,
+  },
+  switchFriendCode: {
+    fieldName: "switchFriendCode",
+    label: "Nintendo Switch friend code",
+    getPrefilledValue: (userData) => userData?.switchFriendCode || "",
+    style: TextInputStyle.Short,
+    validation: z
+      .string()
+      .regex(/SW-\d{4}-\d{4}-\d{4}/)
+      .optional()
+      .nullable(),
+    isRequired: false,
+  },
+  pokemonTcgpFriendCode: {
+    fieldName: "pokemonTcgpFriendCode",
+    label: "Pokémon TCGP friend code",
+    getPrefilledValue: (userData) => userData?.pokemonTcgpFriendCode || "",
+    style: TextInputStyle.Short,
+    validation: z
+      .string()
+      .regex(/\d{4}-\d{4}-\d{4}-\d{4}/)
+      .optional()
+      .nullable(),
+    isRequired: false,
+  },
+  phoneNumber: {
+    fieldName: "phoneNumber",
+    label: "Phone number",
+    getPrefilledValue: (userData) => userData?.phoneNumber,
+    style: TextInputStyle.Short,
+    validation: z.string().max(10).optional().nullable(),
+    isRequired: false,
+  },
+  email: {
+    fieldName: "email",
+    label: "Email",
+    getPrefilledValue: (userData) => userData?.email,
+    style: TextInputStyle.Short,
+    validation: z
       .string()
       .regex(
         // https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression
@@ -36,75 +101,41 @@ const piiModalInputSchema = z
       )
       .optional()
       .nullable(),
-    switchFriendCodeInput: z
-      .string()
-      .regex(/SW-\d{4}-\d{4}-\d{4}/)
-      .optional()
-      .nullable(),
-    pokemonTcgpFriendCodeInput: z
-      .string()
-      .regex(/\d{4}-\d{4}-\d{4}-\d{4}/)
-      .optional()
-      .nullable(),
-  })
-  .strict();
+    isRequired: false,
+  },
+} as const satisfies Record<string, PiiModalFieldConfig>;
 
-type ModalSubmitInteractionWithGuild = Omit<ModalSubmitInteraction, "guild"> & {
-  guild: { id: string };
-};
+const piiFieldConfigs = Object.values(piiFieldConfigsMap);
+
+export type PiiFieldName = (typeof piiFieldConfigs)[number]["fieldName"];
+
+const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap);
 
 const modalId = "userDataModal";
-export const piiFieldNames = {
-  birthday: "birthdayInput",
-  firstName: "firstNameInput",
-  switchFriendCode: "switchFriendCodeInput",
-  pokemonTcgpFriendCode: "pokemonTcgpFriendCodeInput",
-} as const;
-export type PiiFieldName = (typeof piiFieldNames)[keyof typeof piiFieldNames];
 
 const generateComponents = (
-  userData: UserData | undefined,
-): TextInputBuilder[] => {
-  const preFilledBirthday = userData?.birthday || "1990-01-01";
-  return [
-    new TextInputBuilder()
-      .setCustomId(piiFieldNames.birthday)
-      .setLabel("Birthday (DD/MM/YYYY)")
-      .setValue(formatDate(preFilledBirthday, { dateStyle: "short" }) || "")
-      .setStyle(TextInputStyle.Short)
-      .setRequired(false),
-    new TextInputBuilder()
-      .setCustomId(piiFieldNames.firstName)
-      .setLabel("First name")
-      .setValue(userData?.firstName || "")
-      .setStyle(TextInputStyle.Short)
-      .setRequired(false),
-    new TextInputBuilder()
-      .setCustomId(piiFieldNames.switchFriendCode)
-      .setLabel("Nintendo Switch friend code")
-      .setValue(userData?.switchFriendCode || "")
-      .setStyle(TextInputStyle.Short)
-      .setRequired(false),
-    new TextInputBuilder()
-      .setCustomId(piiFieldNames.pokemonTcgpFriendCode)
-      .setLabel("Pokémon TCGP friend code")
-      .setValue(userData?.pokemonTcgpFriendCode || "")
-      .setStyle(TextInputStyle.Short)
-      .setRequired(false),
-  ];
-};
-const componentsRelevantForGuild = (
   guildId: string,
-  components: TextInputBuilder[],
-) => {
+  userData?: UserData,
+): TextInputBuilder[] => {
   const guildConfig = getGuildConfigById(guildId);
-  if (guildConfig.piiFields === "all") return components;
-  return components.filter(
-    (component) =>
-      component.data.custom_id &&
-      // https://github.com/microsoft/TypeScript/issues/26255
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-      guildConfig.piiFields.includes(component.data.custom_id as any),
+
+  const guildRelevantPiiConfigs = Object.values(piiFieldConfigsMap).filter(
+    (config) => guildConfig.piiFields.includes(config.fieldName),
+  );
+
+  if (guildRelevantPiiConfigs.length > 5) {
+    throw new Error(
+      `Too many PII fields configured for the guild. Max allowed per modal is 5 fields but config has '${guildRelevantPiiConfigs.length}'.`,
+    );
+  }
+
+  return guildRelevantPiiConfigs.map((fieldConfig) =>
+    new TextInputBuilder()
+      .setCustomId(fieldConfig.fieldName)
+      .setLabel(fieldConfig.label)
+      .setValue(fieldConfig.getPrefilledValue(userData) || "")
+      .setStyle(fieldConfig.style)
+      .setRequired(fieldConfig.isRequired),
   );
 };
 
@@ -118,42 +149,14 @@ const createModal = ({ guildId, userData }: CreateModalProps) => {
     .setCustomId(modalId)
     .setTitle("User data form. Optional!");
 
-  const components = generateComponents(userData);
-  const relevantComponents = componentsRelevantForGuild(guildId, components);
+  const components = generateComponents(guildId, userData);
+  const relevantComponents = getComponentsRelevantForGuild(guildId, components);
   const rows = relevantComponents.map((component) => {
     return new ActionRowBuilder<TextInputBuilder>().addComponents(component);
   });
 
   modal.addComponents(rows);
   return modal;
-};
-
-const getSubmittedFieldValue = (
-  interaction: ModalSubmitInteractionWithGuild,
-  fieldName: PiiFieldName,
-) => {
-  const guildConfig = getGuildConfigById(interaction.guild.id);
-  const fieldIsEnabledForGuild =
-    guildConfig.piiFields === "all" ||
-    guildConfig.piiFields.includes(fieldName);
-
-  // Important to early exit here, as otherwise discord js throws an error due
-  // to the component for the field not being found
-  if (!fieldIsEnabledForGuild) return null;
-  return interaction.fields.getTextInputValue(fieldName) || null;
-};
-
-const extractAndValidateModalValues = (
-  interaction: ModalSubmitInteractionWithGuild,
-) => {
-  const fieldsToValidate: { [key in PiiFieldName]?: string | null } = {};
-  for (const fieldName of Object.values(piiFieldNames)) {
-    fieldsToValidate[fieldName] = getSubmittedFieldValue(
-      interaction,
-      fieldName,
-    );
-  }
-  return piiModalInputSchema.safeParse(fieldsToValidate);
 };
 
 export default {
@@ -171,7 +174,12 @@ export default {
         ? interaction.member.displayName
         : null;
 
-    const inputParsing = extractAndValidateModalValues(interaction);
+    const inputParsing = extractAndValidateModalValues({
+      interaction,
+      fieldConfigs: piiFieldConfigs,
+      fieldsToExtract: getGuildConfigById(interaction.guild.id).piiFields,
+      validationSchema: piiModalInputSchema,
+    });
 
     if (!inputParsing.success) {
       const errorMessage = z.prettifyError(inputParsing.error);
@@ -185,12 +193,12 @@ export default {
         guildId: interaction.guild.id,
         username: interaction.user.username,
         displayName,
-        firstName: validatedInput.firstNameInput,
-        birthday: validatedInput.birthdayInput,
-        phoneNumber: validatedInput.phoneNumberInput,
-        email: validatedInput.emailInput,
-        switchFriendCode: validatedInput.switchFriendCodeInput,
-        pokemonTcgpFriendCode: validatedInput.pokemonTcgpFriendCodeInput,
+        firstName: validatedInput.firstName,
+        birthday: validatedInput.birthday,
+        phoneNumber: validatedInput.phoneNumber,
+        email: validatedInput.email,
+        switchFriendCode: validatedInput.switchFriendCode,
+        pokemonTcgpFriendCode: validatedInput.pokemonTcgpFriendCode,
       },
     });
     return "Your user data was submitted successfully!";
