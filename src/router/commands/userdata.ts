@@ -4,16 +4,46 @@ import { Command } from "../commandRouter";
 import { formatDate } from "~/lib/helpers/date";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 import { getUsersWithUpcomingBirthday } from "~/lib/database/userData";
+import { PiiFieldName } from "../modals/piiModal";
+
+type UserDataTypeOption = {
+  name: string;
+  choices: Record<string, { name: string; value: PiiFieldName }>;
+};
 
 const userDataTypeOptions = {
   name: "field",
   choices: {
     birthdays: {
-      name: "Birthdays",
-      value: "birthdays",
+      name: "Upcoming Birthdays",
+      value: "birthday",
     },
   },
-};
+} satisfies UserDataTypeOption;
+
+function assertIsValidUserDataField(
+  field: string | null,
+): asserts field is PiiFieldName {
+  if (!field) {
+    throw new DoraUserException(
+      `Required option '${userDataTypeOptions.name}' is missing`,
+    );
+  }
+
+  const validFieldChoices = Object.values(userDataTypeOptions.choices).map(
+    (choice) => choice.value,
+  );
+  if (
+    validFieldChoices.every((validFieldChoice) => validFieldChoice !== field)
+  ) {
+    throw new DoraUserException(
+      `Invalid field '${field}' provided. Valid fields are: ${validFieldChoices.join(
+        ", ",
+      )}`,
+    );
+  }
+}
+
 export default {
   deferReply: true,
   data: new SlashCommandBuilder()
@@ -24,7 +54,10 @@ export default {
         .setName(userDataTypeOptions.name)
         .setDescription("List user data for field")
         .setRequired(true)
-        .setChoices(userDataTypeOptions.choices.birthdays),
+        .setChoices(
+          userDataTypeOptions.choices.birthdays,
+          userDataTypeOptions.choices.pokemonTcgp,
+        ),
     ),
   execute: async (interaction) => {
     assertHasDefinedProperty(
@@ -34,11 +67,7 @@ export default {
     );
 
     const field = interaction.options.getString(userDataTypeOptions.name);
-    if (!field) {
-      throw new DoraUserException(
-        `Required option '${userDataTypeOptions.name}' is missing`,
-      );
-    }
+    assertIsValidUserDataField(field);
 
     return await handleFieldChoice(interaction, field);
   },
@@ -50,23 +79,24 @@ type CommandInteractionWithGuild = Omit<CommandInteraction, "guild"> & {
 
 const handleFieldChoice = async (
   interaction: CommandInteractionWithGuild,
-  field: string,
+  field: PiiFieldName,
 ) => {
-  if (field === "birthdays") {
-    const birthdays = await getUsersWithUpcomingBirthday({
+  if (field === "birthday") {
+    const membersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
       guildId: interaction.guild.id,
     });
-    if (birthdays.length === 0) {
+    if (membersWithUpcomingBirthday.length === 0) {
       throw new DoraUserException(
-        "No upcoming birthdays found, add yours via the /pii form",
+        "No upcoming birthdays found, add yours via the /pii modal",
       );
     }
-    const content = birthdays
+    const content = membersWithUpcomingBirthday
       .map(({ username, displayName, birthday }) => {
-        return `**${displayName || username}** - ${formatDate(birthday)}`;
+        return `**${displayName || username}**: ${formatDate(birthday)}`;
       })
       .join("\n");
     return content;
   }
-  throw new Error(`Unknown field: ${field}`);
+
+  throw new Error(`Was unable to handle userdata field: ${field}`);
 };
