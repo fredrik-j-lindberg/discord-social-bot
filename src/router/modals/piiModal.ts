@@ -15,19 +15,19 @@ import { setUserData } from "~/lib/database/userData";
 
 const piiModalInputSchema = z
   .object({
-    firstName: z
+    firstNameInput: z
       .string()
       .regex(/^[a-zA-ZäöåÄÖÅ]+$/)
       .optional()
       .nullable(),
-    birthday: z
+    birthdayInput: z
       .string()
       .regex(/^\d{2}\/\d{2}\/\d{4}$/)
       .transform((value) => new Date(ukDateStringToDate(value))) // Transforms for example 01/01/1990 to 1990-01-01 and then converts it to a Date object
       .optional()
       .nullable(),
-    phoneNumber: z.string().max(10).optional().nullable(),
-    email: z
+    phoneNumberInput: z.string().max(10).optional().nullable(),
+    emailInput: z
       .string()
       .regex(
         // https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression
@@ -36,12 +36,12 @@ const piiModalInputSchema = z
       )
       .optional()
       .nullable(),
-    switchFriendCode: z
+    switchFriendCodeInput: z
       .string()
       .regex(/SW-\d{4}-\d{4}-\d{4}/)
       .optional()
       .nullable(),
-    pokemonTcgpFriendCode: z
+    pokemonTcgpFriendCodeInput: z
       .string()
       .regex(/\d{4}-\d{4}-\d{4}-\d{4}/)
       .optional()
@@ -143,6 +143,19 @@ const getSubmittedFieldValue = (
   return interaction.fields.getTextInputValue(fieldName) || null;
 };
 
+const extractAndValidateModalValues = (
+  interaction: ModalSubmitInteractionWithGuild,
+) => {
+  const fieldsToValidate: { [key in PiiFieldName]?: string | null } = {};
+  for (const fieldName of Object.values(piiFieldNames)) {
+    fieldsToValidate[fieldName] = getSubmittedFieldValue(
+      interaction,
+      fieldName,
+    );
+  }
+  return piiModalInputSchema.parse(fieldsToValidate);
+};
+
 export default {
   data: { name: modalId },
   createModal,
@@ -158,25 +171,19 @@ export default {
         ? interaction.member.displayName
         : null;
 
-    const validatedInput = piiModalInputSchema.parse({
-      birthday: getSubmittedFieldValue(interaction, piiFieldNames.birthday),
-      firstName: getSubmittedFieldValue(interaction, piiFieldNames.firstName),
-      switchFriendCode: getSubmittedFieldValue(
-        interaction,
-        piiFieldNames.switchFriendCode,
-      ),
-      pokemonTcgpFriendCode: getSubmittedFieldValue(
-        interaction,
-        piiFieldNames.pokemonTcgpFriendCode,
-      ),
-    });
+    const validatedInput = extractAndValidateModalValues(interaction);
     await setUserData({
       userData: {
         userId: interaction.user.id,
         guildId: interaction.guild.id,
         username: interaction.user.username,
         displayName,
-        ...validatedInput,
+        firstName: validatedInput.firstNameInput,
+        birthday: validatedInput.birthdayInput,
+        phoneNumber: validatedInput.phoneNumberInput,
+        email: validatedInput.emailInput,
+        switchFriendCode: validatedInput.switchFriendCodeInput,
+        pokemonTcgpFriendCode: validatedInput.pokemonTcgpFriendCodeInput,
       },
     });
     return "Your user data was submitted successfully!";
