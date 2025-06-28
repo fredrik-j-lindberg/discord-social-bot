@@ -9,23 +9,19 @@ import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
 import { ModalData } from "../modalRouter";
 import { UserData } from "~/lib/database/schema";
-import { z, ZodType } from "zod/v4";
+import { z } from "zod/v4";
 import { setUserData } from "~/lib/database/userData";
 import {
   extractAndValidateModalValues,
   generateComponents,
   generateModalSchema,
+  ModalFieldConfig,
 } from "~/lib/helpers/modals";
 
-type PiiModalFieldConfig = {
-  fieldName: string;
-  label: string;
-  getPrefilledValue: (
-    userData: UserData | undefined,
-  ) => string | null | undefined;
-  style: TextInputStyle;
-  validation: ZodType;
-  isRequired: boolean;
+const modalId = "userDataModal";
+
+type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
+  getPrefilledValue: (userData?: UserData) => string | null | undefined;
 };
 
 const piiFieldConfigsMap = {
@@ -110,8 +106,6 @@ const piiFieldConfigs = Object.values(piiFieldConfigsMap);
 export type PiiFieldName = (typeof piiFieldConfigs)[number]["fieldName"];
 
 const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap);
-
-const modalId = "userDataModal";
 
 // https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
 type CreateModalProps = {
