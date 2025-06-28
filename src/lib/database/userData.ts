@@ -128,3 +128,22 @@ export const getUsersWithUpcomingBirthday = async ({
 
   return selectedUserDataRecords.map(mapSelectedUserData);
 };
+
+export const getUsersWithPokemonTcgpFriendCode = async ({
+  guildId,
+}: {
+  guildId: string;
+}): Promise<UserData[]> => {
+  const selectedUserDataRecords = await db
+    .select()
+    .from(usersTable)
+    .where(
+      and(
+        eq(usersTable.guildId, guildId),
+        isNotNull(usersTable.pokemonTcgpFriendCode),
+      ),
+    )
+    .limit(30);
+
+  return selectedUserDataRecords.map(mapSelectedUserData);
+};

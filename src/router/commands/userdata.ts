@@ -3,7 +3,10 @@ import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Command } from "../commandRouter";
 import { formatDate } from "~/lib/helpers/date";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
-import { getUsersWithUpcomingBirthday } from "~/lib/database/userData";
+import {
+  getUsersWithPokemonTcgpFriendCode,
+  getUsersWithUpcomingBirthday,
+} from "~/lib/database/userData";
 import { PiiFieldName } from "../modals/piiModal";
 
 type UserDataTypeOption = {
@@ -17,6 +20,10 @@ const userDataTypeOptions = {
     birthdays: {
       name: "Upcoming Birthdays",
       value: "birthday",
+    },
+    pokemonTcgp: {
+      name: "Pokemon TCGP Friend Code",
+      value: "pokemonTcgpFriendCode",
     },
   },
 } satisfies UserDataTypeOption;
@@ -93,6 +100,23 @@ const handleFieldChoice = async (
     const content = membersWithUpcomingBirthday
       .map(({ username, displayName, birthday }) => {
         return `**${displayName || username}**: ${formatDate(birthday)}`;
+      })
+      .join("\n");
+    return content;
+  }
+
+  if (field === "pokemonTcgpFriendCode") {
+    const membersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
+      guildId: interaction.guild.id,
+    });
+    if (membersWithTcgpAccount.length === 0) {
+      throw new DoraUserException(
+        "No users with TCGP friend code found, add yours via the /pii modal",
+      );
+    }
+    const content = membersWithTcgpAccount
+      .map(({ username, displayName, pokemonTcgpFriendCode }) => {
+        return `**${displayName || username}**: ${pokemonTcgpFriendCode}`;
       })
       .join("\n");
     return content;
