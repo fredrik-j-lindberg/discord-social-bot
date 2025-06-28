@@ -94,7 +94,6 @@ Now your database should be up to date with the latest migration.
 # TODO
 
 - Feats:
-  - Support getting height (and other) data from /userdata
   - Update nickname when user is updated via events
   - Guild config improvements
     - Move guildconfigs to database?

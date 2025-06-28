@@ -12,10 +12,6 @@ const userDataTypeOptions = {
       name: "Birthdays",
       value: "birthdays",
     },
-    height: {
-      name: "Height",
-      value: "height",
-    },
   },
 };
 export default {
@@ -28,10 +24,7 @@ export default {
         .setName(userDataTypeOptions.name)
         .setDescription("List user data for field")
         .setRequired(true)
-        .setChoices(
-          userDataTypeOptions.choices.birthdays,
-          userDataTypeOptions.choices.height,
-        ),
+        .setChoices(userDataTypeOptions.choices.birthdays),
     ),
   execute: async (interaction) => {
     assertHasDefinedProperty(
@@ -74,12 +67,6 @@ const handleFieldChoice = async (
       })
       .join("\n");
     return content;
-  }
-  if (field === "height") {
-    // TODO: Fix height view
-    throw new DoraUserException(
-      "Not implemented yet. Anti is the tallest though",
-    );
   }
   throw new Error(`Unknown field: ${field}`);
 };

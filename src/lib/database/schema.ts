@@ -20,7 +20,7 @@ export const usersTable = pgTable(
     birthday: date({ mode: "date" }),
     phoneNumber: varchar({ length: 255 }),
     email: varchar({ length: 255 }),
-    height: integer(),
+    height: integer(), // Legacy, just kept in case we want to re-implement it
     switchFriendCode: varchar({ length: 255 }),
     pokemonTcgpFriendCode: varchar({ length: 255 }),
   },

@@ -45,7 +45,6 @@ export const prodGuildConfigs: GuildConfigs = {
     piiFields: [
       "birthdayInput",
       "firstNameInput",
-      "heightInput",
       "switchFriendCodeInput",
       "pokemonTcgpFriendCodeInput",
     ],

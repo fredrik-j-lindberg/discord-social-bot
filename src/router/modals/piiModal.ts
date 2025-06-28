@@ -36,7 +36,6 @@ const piiModalInputSchema = z
       )
       .optional()
       .nullable(),
-    height: z.coerce.number().max(300).min(50).optional().nullable(),
     switchFriendCode: z
       .string()
       .regex(/SW-\d{4}-\d{4}-\d{4}/)
@@ -58,7 +57,6 @@ const modalId = "userDataModal";
 export const piiFieldNames = {
   birthday: "birthdayInput",
   firstName: "firstNameInput",
-  height: "heightInput",
   switchFriendCode: "switchFriendCodeInput",
   pokemonTcgpFriendCode: "pokemonTcgpFriendCodeInput",
 } as const;
@@ -79,12 +77,6 @@ const generateComponents = (
       .setCustomId(piiFieldNames.firstName)
       .setLabel("First name")
       .setValue(userData?.firstName || "")
-      .setStyle(TextInputStyle.Short)
-      .setRequired(false),
-    new TextInputBuilder()
-      .setCustomId(piiFieldNames.height)
-      .setLabel("Height (cm)")
-      .setValue(userData?.height?.toString() || "")
       .setStyle(TextInputStyle.Short)
       .setRequired(false),
     new TextInputBuilder()
@@ -169,7 +161,6 @@ export default {
     const validatedInput = piiModalInputSchema.parse({
       birthday: getSubmittedFieldValue(interaction, piiFieldNames.birthday),
       firstName: getSubmittedFieldValue(interaction, piiFieldNames.firstName),
-      height: getSubmittedFieldValue(interaction, piiFieldNames.height),
       switchFriendCode: getSubmittedFieldValue(
         interaction,
         piiFieldNames.switchFriendCode,

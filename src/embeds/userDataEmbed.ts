@@ -27,13 +27,6 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
-    heightInput: [
-      {
-        name: "Height (cm)",
-        value: userData.height?.toString() || "-",
-        inline: true,
-      },
-    ],
     switchFriendCodeInput: [
       {
         name: "Switch friend code",
