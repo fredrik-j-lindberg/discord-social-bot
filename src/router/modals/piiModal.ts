@@ -42,6 +42,11 @@ const piiModalInputSchema = z
       .regex(/SW-\d{4}-\d{4}-\d{4}/)
       .optional()
       .nullable(),
+    pokemonTcgpFriendCode: z
+      .string()
+      .regex(/\d{4}-\d{4}-\d{4}-\d{4}/)
+      .optional()
+      .nullable(),
   })
   .strict();
 
@@ -55,6 +60,7 @@ export const piiFieldNames = {
   firstName: "firstNameInput",
   height: "heightInput",
   switchFriendCode: "switchFriendCodeInput",
+  pokemonTcgpFriendCode: "pokemonTcgpFriendCodeInput",
 } as const;
 export type PiiFieldName = (typeof piiFieldNames)[keyof typeof piiFieldNames];
 
@@ -85,6 +91,12 @@ const generateComponents = (
       .setCustomId(piiFieldNames.switchFriendCode)
       .setLabel("Nintendo Switch friend code")
       .setValue(userData?.switchFriendCode || "")
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false),
+    new TextInputBuilder()
+      .setCustomId(piiFieldNames.pokemonTcgpFriendCode)
+      .setLabel("Pokémon TCGP friend code")
+      .setValue(userData?.pokemonTcgpFriendCode || "")
       .setStyle(TextInputStyle.Short)
       .setRequired(false),
   ];
@@ -161,6 +173,10 @@ export default {
       switchFriendCode: getSubmittedFieldValue(
         interaction,
         piiFieldNames.switchFriendCode,
+      ),
+      pokemonTcgpFriendCode: getSubmittedFieldValue(
+        interaction,
+        piiFieldNames.pokemonTcgpFriendCode,
       ),
     });
     await setUserData({

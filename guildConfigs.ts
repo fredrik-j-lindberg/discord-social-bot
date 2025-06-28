@@ -47,6 +47,7 @@ export const prodGuildConfigs: GuildConfigs = {
       "firstNameInput",
       "heightInput",
       "switchFriendCodeInput",
+      "pokemonTcgpFriendCodeInput",
     ],
     birthdays: {
       channelId: "106099890320330752", // #general

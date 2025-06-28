@@ -41,6 +41,13 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
+    pokemonTcgpFriendCodeInput: [
+      {
+        name: "Pokémon TCGP",
+        value: userData.pokemonTcgpFriendCode || "-",
+        inline: true,
+      },
+    ],
   };
   const guildConfig = getGuildConfigById(guildId);
   if (guildConfig.piiFields === "all") {
