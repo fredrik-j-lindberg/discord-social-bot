@@ -67,7 +67,14 @@ const piiFieldConfigsMap = {
     placeholder: "1234-5678-9012-3456",
     validation: z
       .string()
-      .regex(/\d{4}-\d{4}-\d{4}-\d{4}/)
+      .regex(/\d{4}-?\d{4}-?\d{4}-?\d{4}/)
+      // When the user copies their code, the dashes are not always included, so we want to allow them to
+      // add their code without dashes, but then we transform the input to always have dashes on our end.
+      .transform((value) => {
+        const cleanedInput = value.replace(/-/g, "");
+        const groups = cleanedInput.match(/.{1,4}/g);
+        return groups ? groups.join("-") : "";
+      })
       .optional()
       .nullable(),
     isRequired: false,
