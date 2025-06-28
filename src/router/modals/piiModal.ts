@@ -10,7 +10,7 @@ import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
 import { ModalData } from "../modalRouter";
 import { UserData } from "~/lib/database/schema";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { setUserData } from "~/lib/database/userData";
 
 const piiModalInputSchema = z
@@ -153,7 +153,7 @@ const extractAndValidateModalValues = (
       fieldName,
     );
   }
-  return piiModalInputSchema.parse(fieldsToValidate);
+  return piiModalInputSchema.safeParse(fieldsToValidate);
 };
 
 export default {
@@ -171,7 +171,14 @@ export default {
         ? interaction.member.displayName
         : null;
 
-    const validatedInput = extractAndValidateModalValues(interaction);
+    const inputParsing = extractAndValidateModalValues(interaction);
+
+    if (!inputParsing.success) {
+      const errorMessage = z.prettifyError(inputParsing.error);
+      return errorMessage;
+    }
+    const validatedInput = inputParsing.data;
+
     await setUserData({
       userData: {
         userId: interaction.user.id,
