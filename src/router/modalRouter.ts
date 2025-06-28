@@ -9,7 +9,10 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ModalData<TModelInput = any> = {
-  data: { name: string };
+  data: {
+    /** The router uses the name determine which modal to show */
+    name: string;
+  };
   createModal: ((input: TModelInput) => ModalBuilder) | (() => ModalBuilder);
   /**
    * Function to run when modal is submitted

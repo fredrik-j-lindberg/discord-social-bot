@@ -13,8 +13,8 @@ import { z, ZodType } from "zod/v4";
 import { setUserData } from "~/lib/database/userData";
 import {
   extractAndValidateModalValues,
+  generateComponents,
   generateModalSchema,
-  getComponentsRelevantForGuild,
 } from "~/lib/helpers/modals";
 
 type PiiModalFieldConfig = {
@@ -113,32 +113,6 @@ const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap);
 
 const modalId = "userDataModal";
 
-const generateComponents = (
-  guildId: string,
-  userData?: UserData,
-): TextInputBuilder[] => {
-  const guildConfig = getGuildConfigById(guildId);
-
-  const guildRelevantPiiConfigs = Object.values(piiFieldConfigsMap).filter(
-    (config) => guildConfig.piiFields.includes(config.fieldName),
-  );
-
-  if (guildRelevantPiiConfigs.length > 5) {
-    throw new Error(
-      `Too many PII fields configured for the guild. Max allowed per modal is 5 fields but config has '${guildRelevantPiiConfigs.length}'.`,
-    );
-  }
-
-  return guildRelevantPiiConfigs.map((fieldConfig) =>
-    new TextInputBuilder()
-      .setCustomId(fieldConfig.fieldName)
-      .setLabel(fieldConfig.label)
-      .setValue(fieldConfig.getPrefilledValue(userData) || "")
-      .setStyle(fieldConfig.style)
-      .setRequired(fieldConfig.isRequired),
-  );
-};
-
 // https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
 type CreateModalProps = {
   guildId: string;
@@ -149,9 +123,12 @@ const createModal = ({ guildId, userData }: CreateModalProps) => {
     .setCustomId(modalId)
     .setTitle("User data form. Optional!");
 
-  const components = generateComponents(guildId, userData);
-  const relevantComponents = getComponentsRelevantForGuild(guildId, components);
-  const rows = relevantComponents.map((component) => {
+  const components = generateComponents({
+    fieldConfigs: piiFieldConfigs,
+    fieldsToGenerate: getGuildConfigById(guildId).piiFields,
+    modalMetaData: userData,
+  });
+  const rows = components.map((component) => {
     return new ActionRowBuilder<TextInputBuilder>().addComponents(component);
   });
 
