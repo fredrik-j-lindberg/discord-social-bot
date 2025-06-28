@@ -12,14 +12,14 @@ const getFieldsRelevantForGuilds = ({
   userData: UserData;
 }): APIEmbedField[] => {
   const piiFieldsMappedToEmbedFields: Record<PiiFieldName, APIEmbedField[]> = {
-    firstNameInput: [
+    firstName: [
       {
         name: "First name",
         value: userData.firstName || "-",
         inline: true,
       },
     ],
-    birthdayInput: [
+    birthday: [
       { name: "Age", value: userData.age?.toString() || "-", inline: true },
       {
         name: "Birthday",
@@ -27,25 +27,36 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
-    switchFriendCodeInput: [
+    switchFriendCode: [
       {
         name: "Switch friend code",
         value: userData.switchFriendCode || "-",
         inline: true,
       },
     ],
-    pokemonTcgpFriendCodeInput: [
+    pokemonTcgpFriendCode: [
       {
         name: "Pokémon TCGP",
         value: userData.pokemonTcgpFriendCode || "-",
         inline: true,
       },
     ],
+    email: [
+      {
+        name: "Email",
+        value: userData.email || "-",
+        inline: true,
+      },
+    ],
+    phoneNumber: [
+      {
+        name: "Phone number",
+        value: userData.phoneNumber || "-",
+        inline: true,
+      },
+    ],
   };
   const guildConfig = getGuildConfigById(guildId);
-  if (guildConfig.piiFields === "all") {
-    return Object.values(piiFieldsMappedToEmbedFields).flat();
-  }
   const relevantFields = Object.entries(piiFieldsMappedToEmbedFields)
     .map(([key, value]) => {
       if (!guildConfig.piiFields.includes(key as PiiFieldName)) return null;
