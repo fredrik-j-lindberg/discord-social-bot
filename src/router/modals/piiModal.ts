@@ -28,14 +28,16 @@ const piiFieldConfigsMap = {
       .regex(/^[a-zA-ZäöåÄÖÅ]+$/)
       .optional()
       .nullable(),
+    placeholder: "John",
     isRequired: false,
   },
   birthday: {
     fieldName: "birthday",
     label: "Birthday (DD/MM/YYYY)",
     getPrefilledValue: (userData) =>
-      formatDate(userData?.birthday || "1990-01-01", { dateStyle: "short" }),
+      formatDate(userData?.birthday, { dateStyle: "short" }),
     style: TextInputStyle.Short,
+    placeholder: "23/11/1998",
     validation: z
       .string()
       .regex(/^\d{2}\/\d{2}\/\d{4}$/)
@@ -49,6 +51,7 @@ const piiFieldConfigsMap = {
     label: "Nintendo Switch friend code",
     getPrefilledValue: (userData) => userData?.switchFriendCode || "",
     style: TextInputStyle.Short,
+    placeholder: "SW-1234-5678-9012",
     validation: z
       .string()
       .regex(/SW-\d{4}-\d{4}-\d{4}/)
@@ -61,6 +64,7 @@ const piiFieldConfigsMap = {
     label: "Pokémon TCGP friend code",
     getPrefilledValue: (userData) => userData?.pokemonTcgpFriendCode || "",
     style: TextInputStyle.Short,
+    placeholder: "1234-5678-9012-3456",
     validation: z
       .string()
       .regex(/\d{4}-\d{4}-\d{4}-\d{4}/)
@@ -72,6 +76,7 @@ const piiFieldConfigsMap = {
     fieldName: "phoneNumber",
     label: "Phone number",
     getPrefilledValue: (userData) => userData?.phoneNumber,
+    placeholder: "+46712345673",
     style: TextInputStyle.Short,
     validation: z.string().max(10).optional().nullable(),
     isRequired: false,
@@ -81,6 +86,7 @@ const piiFieldConfigsMap = {
     label: "Email",
     getPrefilledValue: (userData) => userData?.email,
     style: TextInputStyle.Short,
+    placeholder: "example@example.com",
     validation: z
       .string()
       .regex(

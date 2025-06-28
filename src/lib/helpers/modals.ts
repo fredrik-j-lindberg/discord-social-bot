@@ -16,6 +16,7 @@ export type ModalFieldConfig = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     modalMetadata: any,
   ) => string | null | undefined;
+  placeholder?: string;
   validation: ZodType;
   isRequired: boolean;
 };
@@ -30,21 +31,6 @@ export type ModalSubmitInteractionWithGuild = Omit<
 > & {
   guild: { id: string };
 };
-
-// /** Helper for filtering the components to be relevant for the specific guild based on guild config */
-// export const getComponentsRelevantForGuild = (
-//   guildId: string,
-//   components: TextInputBuilder[],
-// ) => {
-//   const guildConfig = getGuildConfigById(guildId);
-//   return components.filter(
-//     (component) =>
-//       component.data.custom_id &&
-//       // https://github.com/microsoft/TypeScript/issues/26255
-//       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-//       guildConfig.piiFields.includes(component.data.custom_id as any),
-//   );
-// };
 
 /** Helper for creating a modal schema from field configs */
 export const generateModalSchema = <
@@ -137,6 +123,7 @@ export const createModal = <
       .setLabel(fieldConfig.label)
       .setValue(fieldConfig.getPrefilledValue(modalMetaData) || "")
       .setStyle(fieldConfig.style)
+      .setPlaceholder(fieldConfig.placeholder || "")
       .setRequired(fieldConfig.isRequired),
   );
 
