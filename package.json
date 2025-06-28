@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
     "verify": "pnpm lint && pnpm check-types",
-    "refreshCommands": "tsx --env-file=.env ./scripts/refreshCommands.ts"
+    "refreshCommands": "tsx --env-file=.env ./scripts/refreshCommands.ts",
+    "db:schema-generate": "drizzle-kit generate",
+    "db:schema-migrate": "drizzle-kit migrate"
   },
   "keywords": [],
   "author": "",
