@@ -69,6 +69,28 @@ To run the bot locally, follow the steps below:
 
    Note that it refreshes it with the credentials currently stored in `.env`, if you for example run the local version of the bot you'll need to make sure to refresh the commands for the production bot as well when you are ready to do so
 
+## Modifying database schema
+
+This repo uses [Drizzle](https://orm.drizzle.team/) as the database ORM, and the database schema is configured in code
+
+In order to modify the database schema, do the following steps:
+
+1. Modify the [schema.ts](./src/lib/database/schema.ts) file. See the drizzle docs for more info on this.
+2. Generate a new database migration with the command:
+
+```bash
+pnpm db:schema-generate --name=<name>
+```
+
+3. Confirm that the migration file looks reasonable and won't break anything once applied
+4. Run the migration:
+
+```bash
+pnpm db:schema-migrate
+```
+
+Now your database should be up to date with the latest migration.
+
 # TODO
 
 - Feats:
