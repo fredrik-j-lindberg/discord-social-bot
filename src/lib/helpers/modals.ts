@@ -1,4 +1,6 @@
 import {
+  ActionRowBuilder,
+  ModalBuilder,
   ModalSubmitInteraction,
   TextInputBuilder,
   TextInputStyle,
@@ -97,18 +99,25 @@ export const extractAndValidateModalValues = <
   return validationSchema.safeParse(valuesToValidate);
 };
 
-export const generateComponents = <
+// https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
+export const createModal = <
   TFieldConfigs extends ModalFieldConfig[],
   TFieldName extends string = TFieldConfigs[number]["fieldName"],
 >({
+  modalId,
+  title,
   fieldConfigs,
   fieldsToGenerate,
   modalMetaData,
 }: {
+  modalId: string;
+  title: string;
   fieldConfigs: TFieldConfigs;
   fieldsToGenerate: TFieldName[];
   modalMetaData?: Parameters<TFieldConfigs[number]["getPrefilledValue"]>[0];
 }) => {
+  const modal = new ModalBuilder().setCustomId(modalId).setTitle(title);
+
   const fieldsToGenerateConfigs = fieldConfigs.filter((fieldConfig) =>
     fieldsToGenerate.some(
       (fieldToExtract) => fieldConfig.fieldName === fieldToExtract,
@@ -122,7 +131,7 @@ export const generateComponents = <
     );
   }
 
-  return fieldsToGenerateConfigs.map((fieldConfig) =>
+  const components = fieldsToGenerateConfigs.map((fieldConfig) =>
     new TextInputBuilder()
       .setCustomId(fieldConfig.fieldName)
       .setLabel(fieldConfig.label)
@@ -130,4 +139,11 @@ export const generateComponents = <
       .setStyle(fieldConfig.style)
       .setRequired(fieldConfig.isRequired),
   );
+
+  const rows = components.map((component) => {
+    return new ActionRowBuilder<TextInputBuilder>().addComponents(component);
+  });
+
+  modal.addComponents(rows);
+  return modal;
 };

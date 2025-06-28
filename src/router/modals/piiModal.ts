@@ -1,9 +1,4 @@
-import {
-  ActionRowBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js";
+import { TextInputStyle } from "discord.js";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
@@ -12,13 +7,11 @@ import { UserData } from "~/lib/database/schema";
 import { z } from "zod/v4";
 import { setUserData } from "~/lib/database/userData";
 import {
+  createModal,
   extractAndValidateModalValues,
-  generateComponents,
   generateModalSchema,
   ModalFieldConfig,
 } from "~/lib/helpers/modals";
-
-const modalId = "userDataModal";
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
   getPrefilledValue: (userData?: UserData) => string | null | undefined;
@@ -107,32 +100,21 @@ export type PiiFieldName = (typeof piiFieldConfigs)[number]["fieldName"];
 
 const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap);
 
-// https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
 type CreateModalProps = {
   guildId: string;
   userData: UserData | undefined;
 };
-const createModal = ({ guildId, userData }: CreateModalProps) => {
-  const modal = new ModalBuilder()
-    .setCustomId(modalId)
-    .setTitle("User data form. Optional!");
-
-  const components = generateComponents({
-    fieldConfigs: piiFieldConfigs,
-    fieldsToGenerate: getGuildConfigById(guildId).piiFields,
-    modalMetaData: userData,
-  });
-  const rows = components.map((component) => {
-    return new ActionRowBuilder<TextInputBuilder>().addComponents(component);
-  });
-
-  modal.addComponents(rows);
-  return modal;
-};
-
 export default {
-  data: { name: modalId },
-  createModal,
+  data: { name: "userDataModal" },
+  createModal({ guildId, userData }: CreateModalProps) {
+    return createModal({
+      modalId: this.data.name,
+      title: "User data form. Optional!",
+      fieldConfigs: piiFieldConfigs,
+      fieldsToGenerate: getGuildConfigById(guildId).piiFields,
+      modalMetaData: userData,
+    });
+  },
   deferReply: true,
   handleSubmit: async (interaction) => {
     assertHasDefinedProperty(
