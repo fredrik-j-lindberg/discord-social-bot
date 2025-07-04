@@ -36,7 +36,6 @@ export default {
       userId: user.id,
       guildId: interaction.guild.id,
     });
-    if (!userData) return "No data found";
     const embed = getUserDataEmbed({
       guildId: interaction.guild.id,
       member,

@@ -44,3 +44,8 @@ export const ukDateStringToDate = (ukDateString: string) => {
   if (!day || !month || !year) throw new Error("Missing day, month or year");
   return new Date(Date.UTC(year, month - 1, day));
 };
+
+/** Converts a timestamp into Discord's native timestamp string format */
+export const timeStampToDiscordTimeStamp = (timestamp?: number | null) => {
+  return timestamp && `<t:${Math.round(timestamp / 1000)}:R>`;
+};

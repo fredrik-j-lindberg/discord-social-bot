@@ -1,6 +1,6 @@
 import { APIEmbedField, EmbedBuilder, GuildMember } from "discord.js";
 import { UserData } from "~/lib/database/schema";
-import { formatDate } from "~/lib/helpers/date";
+import { formatDate, timeStampToDiscordTimeStamp } from "~/lib/helpers/date";
 import { getGuildConfigById, OptInUserFields } from "../../guildConfigs";
 
 const getFieldsRelevantForGuilds = ({
@@ -9,68 +9,64 @@ const getFieldsRelevantForGuilds = ({
   member,
 }: {
   guildId: string;
-  userData: UserData;
+  userData?: UserData;
   member: GuildMember;
 }): APIEmbedField[] => {
   const optInEmbedFields: Record<OptInUserFields, APIEmbedField[]> = {
     firstName: [
       {
         name: "First name",
-        value: userData.firstName || "-",
+        value: userData?.firstName || "-",
         inline: true,
       },
     ],
     birthday: [
-      { name: "Age", value: userData.age?.toString() || "-", inline: true },
+      { name: "Age", value: userData?.age?.toString() || "-", inline: true },
       {
         name: "Birthday",
-        value: formatDate(userData.birthday) || "-",
+        value: formatDate(userData?.birthday) || "-",
         inline: true,
       },
     ],
     switchFriendCode: [
       {
         name: "Switch friend code",
-        value: userData.switchFriendCode || "-",
+        value: userData?.switchFriendCode || "-",
         inline: true,
       },
     ],
     pokemonTcgpFriendCode: [
       {
         name: "Pokémon TCGP",
-        value: userData.pokemonTcgpFriendCode || "-",
+        value: userData?.pokemonTcgpFriendCode || "-",
         inline: true,
       },
     ],
     email: [
       {
         name: "Email",
-        value: userData.email || "-",
+        value: userData?.email || "-",
         inline: true,
       },
     ],
     phoneNumber: [
       {
         name: "Phone number",
-        value: userData.phoneNumber || "-",
+        value: userData?.phoneNumber || "-",
         inline: true,
       },
     ],
     joinedServer: [
       {
         name: "Joined server",
-        value: member.joinedTimestamp
-          ? `<t:${Math.round(member.joinedTimestamp / 1000)}:R>`
-          : "-",
+        value: timeStampToDiscordTimeStamp(member.joinedTimestamp) || "-",
         inline: true,
       },
     ],
     accountCreation: [
       {
         name: "Account creation",
-        value: member.joinedTimestamp
-          ? `<t:${Math.round(member.user.createdTimestamp / 1000)}:R>`
-          : "-",
+        value: timeStampToDiscordTimeStamp(member.user.createdTimestamp) || "-",
         inline: true,
       },
     ],
@@ -93,7 +89,7 @@ export const getUserDataEmbed = ({
 }: {
   guildId: string;
   member: GuildMember;
-  userData: UserData;
+  userData?: UserData;
 }) =>
   new EmbedBuilder()
     .setColor(0x0099ff)
