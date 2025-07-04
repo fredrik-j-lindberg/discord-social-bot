@@ -53,8 +53,6 @@ export const generateModalSchema = <
 };
 
 export const extractAndValidateModalValues = <
-  TFieldConfigs extends ModalFieldConfig[],
-  TFieldName extends string = TFieldConfigs[number]["fieldName"],
   TValidationSchema extends ZodType = ZodType,
 >({
   interaction,
@@ -63,8 +61,8 @@ export const extractAndValidateModalValues = <
   validationSchema,
 }: {
   interaction: ModalSubmitInteractionWithGuild;
-  fieldConfigs: TFieldConfigs;
-  fieldsToExtract: TFieldName[];
+  fieldConfigs: ModalFieldConfig[];
+  fieldsToExtract: string[];
   validationSchema: TValidationSchema;
 }) => {
   // It is important to filter these out before extracting the values as if the field is not
@@ -75,10 +73,10 @@ export const extractAndValidateModalValues = <
     ),
   );
 
-  const valuesToValidate: { [key in TFieldName]?: string | null } = {};
+  const valuesToValidate: { [key in string]?: string | null } = {};
   for (const fieldConfig of fieldsToExtractConfigs) {
     // TODO: Can this be solved without the coercion
-    valuesToValidate[fieldConfig.fieldName as TFieldName] =
+    valuesToValidate[fieldConfig.fieldName] =
       interaction.fields.getTextInputValue(fieldConfig.fieldName) || null;
   }
 
@@ -86,10 +84,7 @@ export const extractAndValidateModalValues = <
 };
 
 // https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
-export const createModal = <
-  TFieldConfigs extends ModalFieldConfig[],
-  TFieldName extends string = TFieldConfigs[number]["fieldName"],
->({
+export const createModal = <TFieldConfigs extends ModalFieldConfig[]>({
   modalId,
   title,
   fieldConfigs,
@@ -99,7 +94,7 @@ export const createModal = <
   modalId: string;
   title: string;
   fieldConfigs: TFieldConfigs;
-  fieldsToGenerate: TFieldName[];
+  fieldsToGenerate: string[];
   modalMetaData?: Parameters<TFieldConfigs[number]["getPrefilledValue"]>[0];
 }) => {
   const modal = new ModalBuilder().setCustomId(modalId).setTitle(title);
