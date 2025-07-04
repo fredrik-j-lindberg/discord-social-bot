@@ -17,7 +17,6 @@ This is a Discord bot built to cater to some specific needs I had a hard time fi
 - **User data**
 
   _Note: Much of the userdata fields are required to opt in for on guild by guild basis in the guild config._
-
   - Via /pii a user can enter user data about themselves
   - Via /whois you can view info about a user
   - Via /userdata you can list specific userdata
@@ -66,7 +65,6 @@ This is the entrypoint for any command or modal or similar, and the routers are 
 ### Adding new commands
 
 1. Add a new command file under /src/router/commands containing relevant logic. Example files as reference:
-
    - [ping](./src/router/commands/ping.ts) - Very basic command
    - [userdata](./src/router/commands/userdata.ts) - Command with argument
    - [pii](./src/router/commands/pii.ts) - Command which triggers modal. See [Adding a new modal](#adding-a-new-modal) for context around modals
@@ -113,7 +111,6 @@ Now your database should be up to date with the latest migration.
   - Add discord native timestamp of next birthday to /userdata birthdays output
   - Event gcal syncing?
 - Improved devx
-  - Enforce import type syntax
   - Look into linting improvements
     - import order
     - circular dependencies

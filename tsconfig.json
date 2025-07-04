@@ -13,11 +13,8 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
 
-    "declaration": false,
-    "declarationMap": false,
-
-    "moduleResolution": "Bundler",
-    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "module": "es2022",
     "noEmit": true,
 
     "lib": ["es2022"],
