@@ -19,6 +19,10 @@ export type ModalData<TModelInput = any> = {
    * @returns The reply to the user submitting the modal
    */
   handleSubmit: RouterInteractionExecute<ModalSubmitInteraction>;
+  /**
+   * Whether or not to defer the reply. Need more than 3 seconds to compose your reply? Then you need to defer
+   * More context: https://discordjs.guide/slash-commands/response-methods.html#deferred-responses
+   */
   deferReply: boolean;
 };
 

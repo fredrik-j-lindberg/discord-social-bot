@@ -5,6 +5,7 @@ import { DoraException } from "~/lib/exceptions/DoraException";
 import {
   CommandInteraction,
   ModalSubmitInteraction,
+  type BaseMessageOptions,
   type InteractionReplyOptions,
 } from "discord.js";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
@@ -46,7 +47,7 @@ const reply = async ({
 }: {
   interaction: RouterInteraction;
   deferReply: boolean;
-  replyOptions: InteractionReplyOptions | string;
+  replyOptions: BaseMessageOptions | string;
 }) => {
   if (deferReply) {
     await interaction.editReply(replyOptions);

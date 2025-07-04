@@ -22,6 +22,10 @@ export type Command = {
    * @returns The reply to the command
    */
   execute: RouterInteractionExecute<ChatInputCommandInteraction>;
+  /**
+   * Whether or not to defer the reply. Need more than 3 seconds to compose your reply? Then you need to defer
+   * More context: https://discordjs.guide/slash-commands/response-methods.html#deferred-responses
+   */
   deferReply: boolean;
 };
 
