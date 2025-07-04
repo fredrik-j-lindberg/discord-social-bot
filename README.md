@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a Discord bot built to cater to some specific needs I had a hard time finding good solutions for in existing bots
+This is a Discord bot built to cater to some specific needs I had a hard time finding good solutions for in existing bots.
 
 ## Features
 
@@ -57,17 +57,29 @@ To run the bot locally, follow the steps below:
    pnpm start
    ```
 
-## Adding new commands
+## Router
 
-1. Add your command file containing relevant logic. Example files as reference:
+The /src/router folder houses routers that are responsible for routing user interactions to the right place.
+
+This is the entrypoint for any command or modal or similar, and the routers are set up in a way to automatically import the relevant files from the subfolders.
+
+### Adding new commands
+
+1. Add a new command file under /src/router/commands containing relevant logic. Example files as reference:
 
    - [ping](./src/router/commands/ping.ts) - Very basic command
    - [userdata](./src/router/commands/userdata.ts) - Command with argument
-   - [pii](./src/router/commands/pii.ts) - Command which triggers modal
+   - [pii](./src/router/commands/pii.ts) - Command which triggers modal. See [Adding a new modal](#adding-a-new-modal) for context around modals
 
 2. Run `pnpm refreshCommands`
 
    Note that it refreshes it with the credentials currently stored in `.env`, if you for example run the local version of the bot you'll need to make sure to refresh the commands for the production bot as well when you are ready to do so
+
+### Adding a new modal
+
+Modals are Discord native form dialogs that allow you to collect user input in a nice way.
+
+You can add a new modal by creating a new file under /src/router/modals containing relevant logic. Use [piiModal](./src/router/modals/piiModal.ts) as reference
 
 ## Modifying database schema
 
@@ -100,8 +112,6 @@ Now your database should be up to date with the latest migration.
     - Make it configurable via commands
   - Add discord native timestamp of next birthday to /userdata birthdays output
   - Event gcal syncing?
-- Docs
-  - Add router section to readme
 - Improved devx
   - Enforce import type syntax
   - Look into linting improvements
