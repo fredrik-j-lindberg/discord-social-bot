@@ -3,7 +3,7 @@ import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 import type { PiiFieldName } from "~/router/modals/piiModal";
 
-export type OptInUserFields = PiiFieldName;
+export type OptInUserFields = PiiFieldName | "joinedServer" | "accountCreation";
 
 export type GuildConfig = {
   guildId: string;
@@ -29,6 +29,8 @@ const devGuildConfigs: GuildConfigs = {
       "firstName",
       "switchFriendCode",
       "pokemonTcgpFriendCode",
+      "joinedServer",
+      "accountCreation",
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
@@ -41,7 +43,7 @@ export const prodGuildConfigs: GuildConfigs = {
   // Climbing (Dora the Explorer)
   "1193809867232772126": {
     guildId: "1193809867232772126",
-    optInUserFields: ["birthday"],
+    optInUserFields: ["birthday", "joinedServer", "accountCreation"],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
       roleId: "1308163163149307955",
@@ -55,6 +57,8 @@ export const prodGuildConfigs: GuildConfigs = {
       "firstName",
       "switchFriendCode",
       "pokemonTcgpFriendCode",
+      "joinedServer",
+      "accountCreation",
     ],
     birthdays: {
       channelId: "106099890320330752", // #general

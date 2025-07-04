@@ -1,4 +1,4 @@
-import { APIEmbedField, EmbedBuilder, User } from "discord.js";
+import { APIEmbedField, EmbedBuilder, GuildMember } from "discord.js";
 import { UserData } from "~/lib/database/schema";
 import { formatDate } from "~/lib/helpers/date";
 import { getGuildConfigById, OptInUserFields } from "../../guildConfigs";
@@ -6,9 +6,11 @@ import { getGuildConfigById, OptInUserFields } from "../../guildConfigs";
 const getFieldsRelevantForGuilds = ({
   guildId,
   userData,
+  member,
 }: {
   guildId: string;
   userData: UserData;
+  member: GuildMember;
 }): APIEmbedField[] => {
   const optInEmbedFields: Record<OptInUserFields, APIEmbedField[]> = {
     firstName: [
@@ -54,6 +56,24 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
+    joinedServer: [
+      {
+        name: "Joined server",
+        value: member.joinedTimestamp
+          ? `<t:${Math.round(member.joinedTimestamp / 1000)}:R>`
+          : "-",
+        inline: true,
+      },
+    ],
+    accountCreation: [
+      {
+        name: "Account creation",
+        value: member.joinedTimestamp
+          ? `<t:${Math.round(member.user.createdTimestamp / 1000)}:R>`
+          : "-",
+        inline: true,
+      },
+    ],
   };
   const guildConfig = getGuildConfigById(guildId);
   const relevantFields = Object.entries(optInEmbedFields)
@@ -68,18 +88,18 @@ const getFieldsRelevantForGuilds = ({
 
 export const getUserDataEmbed = ({
   guildId,
-  user,
+  member,
   userData,
 }: {
   guildId: string;
-  user: User;
+  member: GuildMember;
   userData: UserData;
 }) =>
   new EmbedBuilder()
     .setColor(0x0099ff)
-    .setTitle(`User Data - ${user.displayName}`)
-    .setThumbnail(user.avatarURL())
-    .addFields(getFieldsRelevantForGuilds({ guildId, userData }))
+    .setTitle(`User Data - ${member.displayName}`)
+    .setThumbnail(member.avatarURL())
+    .addFields(getFieldsRelevantForGuilds({ guildId, userData, member }))
     .setFooter({
       text: "Add or update your user data with the /pii command",
     });

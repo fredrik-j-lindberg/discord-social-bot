@@ -4,6 +4,7 @@ import { Command } from "../commandRouter";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 import { getUserDataEmbed } from "~/embeds/userDataEmbed";
 import { getUserData } from "~/lib/database/userData";
+import { getMember } from "~/lib/discord/user";
 
 const userOptionName = "user";
 export default {
@@ -29,6 +30,8 @@ export default {
       throw new DoraUserException("Required user option is missing");
     }
 
+    const member = await getMember({ guild: interaction.guild, user });
+
     const userData = await getUserData({
       userId: user.id,
       guildId: interaction.guild.id,
@@ -36,7 +39,7 @@ export default {
     if (!userData) return "No data found";
     const embed = getUserDataEmbed({
       guildId: interaction.guild.id,
-      user,
+      member,
       userData,
     });
     return { embeds: [embed] };
