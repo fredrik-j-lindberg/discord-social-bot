@@ -37,6 +37,6 @@ const makeCmdsRestFriendly = (commands: Command[]) => {
   });
 
   logger.info("Successfully reloaded application (/) commands.");
-})().catch((err) => {
+})().catch((err: unknown) => {
   logger.error(err, "Failed to refresh application (/) commands");
 });

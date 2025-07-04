@@ -24,10 +24,10 @@ export const registerEvent = <TEvent extends keyof ClientEvents>({
   listener,
   metadataSelector,
 }: RegisterEventParams<TEvent>) => {
-  client.on(event, async (...eventArgs) => {
+  client.on(event, (...eventArgs) => {
     const metadata = metadataSelector?.(...eventArgs) || {};
 
-    await actionWrapper({
+    void actionWrapper({
       action: () => listener(...eventArgs),
       meta: { ...metadata, event: String(event) },
       actionDescription: "Handle discord.js event",

@@ -24,9 +24,7 @@ export const usersTable = pgTable(
     switchFriendCode: varchar({ length: 255 }),
     pokemonTcgpFriendCode: varchar({ length: 255 }),
   },
-  (table) => ({
-    pk: primaryKey({ columns: [table.guildId, table.userId] }),
-  }),
+  (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
 );
 
 export type UserDataPost = Omit<typeof usersTable.$inferInsert, "id">;

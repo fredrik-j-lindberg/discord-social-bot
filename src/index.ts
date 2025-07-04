@@ -8,6 +8,6 @@ import { initDatabase } from "./lib/database/client";
   await initDiscordClient();
   registerCronJobs();
   logger.info("Bot successfully initialized & logged in");
-})().catch((err) => {
+})().catch((err: unknown) => {
   logger.error(err, "Failed to initialize bot");
 });

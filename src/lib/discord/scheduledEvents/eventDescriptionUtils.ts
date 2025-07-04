@@ -57,6 +57,6 @@ export const setLatestReminderAtInEventDescription = async (
 
   // Set new description with new value
   await scheduledEvent.setDescription(
-    scheduledEventDescription + `\nlatestReminderAt="${Date.now()}"`,
+    `${scheduledEventDescription}\nlatestReminderAt="${Date.now()}"`,
   );
 };

@@ -99,7 +99,7 @@ const handleFieldChoice = async (
     }
     const content = membersWithUpcomingBirthday
       .map(({ username, displayName, birthday }) => {
-        return `**${displayName || username}**: ${formatDate(birthday)}`;
+        return `**${displayName || username}**: ${formatDate(birthday) || "-"}`;
       })
       .join("\n");
     return content;
