@@ -16,7 +16,7 @@ This is a Discord bot built to cater to some specific needs I had a hard time fi
 
 - **User data**
 
-  _Note: This feature requires that you have enabled pii fields in the guild config._
+  _Note: Much of the userdata fields are required to opt in for on guild by guild basis in the guild config._
 
   - Via /pii a user can enter user data about themselves
   - Via /whois you can view info about a user
@@ -100,8 +100,6 @@ Now your database should be up to date with the latest migration.
     - Make it configurable via commands
   - Add discord native timestamp of next birthday to /userdata birthdays output
   - Event gcal syncing?
-- Refactoring:
-  - Make it easier to add a new field
 - Docs
   - Add router section to readme
 - Improved devx

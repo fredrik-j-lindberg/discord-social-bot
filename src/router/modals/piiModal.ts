@@ -124,7 +124,7 @@ export default {
       modalId: this.data.name,
       title: "User data form. Optional!",
       fieldConfigs: piiFieldConfigs,
-      fieldsToGenerate: getGuildConfigById(guildId).piiFields,
+      fieldsToGenerate: getGuildConfigById(guildId).optInUserFields,
       modalMetaData: userData,
     });
   },
@@ -143,7 +143,7 @@ export default {
     const inputParsing = extractAndValidateModalValues({
       interaction,
       fieldConfigs: piiFieldConfigs,
-      fieldsToExtract: getGuildConfigById(interaction.guild.id).piiFields,
+      fieldsToExtract: getGuildConfigById(interaction.guild.id).optInUserFields,
       validationSchema: piiModalInputSchema,
     });
 

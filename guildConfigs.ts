@@ -3,13 +3,16 @@ import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 import type { PiiFieldName } from "~/router/modals/piiModal";
 
+export type OptInUserFields = PiiFieldName;
+
 export type GuildConfig = {
   guildId: string;
-  piiFields: PiiFieldName[];
+  /** Fields that guilds need to opt in to use, as these fields might not be relevant for all guilds */
+  optInUserFields: OptInUserFields[];
   birthdays: {
-    // Channel to send birthday wishes in
+    /** Channel to send birthday wishes in */
     channelId?: string;
-    // Role to add to users on their birthday
+    /** Role to add to users on their birthday */
     roleId?: string;
   };
 };
@@ -21,7 +24,7 @@ const devGuildConfigs: GuildConfigs = {
   // Local bot testing
   "1211309484811485264": {
     guildId: "1211309484811485264",
-    piiFields: [
+    optInUserFields: [
       "birthday",
       "firstName",
       "switchFriendCode",
@@ -38,7 +41,7 @@ export const prodGuildConfigs: GuildConfigs = {
   // Climbing (Dora the Explorer)
   "1193809867232772126": {
     guildId: "1193809867232772126",
-    piiFields: ["birthday"],
+    optInUserFields: ["birthday"],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
       roleId: "1308163163149307955",
@@ -47,7 +50,7 @@ export const prodGuildConfigs: GuildConfigs = {
   // Eithon
   "106099890320330752": {
     guildId: "106099890320330752",
-    piiFields: [
+    optInUserFields: [
       "birthday",
       "firstName",
       "switchFriendCode",

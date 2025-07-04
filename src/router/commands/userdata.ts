@@ -7,11 +7,11 @@ import {
   getUsersWithPokemonTcgpFriendCode,
   getUsersWithUpcomingBirthday,
 } from "~/lib/database/userData";
-import { PiiFieldName } from "../modals/piiModal";
+import { OptInUserFields } from "../../../guildConfigs";
 
 type UserDataTypeOption = {
   name: string;
-  choices: Record<string, { name: string; value: PiiFieldName }>;
+  choices: Record<string, { name: string; value: OptInUserFields }>;
 };
 
 const userDataTypeOptions = {
@@ -30,7 +30,7 @@ const userDataTypeOptions = {
 
 function assertIsValidUserDataField(
   field: string | null,
-): asserts field is PiiFieldName {
+): asserts field is OptInUserFields {
   if (!field) {
     throw new DoraUserException(
       `Required option '${userDataTypeOptions.name}' is missing`,
@@ -86,7 +86,7 @@ type CommandInteractionWithGuild = Omit<CommandInteraction, "guild"> & {
 
 const handleFieldChoice = async (
   interaction: CommandInteractionWithGuild,
-  field: PiiFieldName,
+  field: OptInUserFields,
 ) => {
   if (field === "birthday") {
     const membersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({

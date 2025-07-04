@@ -1,8 +1,7 @@
 import { APIEmbedField, EmbedBuilder, User } from "discord.js";
 import { UserData } from "~/lib/database/schema";
 import { formatDate } from "~/lib/helpers/date";
-import { getGuildConfigById } from "../../guildConfigs";
-import { PiiFieldName } from "~/router/modals/piiModal";
+import { getGuildConfigById, OptInUserFields } from "../../guildConfigs";
 
 const getFieldsRelevantForGuilds = ({
   guildId,
@@ -11,7 +10,7 @@ const getFieldsRelevantForGuilds = ({
   guildId: string;
   userData: UserData;
 }): APIEmbedField[] => {
-  const piiFieldsMappedToEmbedFields: Record<PiiFieldName, APIEmbedField[]> = {
+  const optInEmbedFields: Record<OptInUserFields, APIEmbedField[]> = {
     firstName: [
       {
         name: "First name",
@@ -57,9 +56,10 @@ const getFieldsRelevantForGuilds = ({
     ],
   };
   const guildConfig = getGuildConfigById(guildId);
-  const relevantFields = Object.entries(piiFieldsMappedToEmbedFields)
+  const relevantFields = Object.entries(optInEmbedFields)
     .map(([key, value]) => {
-      if (!guildConfig.piiFields.includes(key as PiiFieldName)) return null;
+      if (!guildConfig.optInUserFields.includes(key as OptInUserFields))
+        return null;
       return value;
     })
     .filter(Boolean) as APIEmbedField[][];
