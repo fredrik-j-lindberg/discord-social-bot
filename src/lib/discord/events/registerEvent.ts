@@ -1,4 +1,4 @@
-import { ClientEvents } from "discord.js";
+import type { ClientEvents } from "discord.js";
 import { client } from "~/client";
 import { actionWrapper } from "~/lib/actionWrapper";
 

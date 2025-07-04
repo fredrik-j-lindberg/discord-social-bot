@@ -2,15 +2,15 @@ import { TextInputStyle } from "discord.js";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import { getGuildConfigById } from "../../../guildConfigs";
-import { ModalData } from "../modalRouter";
-import { UserData } from "~/lib/database/schema";
+import type { ModalData } from "../modalRouter";
+import type { UserData } from "~/lib/database/schema";
 import { z } from "zod/v4";
 import { setUserData } from "~/lib/database/userData";
 import {
   createModal,
   extractAndValidateModalValues,
   generateModalSchema,
-  ModalFieldConfig,
+  type ModalFieldConfig,
 } from "~/lib/helpers/modals";
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {

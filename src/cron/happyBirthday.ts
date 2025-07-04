@@ -1,6 +1,6 @@
 import { sendBirthdayWish } from "~/lib/discord/sendMessage";
 import { DoraException } from "~/lib/exceptions/DoraException";
-import { GuildConfig, guildConfigs } from "../../guildConfigs";
+import { type GuildConfig, guildConfigs } from "../../guildConfigs";
 import { addRole, getRole } from "~/lib/discord/roles";
 import { Guild, GuildMember } from "discord.js";
 import { getChannel } from "~/lib/discord/channels";

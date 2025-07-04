@@ -1,9 +1,9 @@
 import { addRole, removeRole } from "~/lib/discord/roles";
 import { assertHasDefinedProperty, assertIsDefined } from "~/lib/validation";
 import {
-  ClientEvents,
   GuildScheduledEvent,
-  PartialGuildScheduledEvent,
+  type ClientEvents,
+  type PartialGuildScheduledEvent,
 } from "discord.js";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { actionWrapper } from "~/lib/actionWrapper";

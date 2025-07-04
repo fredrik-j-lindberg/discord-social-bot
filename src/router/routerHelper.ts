@@ -4,8 +4,8 @@ import fs from "node:fs";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import {
   CommandInteraction,
-  InteractionReplyOptions,
   ModalSubmitInteraction,
+  type InteractionReplyOptions,
 } from "discord.js";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 

@@ -1,4 +1,4 @@
-import { Guild, GuildBasedChannel } from "discord.js";
+import { Guild, type GuildBasedChannel } from "discord.js";
 import { DoraException } from "../exceptions/DoraException";
 
 export const getChannel = async ({

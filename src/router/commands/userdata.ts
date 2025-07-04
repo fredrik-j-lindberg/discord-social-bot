@@ -1,13 +1,13 @@
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
-import { Command } from "../commandRouter";
+import type { Command } from "../commandRouter";
 import { formatDate } from "~/lib/helpers/date";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 import {
   getUsersWithPokemonTcgpFriendCode,
   getUsersWithUpcomingBirthday,
 } from "~/lib/database/userData";
-import { OptInUserFields } from "../../../guildConfigs";
+import type { OptInUserFields } from "../../../guildConfigs";
 
 type UserDataTypeOption = {
   name: string;

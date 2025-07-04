@@ -1,4 +1,4 @@
-import { DoraException, Severity } from "./DoraException";
+import { DoraException, type Severity } from "./DoraException";
 
 /**
  * Exception that is user facing, meaning when it bubbles up to a command or modal handler,

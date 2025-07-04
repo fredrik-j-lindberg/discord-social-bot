@@ -1,7 +1,7 @@
-import { APIEmbedField, EmbedBuilder, GuildMember } from "discord.js";
-import { UserData } from "~/lib/database/schema";
+import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js";
+import type { UserData } from "~/lib/database/schema";
 import { formatDate, timeStampToDiscordTimeStamp } from "~/lib/helpers/date";
-import { getGuildConfigById, OptInUserFields } from "../../guildConfigs";
+import { getGuildConfigById, type OptInUserFields } from "../../guildConfigs";
 
 const getFieldsRelevantForGuilds = ({
   guildId,

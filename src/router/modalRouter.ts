@@ -3,8 +3,8 @@ import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 import {
   importFolderModules,
-  RouterInteractionExecute,
   triggerExecutionMappedToInteraction,
+  type RouterInteractionExecute,
 } from "./routerHelper";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

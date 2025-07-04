@@ -1,7 +1,7 @@
 import piiModal from "../modals/piiModal";
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { SlashCommandBuilder } from "discord.js";
-import { Command } from "../commandRouter";
+import type { Command } from "../commandRouter";
 import { getUserData } from "~/lib/database/userData";
 
 export default {

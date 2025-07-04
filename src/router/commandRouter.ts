@@ -3,8 +3,8 @@ import { logger } from "~/lib/logger";
 import { DoraException } from "~/lib/exceptions/DoraException";
 import {
   importFolderModules,
-  RouterInteractionExecute,
   triggerExecutionMappedToInteraction,
+  type RouterInteractionExecute,
 } from "./routerHelper";
 
 export type Command = {

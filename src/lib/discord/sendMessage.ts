@@ -1,8 +1,8 @@
 import {
-  GuildBasedChannel,
   GuildScheduledEvent,
-  MessageCreateOptions,
   MessageFlags,
+  type GuildBasedChannel,
+  type MessageCreateOptions,
 } from "discord.js";
 import { assertChannelIsTextBased, assertIsDefined } from "../validation";
 import { timeStampToDiscordTimeStamp } from "../helpers/date";
