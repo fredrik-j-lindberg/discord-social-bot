@@ -45,12 +45,12 @@ const calculateNextBirthday = () => {
     THEN
         -- Calculate the next birthday for this year
         DATE_TRUNC('year', CURRENT_DATE) + 
-        (EXTRACT(MONTH FROM ${usersTable.birthday}) * INTERVAL '1 month') + 
+        ((EXTRACT(MONTH FROM ${usersTable.birthday}) - 1) * INTERVAL '1 month') + 
         (EXTRACT(DAY FROM ${usersTable.birthday}) - 1) * INTERVAL '1 day'
     ELSE
         -- Calculate the next birthday for next year
         DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '1 year' + 
-        (EXTRACT(MONTH FROM ${usersTable.birthday}) * INTERVAL '1 month') + 
+        ((EXTRACT(MONTH FROM ${usersTable.birthday}) - 1) * INTERVAL '1 month') + 
         (EXTRACT(DAY FROM ${usersTable.birthday}) - 1) * INTERVAL '1 day'
   END`
     .mapWith(usersTable.birthday)
