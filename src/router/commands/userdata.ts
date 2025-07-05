@@ -11,10 +11,10 @@ import { assertHasDefinedProperty } from "~/lib/validation";
 import type { OptInUserFields } from "../../../guildConfigs";
 import type { Command } from "../commandRouter";
 
-type UserDataTypeOption = {
+interface UserDataTypeOption {
   name: string;
   choices: Record<string, { name: string; value: OptInUserFields }>;
-};
+}
 
 const userDataTypeOptions = {
   name: "field",

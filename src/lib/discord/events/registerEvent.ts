@@ -7,9 +7,9 @@ type EventListener<TEvent extends keyof ClientEvents> = (
   ...args: ClientEvents[TEvent]
 ) => Promise<void> | void;
 
-type RegisterEventParams<
+interface RegisterEventParams<
   TEvent extends keyof ClientEvents = keyof ClientEvents,
-> = {
+> {
   /** Discord event to listen for */
   event: TEvent;
   /** Callback that will be called when the event is triggered */
@@ -18,7 +18,7 @@ type RegisterEventParams<
   metadataSelector?: (
     ...args: ClientEvents[TEvent]
   ) => Record<string, string | null | undefined>;
-};
+}
 
 export const registerEvent = <TEvent extends keyof ClientEvents>({
   event,

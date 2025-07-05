@@ -9,7 +9,7 @@ import {
   triggerExecutionMappedToInteraction,
 } from "./routerHelper";
 
-export type Command = {
+export interface Command {
   /**
    * This contains a lot more properties than what has been set so far in the interest of keeing the type narrow
    *
@@ -29,7 +29,7 @@ export type Command = {
    * More context: https://discordjs.guide/slash-commands/response-methods.html#deferred-responses
    */
   deferReply: boolean;
-};
+}
 
 export const getAllCommands = async () => {
   return await importFolderModules<Command>("commands");

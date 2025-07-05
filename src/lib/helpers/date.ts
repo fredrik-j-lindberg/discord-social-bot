@@ -2,11 +2,11 @@ import { logger } from "../logger";
 
 const DEFAULT_LOCALE = "en-GB";
 
-type FormatDateOptions = {
+interface FormatDateOptions {
   date?: string | number | Date | null;
   locale?: string;
   format: Intl.DateTimeFormatOptions;
-};
+}
 
 export const isValidDate = (date: Date) =>
   date instanceof Date && !isNaN(date.getTime());

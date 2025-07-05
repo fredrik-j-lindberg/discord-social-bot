@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import z, { ZodType } from "zod/v4";
 
-export type ModalFieldConfig = {
+export interface ModalFieldConfig {
   fieldName: string;
   label: string;
   style: TextInputStyle;
@@ -19,11 +19,11 @@ export type ModalFieldConfig = {
   placeholder?: string;
   validation: ZodType;
   isRequired: boolean;
-};
+}
 
-export type ModalFieldConfigsMap = {
+export interface ModalFieldConfigsMap {
   [key: string]: ModalFieldConfig;
-};
+}
 
 export type ModalSubmitInteractionWithGuild = Omit<
   ModalSubmitInteraction,

@@ -10,7 +10,7 @@ import {
 } from "./routerHelper";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ModalData<TModelInput = any> = {
+export interface ModalData<TModelInput = any> {
   data: {
     /** The router uses the name determine which modal to show */
     name: string;
@@ -26,7 +26,7 @@ export type ModalData<TModelInput = any> = {
    * More context: https://discordjs.guide/slash-commands/response-methods.html#deferred-responses
    */
   deferReply: boolean;
-};
+}
 
 export const getAllModals = async () => {
   return await importFolderModules<ModalData>("modals");

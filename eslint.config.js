@@ -9,6 +9,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   prettierRecommended,
   ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
     plugins: {
       "simple-import-sort": simpleImportSort,
@@ -28,6 +29,13 @@ export default tseslint.config(
 
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
+
+      // I usually want empty string to also fallback to the default, so this rule makes no sense
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
+
+      // While Record syntax is nice when you don't care about giving info about the key, it is nice to be
+      // able to use a more descriptive type for the key when you need it (E.g. { [guildId: string]: ... })
+      "@typescript-eslint/consistent-indexed-object-style": "off",
     },
   },
 );

@@ -115,10 +115,10 @@ export type PiiFieldName = (typeof piiFieldConfigs)[number]["fieldName"];
 
 const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap);
 
-type CreateModalProps = {
+interface CreateModalProps {
   guildId: string;
   userData: UserData | undefined;
-};
+}
 export default {
   data: { name: "userDataModal" },
   createModal({ guildId, userData }: CreateModalProps) {

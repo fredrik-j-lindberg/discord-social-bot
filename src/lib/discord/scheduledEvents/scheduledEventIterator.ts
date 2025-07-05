@@ -2,10 +2,10 @@ import { Guild, GuildScheduledEvent } from "discord.js";
 
 import { actionWrapper } from "~/lib/actionWrapper";
 
-type ScheduledEventIterationResult<TActionResult> = {
+interface ScheduledEventIterationResult<TActionResult> {
   result: TActionResult | undefined;
   scheduledEvent: GuildScheduledEvent;
-};
+}
 
 /**
  * Runs specified action for each individual event

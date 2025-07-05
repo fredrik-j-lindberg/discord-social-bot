@@ -5,7 +5,7 @@ import type { PiiFieldName } from "~/router/modals/piiModal";
 
 export type OptInUserFields = PiiFieldName | "joinedServer" | "accountCreation";
 
-export type GuildConfig = {
+export interface GuildConfig {
   guildId: string;
   /** Fields that guilds need to opt in to use, as these fields might not be relevant for all guilds */
   optInUserFields: OptInUserFields[];
@@ -15,9 +15,11 @@ export type GuildConfig = {
     /** Role to add to users on their birthday */
     roleId?: string;
   };
-};
+}
 
-type GuildConfigs = { [guildId: string]: GuildConfig };
+interface GuildConfigs {
+  [guildId: string]: GuildConfig;
+}
 
 // Configurations for guilds that the local bot is in, to avoid trying to fetch data from production guilds etc
 const devGuildConfigs: GuildConfigs = {
