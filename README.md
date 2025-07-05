@@ -108,7 +108,6 @@ Now your database should be up to date with the latest migration.
   - Guild config improvements
     - Move guildconfigs to database?
     - Make it configurable via commands
-  - Add discord native timestamp of next birthday to /userdata birthdays output
   - Event gcal syncing?
 - Improved devx
   - Look into linting improvements

@@ -1,7 +1,7 @@
 import { assertHasDefinedProperty } from "~/lib/validation";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import type { Command } from "../commandRouter";
-import { formatDate } from "~/lib/helpers/date";
+import { createDiscordTimestamp } from "~/lib/helpers/date";
 import { DoraUserException } from "~/lib/exceptions/DoraUserException";
 import {
   getUsersWithPokemonTcgpFriendCode,
@@ -98,8 +98,8 @@ const handleFieldChoice = async (
       );
     }
     const content = membersWithUpcomingBirthday
-      .map(({ username, displayName, birthday }) => {
-        return `**${displayName || username}**: ${formatDate(birthday) || "-"}`;
+      .map(({ username, displayName, nextBirthday }) => {
+        return `**${displayName || username}**: ${createDiscordTimestamp(nextBirthday) || "-"}`;
       })
       .join("\n");
     return content;

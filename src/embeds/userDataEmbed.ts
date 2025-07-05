@@ -1,6 +1,6 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js";
 import type { UserData } from "~/lib/database/schema";
-import { formatDate, createDiscordTimestamp } from "~/lib/helpers/date";
+import { createDiscordTimestamp } from "~/lib/helpers/date";
 import { getGuildConfigById, type OptInUserFields } from "../../guildConfigs";
 
 const getFieldsRelevantForGuilds = ({
@@ -23,8 +23,8 @@ const getFieldsRelevantForGuilds = ({
     birthday: [
       { name: "Age", value: userData?.age?.toString() || "-", inline: true },
       {
-        name: "Birthday",
-        value: formatDate(userData?.birthday) || "-",
+        name: "Next birthday",
+        value: createDiscordTimestamp(userData?.nextBirthday) || "-",
         inline: true,
       },
     ],
