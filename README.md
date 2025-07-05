@@ -101,7 +101,18 @@ pnpm db:schema-migrate
 
 Now your database should be up to date with the latest migration.
 
-# TODO
+## Linting & formatting
+
+This project is heavily reliant on linting via typescript eslint and prettier. Without eslint formatting on save you'll have an annoying time coding in this repository.
+
+There are also some helpful scripts for this:
+
+- `pnpm lint` - make sure that eslint is happy
+- `pnpm check-types` - make sure typescript is happy
+- `pnpm verify` - convenience script for running the above two
+- `pnpm lint:fix` - auto fix what is possible to auto fix
+
+## TODO
 
 - Feats:
   - Update nickname when user is updated via events
