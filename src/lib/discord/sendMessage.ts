@@ -1,11 +1,12 @@
 import {
-  GuildScheduledEvent,
-  MessageFlags,
   type GuildBasedChannel,
+  GuildScheduledEvent,
   type MessageCreateOptions,
+  MessageFlags,
 } from "discord.js";
-import { assertChannelIsTextBased, assertIsDefined } from "../validation";
+
 import { createDiscordTimestamp } from "../helpers/date";
+import { assertChannelIsTextBased, assertIsDefined } from "../validation";
 
 const sendMsg = async (
   channel: GuildBasedChannel | null,

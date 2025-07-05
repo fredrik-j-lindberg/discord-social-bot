@@ -1,13 +1,15 @@
-import { addRole, removeRole } from "~/lib/discord/roles";
-import { assertHasDefinedProperty, assertIsDefined } from "~/lib/validation";
 import {
-  GuildScheduledEvent,
   type ClientEvents,
+  GuildScheduledEvent,
   type PartialGuildScheduledEvent,
 } from "discord.js";
-import { DoraException } from "~/lib/exceptions/DoraException";
+
 import { actionWrapper } from "~/lib/actionWrapper";
+import { addRole, removeRole } from "~/lib/discord/roles";
 import { extractRoleIdFromEventDescription } from "~/lib/discord/scheduledEvents/eventDescriptionUtils";
+import { DoraException } from "~/lib/exceptions/DoraException";
+import { assertHasDefinedProperty, assertIsDefined } from "~/lib/validation";
+
 import { registerEvent } from "../lib/discord/events/registerEvent";
 
 const metadataSelector = (

@@ -1,10 +1,12 @@
-import { assertHasDefinedProperty } from "~/lib/validation";
 import { SlashCommandBuilder } from "discord.js";
-import type { Command } from "../commandRouter";
-import { DoraUserException } from "~/lib/exceptions/DoraUserException";
+
 import { getUserDataEmbed } from "~/embeds/userDataEmbed";
 import { getUserData } from "~/lib/database/userData";
 import { getMember } from "~/lib/discord/user";
+import { DoraUserException } from "~/lib/exceptions/DoraUserException";
+import { assertHasDefinedProperty } from "~/lib/validation";
+
+import type { Command } from "../commandRouter";
 
 const userOptionName = "user";
 export default {

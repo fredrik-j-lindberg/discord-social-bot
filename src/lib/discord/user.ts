@@ -1,4 +1,5 @@
-import { Guild, User, GuildMember } from "discord.js";
+import { Guild, GuildMember, User } from "discord.js";
+
 import { DoraException } from "../exceptions/DoraException";
 
 export const getMember = ({

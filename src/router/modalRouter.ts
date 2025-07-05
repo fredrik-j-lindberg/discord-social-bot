@@ -1,10 +1,12 @@
 import { ModalBuilder, ModalSubmitInteraction } from "discord.js";
+
 import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
+
 import {
   importFolderModules,
-  triggerExecutionMappedToInteraction,
   type RouterInteractionExecute,
+  triggerExecutionMappedToInteraction,
 } from "./routerHelper";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

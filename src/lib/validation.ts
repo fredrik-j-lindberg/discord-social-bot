@@ -1,4 +1,5 @@
 import { type GuildBasedChannel, TextChannel } from "discord.js";
+
 import { DoraException, type Severity } from "./exceptions/DoraException";
 
 export function assertIsDefined<T>(

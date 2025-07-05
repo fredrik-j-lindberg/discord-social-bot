@@ -1,6 +1,8 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js";
+
 import type { UserData } from "~/lib/database/schema";
 import { createDiscordTimestamp } from "~/lib/helpers/date";
+
 import { getGuildConfigById, type OptInUserFields } from "../../guildConfigs";
 
 const getFieldsRelevantForGuilds = ({

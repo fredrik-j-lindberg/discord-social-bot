@@ -111,8 +111,6 @@ Now your database should be up to date with the latest migration.
   - Event gcal syncing?
 - Improved devx
   - Look into linting improvements
-    - import order
-    - circular dependencies
     - unnecessary conditionals?
   - Formatting improvements
     - No semi?

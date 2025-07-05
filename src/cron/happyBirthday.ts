@@ -1,13 +1,15 @@
+import { Guild, GuildMember } from "discord.js";
+
+import { actionWrapper } from "~/lib/actionWrapper";
+import { getUsersWithBirthdayTodayForAllGuilds } from "~/lib/database/userData";
+import { getChannel } from "~/lib/discord/channels";
+import { getGuild } from "~/lib/discord/guilds";
+import { addRole, getRole } from "~/lib/discord/roles";
 import { sendBirthdayWish } from "~/lib/discord/sendMessage";
 import { DoraException } from "~/lib/exceptions/DoraException";
-import { type GuildConfig, guildConfigs } from "../../guildConfigs";
-import { addRole, getRole } from "~/lib/discord/roles";
-import { Guild, GuildMember } from "discord.js";
-import { getChannel } from "~/lib/discord/channels";
 import { assertIsDefined } from "~/lib/validation";
-import { actionWrapper } from "~/lib/actionWrapper";
-import { getGuild } from "~/lib/discord/guilds";
-import { getUsersWithBirthdayTodayForAllGuilds } from "~/lib/database/userData";
+
+import { type GuildConfig, guildConfigs } from "../../guildConfigs";
 
 export const happyBirthday = async () => {
   for (const guildConfig of Object.values(guildConfigs)) {

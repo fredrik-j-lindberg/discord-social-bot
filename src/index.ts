@@ -1,7 +1,7 @@
 import { initDiscordClient } from "./client";
 import { registerCronJobs } from "./cron/cronJobs";
-import { logger } from "./lib/logger";
 import { initDatabase } from "./lib/database/client";
+import { logger } from "./lib/logger";
 
 (async () => {
   await initDatabase();

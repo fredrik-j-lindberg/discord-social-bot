@@ -1,19 +1,21 @@
 import { Guild, GuildScheduledEvent } from "discord.js";
+
 import { client } from "~/client";
-import { DoraException } from "../lib/exceptions/DoraException";
-import {
-  assertIsDefined,
-  assertIsBefore,
-  assertIsTruthy,
-} from "../lib/validation";
-import { sendEventReminder } from "../lib/discord/sendMessage";
-import { scheduledEventIterator } from "../lib/discord/scheduledEvents/scheduledEventIterator";
+
 import {
   extractChannelIdFromEventDescription,
-  extractShouldRemindFromEventDescription,
   extractLatestReminderFromEventDescription,
+  extractShouldRemindFromEventDescription,
   setLatestReminderAtInEventDescription,
 } from "../lib/discord/scheduledEvents/eventDescriptionUtils";
+import { scheduledEventIterator } from "../lib/discord/scheduledEvents/scheduledEventIterator";
+import { sendEventReminder } from "../lib/discord/sendMessage";
+import { DoraException } from "../lib/exceptions/DoraException";
+import {
+  assertIsBefore,
+  assertIsDefined,
+  assertIsTruthy,
+} from "../lib/validation";
 
 export const announceRelevantScheduledEventsForAllGuilds = async () => {
   const oAuth2Guilds = await client.guilds.fetch();

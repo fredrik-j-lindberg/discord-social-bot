@@ -1,5 +1,7 @@
 import { Guild } from "discord.js";
+
 import { client } from "~/client";
+
 import { DoraException } from "../exceptions/DoraException";
 
 export const getGuild = async (guildId: string): Promise<Guild> => {

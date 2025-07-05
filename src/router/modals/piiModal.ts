@@ -1,17 +1,19 @@
 import { TextInputStyle } from "discord.js";
-import { assertHasDefinedProperty } from "~/lib/validation";
-import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
-import { getGuildConfigById } from "../../../guildConfigs";
-import type { ModalData } from "../modalRouter";
-import type { UserData } from "~/lib/database/schema";
 import { z } from "zod/v4";
+
+import type { UserData } from "~/lib/database/schema";
 import { setUserData } from "~/lib/database/userData";
+import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
 import {
   createModal,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalFieldConfig,
 } from "~/lib/helpers/modals";
+import { assertHasDefinedProperty } from "~/lib/validation";
+
+import { getGuildConfigById } from "../../../guildConfigs";
+import type { ModalData } from "../modalRouter";
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
   getPrefilledValue: (userData?: UserData) => string | null | undefined;

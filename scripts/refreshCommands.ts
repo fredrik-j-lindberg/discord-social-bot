@@ -1,8 +1,10 @@
 import { REST, Routes } from "discord.js";
-import { env } from "../src/env";
+
+import { DoraException } from "~/lib/exceptions/DoraException";
 import { logger } from "~/lib/logger";
 import { type Command, getAllCommands } from "~/router/commandRouter";
-import { DoraException } from "~/lib/exceptions/DoraException";
+
+import { env } from "../src/env";
 
 const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
 

@@ -1,9 +1,10 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import { initCommands } from "./router/commandRouter";
-import { registerEvents } from "./events";
+
 import { env } from "./env";
-import { initModals } from "./router/modalRouter";
+import { registerEvents } from "./events";
 import { logger } from "./lib/logger";
+import { initCommands } from "./router/commandRouter";
+import { initModals } from "./router/modalRouter";
 
 export const client = new Client({
   intents: [

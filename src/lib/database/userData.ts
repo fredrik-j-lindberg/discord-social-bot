@@ -1,12 +1,13 @@
-import { eq, and, sql, getTableColumns, isNotNull } from "drizzle-orm";
+import { and, eq, getTableColumns, isNotNull, sql } from "drizzle-orm";
+
+import { DoraException } from "../exceptions/DoraException";
 import { db } from "./client";
 import {
-  usersTable,
   type UserData,
   type UserDataPost,
   type UserDataSelect,
+  usersTable,
 } from "./schema";
-import { DoraException } from "../exceptions/DoraException";
 
 const calculateAge = (birthday: Date | null) => {
   if (!birthday) return null;
