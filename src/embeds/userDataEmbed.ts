@@ -1,6 +1,6 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js";
 import type { UserData } from "~/lib/database/schema";
-import { formatDate, timeStampToDiscordTimeStamp } from "~/lib/helpers/date";
+import { formatDate, createDiscordTimestamp } from "~/lib/helpers/date";
 import { getGuildConfigById, type OptInUserFields } from "../../guildConfigs";
 
 const getFieldsRelevantForGuilds = ({
@@ -59,14 +59,14 @@ const getFieldsRelevantForGuilds = ({
     joinedServer: [
       {
         name: "Joined server",
-        value: timeStampToDiscordTimeStamp(member.joinedTimestamp) || "-",
+        value: createDiscordTimestamp(member.joinedTimestamp) || "-",
         inline: true,
       },
     ],
     accountCreation: [
       {
         name: "Account creation",
-        value: timeStampToDiscordTimeStamp(member.user.createdTimestamp) || "-",
+        value: createDiscordTimestamp(member.user.createdTimestamp) || "-",
         inline: true,
       },
     ],

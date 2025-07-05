@@ -5,7 +5,7 @@ import {
   type MessageCreateOptions,
 } from "discord.js";
 import { assertChannelIsTextBased, assertIsDefined } from "../validation";
-import { timeStampToDiscordTimeStamp } from "../helpers/date";
+import { createDiscordTimestamp } from "../helpers/date";
 
 const sendMsg = async (
   channel: GuildBasedChannel | null,
@@ -45,7 +45,7 @@ export const sendEventReminder = async ({
   assertIsDefined(eventStartTimestamp, "No start timestamp found for event");
 
   const nameWithoutEmojis = removeEmojis(scheduledEvent.name); // Emojis break the markdown link
-  const relativeDateFormat = timeStampToDiscordTimeStamp(eventStartTimestamp);
+  const relativeDateFormat = createDiscordTimestamp(eventStartTimestamp);
   await sendMsg(channel, {
     content: `[${nameWithoutEmojis}](${scheduledEvent.url}) will take place ${relativeDateFormat}. Currently set as interested: ${interestedUsers.join(" ")}`,
   });
