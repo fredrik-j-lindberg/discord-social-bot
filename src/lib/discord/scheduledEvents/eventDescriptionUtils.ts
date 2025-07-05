@@ -1,28 +1,28 @@
-import { GuildScheduledEvent } from "discord.js";
+import { GuildScheduledEvent } from "discord.js"
 
 type ScheduledEventDescriptionProps = Pick<
   GuildScheduledEvent,
   "description" | "setDescription"
->;
+>
 const extractDataFromEventDescription = ({
   scheduledEvent: { description },
   selector,
 }: {
-  scheduledEvent: ScheduledEventDescriptionProps;
-  selector: string;
+  scheduledEvent: ScheduledEventDescriptionProps
+  selector: string
 }) => {
-  const regex = new RegExp(`${selector}="([^"]+)"`); // Matches for example: roleId="12345", channelId="12345" or shouldRemind="true"
-  const match = description?.match(regex);
-  return match?.[1];
-};
+  const regex = new RegExp(`${selector}="([^"]+)"`) // Matches for example: roleId="12345", channelId="12345" or shouldRemind="true"
+  const match = description?.match(regex)
+  return match?.[1]
+}
 
 export const extractRoleIdFromEventDescription = (
   scheduledEvent: ScheduledEventDescriptionProps,
-) => extractDataFromEventDescription({ scheduledEvent, selector: "roleId" });
+) => extractDataFromEventDescription({ scheduledEvent, selector: "roleId" })
 
 export const extractChannelIdFromEventDescription = (
   scheduledEvent: ScheduledEventDescriptionProps,
-) => extractDataFromEventDescription({ scheduledEvent, selector: "channelId" });
+) => extractDataFromEventDescription({ scheduledEvent, selector: "channelId" })
 
 export const extractShouldRemindFromEventDescription = (
   scheduledEvent: ScheduledEventDescriptionProps,
@@ -30,9 +30,9 @@ export const extractShouldRemindFromEventDescription = (
   const shouldRemind = extractDataFromEventDescription({
     scheduledEvent,
     selector: "shouldRemind",
-  });
-  return shouldRemind === "true";
-};
+  })
+  return shouldRemind === "true"
+}
 
 export const extractLatestReminderFromEventDescription = (
   scheduledEvent: ScheduledEventDescriptionProps,
@@ -40,11 +40,11 @@ export const extractLatestReminderFromEventDescription = (
   const latestReminderAt = extractDataFromEventDescription({
     scheduledEvent,
     selector: "latestReminderAt",
-  });
+  })
 
-  if (!latestReminderAt) return undefined;
-  return parseInt(latestReminderAt);
-};
+  if (!latestReminderAt) return undefined
+  return parseInt(latestReminderAt)
+}
 
 export const setLatestReminderAtInEventDescription = async (
   scheduledEvent: ScheduledEventDescriptionProps,
@@ -53,10 +53,10 @@ export const setLatestReminderAtInEventDescription = async (
   const scheduledEventDescription = scheduledEvent.description?.replace(
     /\nlatestReminderAt=".*"/,
     "",
-  );
+  )
 
   // Set new description with new value
   await scheduledEvent.setDescription(
     `${scheduledEventDescription}\nlatestReminderAt="${Date.now()}"`,
-  );
-};
+  )
+}

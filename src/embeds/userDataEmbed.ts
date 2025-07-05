@@ -1,18 +1,18 @@
-import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js";
+import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 
-import type { UserData } from "~/lib/database/schema";
-import { createDiscordTimestamp } from "~/lib/helpers/date";
+import type { UserData } from "~/lib/database/schema"
+import { createDiscordTimestamp } from "~/lib/helpers/date"
 
-import { getGuildConfigById, type OptInUserFields } from "../../guildConfigs";
+import { getGuildConfigById, type OptInUserFields } from "../../guildConfigs"
 
 const getFieldsRelevantForGuilds = ({
   guildId,
   userData,
   member,
 }: {
-  guildId: string;
-  userData?: UserData;
-  member: GuildMember;
+  guildId: string
+  userData?: UserData
+  member: GuildMember
 }): APIEmbedField[] => {
   const optInEmbedFields: Record<OptInUserFields, APIEmbedField[]> = {
     firstName: [
@@ -72,26 +72,26 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
-  };
-  const guildConfig = getGuildConfigById(guildId);
+  }
+  const guildConfig = getGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)
     .map(([key, value]) => {
       if (!guildConfig.optInUserFields.includes(key as OptInUserFields))
-        return null;
-      return value;
+        return null
+      return value
     })
-    .filter(Boolean) as APIEmbedField[][];
-  return relevantFields.flat();
-};
+    .filter(Boolean) as APIEmbedField[][]
+  return relevantFields.flat()
+}
 
 export const getUserDataEmbed = ({
   guildId,
   member,
   userData,
 }: {
-  guildId: string;
-  member: GuildMember;
-  userData?: UserData;
+  guildId: string
+  member: GuildMember
+  userData?: UserData
 }) =>
   new EmbedBuilder()
     .setColor(0x0099ff)
@@ -100,4 +100,4 @@ export const getUserDataEmbed = ({
     .addFields(getFieldsRelevantForGuilds({ guildId, userData, member }))
     .setFooter({
       text: "Add or update your user data with the /pii command",
-    });
+    })

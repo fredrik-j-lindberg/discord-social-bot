@@ -1,6 +1,6 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js"
 
-import type { Command } from "../commandRouter";
+import type { Command } from "../commandRouter"
 
 export default {
   deferReply: false,
@@ -8,6 +8,6 @@ export default {
     .setName("ping")
     .setDescription("Replies with Pong!"),
   execute: () => {
-    return "Pong!";
+    return "Pong!"
   },
-} satisfies Command;
+} satisfies Command

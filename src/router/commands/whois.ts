@@ -1,14 +1,14 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js"
 
-import { getUserDataEmbed } from "~/embeds/userDataEmbed";
-import { getUserData } from "~/lib/database/userData";
-import { getMember } from "~/lib/discord/user";
-import { DoraUserException } from "~/lib/exceptions/DoraUserException";
-import { assertHasDefinedProperty } from "~/lib/validation";
+import { getUserDataEmbed } from "~/embeds/userDataEmbed"
+import { getUserData } from "~/lib/database/userData"
+import { getMember } from "~/lib/discord/user"
+import { DoraUserException } from "~/lib/exceptions/DoraUserException"
+import { assertHasDefinedProperty } from "~/lib/validation"
 
-import type { Command } from "../commandRouter";
+import type { Command } from "../commandRouter"
 
-const userOptionName = "user";
+const userOptionName = "user"
 export default {
   deferReply: true,
   data: new SlashCommandBuilder()
@@ -25,24 +25,24 @@ export default {
       interaction,
       "guild",
       "Command issued without associated guild",
-    );
+    )
 
-    const user = interaction.options.getUser(userOptionName);
+    const user = interaction.options.getUser(userOptionName)
     if (!user) {
-      throw new DoraUserException("Required user option is missing");
+      throw new DoraUserException("Required user option is missing")
     }
 
-    const member = await getMember({ guild: interaction.guild, user });
+    const member = await getMember({ guild: interaction.guild, user })
 
     const userData = await getUserData({
       userId: user.id,
       guildId: interaction.guild.id,
-    });
+    })
     const embed = getUserDataEmbed({
       guildId: interaction.guild.id,
       member,
       userData,
-    });
-    return { embeds: [embed] };
+    })
+    return { embeds: [embed] }
   },
-} satisfies Command;
+} satisfies Command

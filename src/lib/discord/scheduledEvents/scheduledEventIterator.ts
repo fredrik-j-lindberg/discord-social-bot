@@ -1,10 +1,10 @@
-import { Guild, GuildScheduledEvent } from "discord.js";
+import { Guild, GuildScheduledEvent } from "discord.js"
 
-import { actionWrapper } from "~/lib/actionWrapper";
+import { actionWrapper } from "~/lib/actionWrapper"
 
 interface ScheduledEventIterationResult<TActionResult> {
-  result: TActionResult | undefined;
-  scheduledEvent: GuildScheduledEvent;
+  result: TActionResult | undefined
+  scheduledEvent: GuildScheduledEvent
 }
 
 /**
@@ -19,26 +19,26 @@ export const scheduledEventIterator = async <TActionResult>({
   meta,
 }: {
   /** Guild to get events from */
-  guild: Guild;
+  guild: Guild
   /** Action to run for each event */
   action: (
     scheduledEvent: GuildScheduledEvent,
-  ) => Promise<TActionResult> | TActionResult;
+  ) => Promise<TActionResult> | TActionResult
   /** Description of action for log context */
-  actionDescription: string;
+  actionDescription: string
   /** Relevant data to serve as additional context for logs */
-  meta?: Record<string, string>;
+  meta?: Record<string, string>
 }): Promise<ScheduledEventIterationResult<TActionResult>[]> => {
-  const scheduledEvents = await guild.scheduledEvents.fetch();
-  const result = [];
+  const scheduledEvents = await guild.scheduledEvents.fetch()
+  const result = []
   for (const [, scheduledEvent] of scheduledEvents) {
     const actionResult = await actionWrapper({
       action: () => action(scheduledEvent),
       meta: { ...meta, scheduledEvent: scheduledEvent.name },
       actionDescription,
       swallowError: true,
-    });
-    result.push({ result: actionResult, scheduledEvent });
+    })
+    result.push({ result: actionResult, scheduledEvent })
   }
-  return result;
-};
+  return result
+}

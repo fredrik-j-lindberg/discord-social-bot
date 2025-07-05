@@ -1,37 +1,37 @@
-import { and, eq, getTableColumns, isNotNull, sql } from "drizzle-orm";
+import { and, eq, getTableColumns, isNotNull, sql } from "drizzle-orm"
 
-import { DoraException } from "../exceptions/DoraException";
-import { db } from "./client";
+import { DoraException } from "../exceptions/DoraException"
+import { db } from "./client"
 import {
   type UserData,
   type UserDataPost,
   type UserDataSelect,
   usersTable,
-} from "./schema";
+} from "./schema"
 
 const calculateAge = (birthday: Date | null) => {
-  if (!birthday) return null;
-  const today = new Date();
+  if (!birthday) return null
+  const today = new Date()
 
-  let age = today.getFullYear() - birthday.getFullYear();
-  const monthDifference = today.getMonth() - birthday.getMonth();
+  let age = today.getFullYear() - birthday.getFullYear()
+  const monthDifference = today.getMonth() - birthday.getMonth()
 
   // Adjust age if the birth date hasn't occurred yet this year
-  const isBirthdayMonthPassed = monthDifference < 0;
+  const isBirthdayMonthPassed = monthDifference < 0
   const isBirthdayDayPassed =
-    monthDifference === 0 && today.getDate() < birthday.getDate();
+    monthDifference === 0 && today.getDate() < birthday.getDate()
 
   if (isBirthdayMonthPassed || isBirthdayDayPassed) {
-    age--;
+    age--
   }
 
-  return age;
-};
+  return age
+}
 
 const mapSelectedUserData = (userData: UserDataSelect) => ({
   ...userData,
   age: calculateAge(userData.birthday),
-});
+})
 
 // Function to calculate the next birthday SQL expression
 const calculateNextBirthday = () => {
@@ -55,15 +55,15 @@ const calculateNextBirthday = () => {
         (EXTRACT(DAY FROM ${usersTable.birthday}) - 1) * INTERVAL '1 day'
   END`
     .mapWith(usersTable.birthday)
-    .as("next_birthday");
-};
+    .as("next_birthday")
+}
 
 export const getUserData = async ({
   userId,
   guildId,
 }: {
-  userId: string;
-  guildId: string;
+  userId: string
+  guildId: string
 }): Promise<UserData | undefined> => {
   const users = await db
     .select({
@@ -71,25 +71,25 @@ export const getUserData = async ({
       nextBirthday: calculateNextBirthday(),
     })
     .from(usersTable)
-    .where(and(eq(usersTable.userId, userId), eq(usersTable.guildId, guildId)));
+    .where(and(eq(usersTable.userId, userId), eq(usersTable.guildId, guildId)))
 
   if (users.length > 1) {
     throw new DoraException(
       "Multiple users found with the same id and guild",
       DoraException.Type.Unknown,
       { metadata: { userId, guildId } },
-    );
+    )
   }
-  const selectedUserData = users[0];
-  if (!selectedUserData) return;
-  return mapSelectedUserData(selectedUserData);
-};
+  const selectedUserData = users[0]
+  if (!selectedUserData) return
+  return mapSelectedUserData(selectedUserData)
+}
 
 /** Creates user or updates user with all the data sent */
 export const setUserData = async ({
   userData,
 }: {
-  userData: UserDataPost;
+  userData: UserDataPost
 }): Promise<void> => {
   await db
     .insert(usersTable)
@@ -97,8 +97,8 @@ export const setUserData = async ({
     .onConflictDoUpdate({
       target: [usersTable.userId, usersTable.guildId],
       set: userData,
-    });
-};
+    })
+}
 
 export const getUsersWithBirthdayTodayForAllGuilds = async (): Promise<
   UserData[]
@@ -112,15 +112,15 @@ export const getUsersWithBirthdayTodayForAllGuilds = async (): Promise<
         sql`EXTRACT(MONTH FROM ${usersTable.birthday}) = EXTRACT(MONTH FROM CURRENT_DATE) AND 
               EXTRACT(DAY FROM ${usersTable.birthday}) = EXTRACT(DAY FROM CURRENT_DATE)`,
       ),
-    );
+    )
 
-  return selectedUserDataRecords.map(mapSelectedUserData);
-};
+  return selectedUserDataRecords.map(mapSelectedUserData)
+}
 
 export const getUsersWithUpcomingBirthday = async ({
   guildId,
 }: {
-  guildId: string;
+  guildId: string
 }): Promise<UserData[]> => {
   const selectedUserDataRecords = await db
     .select({
@@ -130,15 +130,15 @@ export const getUsersWithUpcomingBirthday = async ({
     .from(usersTable)
     .where(and(eq(usersTable.guildId, guildId), isNotNull(usersTable.birthday)))
     .orderBy(sql`next_birthday`) // Order by the calculated next birthday
-    .limit(10); // Limit result to the 10 nearest birthdays
+    .limit(10) // Limit result to the 10 nearest birthdays
 
-  return selectedUserDataRecords.map(mapSelectedUserData);
-};
+  return selectedUserDataRecords.map(mapSelectedUserData)
+}
 
 export const getUsersWithPokemonTcgpFriendCode = async ({
   guildId,
 }: {
-  guildId: string;
+  guildId: string
 }): Promise<UserData[]> => {
   const selectedUserDataRecords = await db
     .select()
@@ -149,7 +149,7 @@ export const getUsersWithPokemonTcgpFriendCode = async ({
         isNotNull(usersTable.pokemonTcgpFriendCode),
       ),
     )
-    .limit(30);
+    .limit(30)
 
-  return selectedUserDataRecords.map(mapSelectedUserData);
-};
+  return selectedUserDataRecords.map(mapSelectedUserData)
+}

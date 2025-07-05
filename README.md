@@ -112,5 +112,3 @@ Now your database should be up to date with the latest migration.
 - Improved devx
   - Look into linting improvements
     - unnecessary conditionals?
-  - Formatting improvements
-    - No semi?

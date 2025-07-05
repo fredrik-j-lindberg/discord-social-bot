@@ -1,6 +1,6 @@
-import { type GuildBasedChannel, TextChannel } from "discord.js";
+import { type GuildBasedChannel, TextChannel } from "discord.js"
 
-import { DoraException, type Severity } from "./exceptions/DoraException";
+import { DoraException, type Severity } from "./exceptions/DoraException"
 
 export function assertIsDefined<T>(
   value: T,
@@ -10,19 +10,19 @@ export function assertIsDefined<T>(
   if (value === undefined || value === null) {
     throw new DoraException(message, DoraException.Type.NotDefined, {
       severity,
-    });
+    })
   }
 }
 
 type NonNullRequired<T> = Required<{
-  [P in keyof T]-?: NonNullable<T[P]>;
-}>;
+  [P in keyof T]-?: NonNullable<T[P]>
+}>
 
 export type ObjectWithProperty<
   TObject extends object,
   TPropertyKey extends keyof TObject,
 > = Exclude<TObject, TPropertyKey> &
-  NonNullRequired<Pick<TObject, TPropertyKey>>;
+  NonNullRequired<Pick<TObject, TPropertyKey>>
 
 export function assertHasDefinedProperty<
   TObject extends object,
@@ -39,7 +39,7 @@ export function assertHasDefinedProperty<
   ) {
     throw new DoraException(message, DoraException.Type.NotDefined, {
       severity,
-    });
+    })
   }
 }
 
@@ -51,7 +51,7 @@ export function assertIsTruthy<T>(
   if (!value) {
     throw new DoraException(message, DoraException.Type.NotDefined, {
       severity,
-    });
+    })
   }
 }
 
@@ -63,7 +63,7 @@ export function assertChannelIsTextBased(
   if (!value?.isTextBased()) {
     throw new DoraException(message, DoraException.Type.TypeError, {
       severity,
-    });
+    })
   }
 }
 
@@ -78,6 +78,6 @@ export function assertIsBefore(
     throw new DoraException(message, DoraException.Type.DateRange, {
       severity,
       metadata,
-    });
+    })
   }
 }

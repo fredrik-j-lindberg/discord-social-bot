@@ -1,24 +1,24 @@
-import { env } from "~/env";
-import { DoraException } from "~/lib/exceptions/DoraException";
-import { logger } from "~/lib/logger";
-import type { PiiFieldName } from "~/router/modals/piiModal";
+import { env } from "~/env"
+import { DoraException } from "~/lib/exceptions/DoraException"
+import { logger } from "~/lib/logger"
+import type { PiiFieldName } from "~/router/modals/piiModal"
 
-export type OptInUserFields = PiiFieldName | "joinedServer" | "accountCreation";
+export type OptInUserFields = PiiFieldName | "joinedServer" | "accountCreation"
 
 export interface GuildConfig {
-  guildId: string;
+  guildId: string
   /** Fields that guilds need to opt in to use, as these fields might not be relevant for all guilds */
-  optInUserFields: OptInUserFields[];
+  optInUserFields: OptInUserFields[]
   birthdays: {
     /** Channel to send birthday wishes in */
-    channelId?: string;
+    channelId?: string
     /** Role to add to users on their birthday */
-    roleId?: string;
-  };
+    roleId?: string
+  }
 }
 
 interface GuildConfigs {
-  [guildId: string]: GuildConfig;
+  [guildId: string]: GuildConfig
 }
 
 // Configurations for guilds that the local bot is in, to avoid trying to fetch data from production guilds etc
@@ -39,7 +39,7 @@ const devGuildConfigs: GuildConfigs = {
       roleId: "1276262193515593780",
     },
   },
-};
+}
 
 export const prodGuildConfigs: GuildConfigs = {
   // Climbing (Dora the Explorer)
@@ -67,23 +67,23 @@ export const prodGuildConfigs: GuildConfigs = {
       roleId: "1276240769975324692",
     },
   },
-};
+}
 
-logger.info({ devMode: env.USE_DEV_GUILD_CONFIGS }, "Loaded guild configs");
+logger.info({ devMode: env.USE_DEV_GUILD_CONFIGS }, "Loaded guild configs")
 export const guildConfigs: GuildConfigs = env.USE_DEV_GUILD_CONFIGS
   ? devGuildConfigs
-  : prodGuildConfigs;
+  : prodGuildConfigs
 
 export const getGuildConfigById = (guildId: string) => {
   const guildConfig = Object.values(guildConfigs).find(
     (guildConfig) => guildConfig.guildId === guildId,
-  );
+  )
   if (!guildConfig) {
     throw new DoraException(
       `Guild config not found for guildId`,
       DoraException.Type.NotFound,
       { metadata: { guildId } },
-    );
+    )
   }
-  return guildConfig;
-};
+  return guildConfig
+}

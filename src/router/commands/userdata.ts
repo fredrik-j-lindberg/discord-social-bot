@@ -1,19 +1,19 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, SlashCommandBuilder } from "discord.js"
 
 import {
   getUsersWithPokemonTcgpFriendCode,
   getUsersWithUpcomingBirthday,
-} from "~/lib/database/userData";
-import { DoraUserException } from "~/lib/exceptions/DoraUserException";
-import { createDiscordTimestamp } from "~/lib/helpers/date";
-import { assertHasDefinedProperty } from "~/lib/validation";
+} from "~/lib/database/userData"
+import { DoraUserException } from "~/lib/exceptions/DoraUserException"
+import { createDiscordTimestamp } from "~/lib/helpers/date"
+import { assertHasDefinedProperty } from "~/lib/validation"
 
-import type { OptInUserFields } from "../../../guildConfigs";
-import type { Command } from "../commandRouter";
+import type { OptInUserFields } from "../../../guildConfigs"
+import type { Command } from "../commandRouter"
 
 interface UserDataTypeOption {
-  name: string;
-  choices: Record<string, { name: string; value: OptInUserFields }>;
+  name: string
+  choices: Record<string, { name: string; value: OptInUserFields }>
 }
 
 const userDataTypeOptions = {
@@ -28,7 +28,7 @@ const userDataTypeOptions = {
       value: "pokemonTcgpFriendCode",
     },
   },
-} satisfies UserDataTypeOption;
+} satisfies UserDataTypeOption
 
 function assertIsValidUserDataField(
   field: string | null,
@@ -36,12 +36,12 @@ function assertIsValidUserDataField(
   if (!field) {
     throw new DoraUserException(
       `Required option '${userDataTypeOptions.name}' is missing`,
-    );
+    )
   }
 
   const validFieldChoices = Object.values(userDataTypeOptions.choices).map(
     (choice) => choice.value,
-  );
+  )
   if (
     validFieldChoices.every((validFieldChoice) => validFieldChoice !== field)
   ) {
@@ -49,7 +49,7 @@ function assertIsValidUserDataField(
       `Invalid field '${field}' provided. Valid fields are: ${validFieldChoices.join(
         ", ",
       )}`,
-    );
+    )
   }
 }
 
@@ -73,18 +73,18 @@ export default {
       interaction,
       "guild",
       "Command issued without associated guild",
-    );
+    )
 
-    const field = interaction.options.getString(userDataTypeOptions.name);
-    assertIsValidUserDataField(field);
+    const field = interaction.options.getString(userDataTypeOptions.name)
+    assertIsValidUserDataField(field)
 
-    return await handleFieldChoice(interaction, field);
+    return await handleFieldChoice(interaction, field)
   },
-} satisfies Command;
+} satisfies Command
 
 type CommandInteractionWithGuild = Omit<CommandInteraction, "guild"> & {
-  guild: { id: string };
-};
+  guild: { id: string }
+}
 
 const handleFieldChoice = async (
   interaction: CommandInteractionWithGuild,
@@ -93,36 +93,36 @@ const handleFieldChoice = async (
   if (field === "birthday") {
     const membersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
       guildId: interaction.guild.id,
-    });
+    })
     if (membersWithUpcomingBirthday.length === 0) {
       throw new DoraUserException(
         "No upcoming birthdays found, add yours via the /pii modal",
-      );
+      )
     }
     const content = membersWithUpcomingBirthday
       .map(({ username, displayName, nextBirthday }) => {
-        return `**${displayName || username}**: ${createDiscordTimestamp(nextBirthday) || "-"}`;
+        return `**${displayName || username}**: ${createDiscordTimestamp(nextBirthday) || "-"}`
       })
-      .join("\n");
-    return content;
+      .join("\n")
+    return content
   }
 
   if (field === "pokemonTcgpFriendCode") {
     const membersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
       guildId: interaction.guild.id,
-    });
+    })
     if (membersWithTcgpAccount.length === 0) {
       throw new DoraUserException(
         "No users with TCGP friend code found, add yours via the /pii modal",
-      );
+      )
     }
     const content = membersWithTcgpAccount
       .map(({ username, displayName, pokemonTcgpFriendCode }) => {
-        return `**${displayName || username}**: ${pokemonTcgpFriendCode}`;
+        return `**${displayName || username}**: ${pokemonTcgpFriendCode}`
       })
-      .join("\n");
-    return content;
+      .join("\n")
+    return content
   }
 
-  throw new Error(`Was unable to handle userdata field: ${field}`);
-};
+  throw new Error(`Was unable to handle userdata field: ${field}`)
+}

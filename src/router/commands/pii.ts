@@ -1,10 +1,10 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js"
 
-import { getUserData } from "~/lib/database/userData";
-import { assertHasDefinedProperty } from "~/lib/validation";
+import { getUserData } from "~/lib/database/userData"
+import { assertHasDefinedProperty } from "~/lib/validation"
 
-import type { Command } from "../commandRouter";
-import piiModal from "../modals/piiModal";
+import type { Command } from "../commandRouter"
+import piiModal from "../modals/piiModal"
 
 export default {
   deferReply: false,
@@ -16,17 +16,17 @@ export default {
       interaction,
       "guild",
       "Command issued without associated guild",
-    );
+    )
 
     const userData = await getUserData({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
-    });
+    })
     const modal = piiModal.createModal({
       guildId: interaction.guild.id,
       userData,
-    });
-    await interaction.showModal(modal);
-    return undefined; // Modal submission will handle response
+    })
+    await interaction.showModal(modal)
+    return undefined // Modal submission will handle response
   },
-} satisfies Command;
+} satisfies Command

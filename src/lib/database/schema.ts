@@ -5,7 +5,7 @@ import {
   primaryKey,
   uuid,
   varchar,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/pg-core"
 
 // TODO: rename things related to the table to member something to better reflect that the data is specific to guild?
 export const usersTable = pgTable(
@@ -25,16 +25,16 @@ export const usersTable = pgTable(
     pokemonTcgpFriendCode: varchar({ length: 255 }),
   },
   (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
-);
+)
 
-export type UserDataPost = Omit<typeof usersTable.$inferInsert, "id">;
+export type UserDataPost = Omit<typeof usersTable.$inferInsert, "id">
 
 export type UserDataSelect = typeof usersTable.$inferSelect & {
   /** Optionally computed field on select */
-  nextBirthday?: Date | null;
-};
+  nextBirthday?: Date | null
+}
 
 export type UserData = UserDataSelect & {
   /** Computed post-select */
-  age: number | null;
-};
+  age: number | null
+}

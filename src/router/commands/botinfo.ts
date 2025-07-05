@@ -1,6 +1,6 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js"
 
-import type { Command } from "../commandRouter";
+import type { Command } from "../commandRouter"
 
 export default {
   deferReply: false,
@@ -8,6 +8,6 @@ export default {
     .setName("botinfo")
     .setDescription("Shows basic info about the bot"),
   execute: () => {
-    return "https://github.com/fredrik-j-lindberg/discord-social-bot";
+    return "https://github.com/fredrik-j-lindberg/discord-social-bot"
   },
-} satisfies Command;
+} satisfies Command

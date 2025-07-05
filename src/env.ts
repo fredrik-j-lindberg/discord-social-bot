@@ -1,12 +1,12 @@
-import { createEnv } from "@t3-oss/env-core";
-import { z } from "zod";
+import { createEnv } from "@t3-oss/env-core"
+import { z } from "zod"
 
 const booleanSchema = z
   .string()
   // only allow "true" or "false"
   .refine((s) => s === "true" || s === "false")
   // transform to boolean
-  .transform((s) => s === "true");
+  .transform((s) => s === "true")
 
 export const env = createEnv({
   server: {
@@ -17,4 +17,4 @@ export const env = createEnv({
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
-});
+})

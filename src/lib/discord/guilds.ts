@@ -1,12 +1,12 @@
-import { Guild } from "discord.js";
+import { Guild } from "discord.js"
 
-import { client } from "~/client";
+import { client } from "~/client"
 
-import { DoraException } from "../exceptions/DoraException";
+import { DoraException } from "../exceptions/DoraException"
 
 export const getGuild = async (guildId: string): Promise<Guild> => {
   try {
-    return await client.guilds.fetch(guildId);
+    return await client.guilds.fetch(guildId)
   } catch (err) {
     throw new DoraException(
       "Failed to fetch guild",
@@ -15,6 +15,6 @@ export const getGuild = async (guildId: string): Promise<Guild> => {
         cause: err,
         metadata: { guildId },
       },
-    );
+    )
   }
-};
+}

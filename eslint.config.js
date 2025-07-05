@@ -1,9 +1,9 @@
 // @ts-check
 
-import eslint from "@eslint/js";
-import prettierRecommended from "eslint-plugin-prettier/recommended";
-import simpleImportSort from "eslint-plugin-simple-import-sort";
-import tseslint from "typescript-eslint";
+import eslint from "@eslint/js"
+import prettierRecommended from "eslint-plugin-prettier/recommended"
+import simpleImportSort from "eslint-plugin-simple-import-sort"
+import tseslint from "typescript-eslint"
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -38,4 +38,4 @@ export default tseslint.config(
       "@typescript-eslint/consistent-indexed-object-style": "off",
     },
   },
-);
+)

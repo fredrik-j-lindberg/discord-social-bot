@@ -1,23 +1,23 @@
-import { TextInputStyle } from "discord.js";
-import { z } from "zod/v4";
+import { TextInputStyle } from "discord.js"
+import { z } from "zod/v4"
 
-import type { UserData } from "~/lib/database/schema";
-import { setUserData } from "~/lib/database/userData";
-import { formatDate, ukDateStringToDate } from "~/lib/helpers/date";
+import type { UserData } from "~/lib/database/schema"
+import { setUserData } from "~/lib/database/userData"
+import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import {
   createModal,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalFieldConfig,
-} from "~/lib/helpers/modals";
-import { assertHasDefinedProperty } from "~/lib/validation";
+} from "~/lib/helpers/modals"
+import { assertHasDefinedProperty } from "~/lib/validation"
 
-import { getGuildConfigById } from "../../../guildConfigs";
-import type { ModalData } from "../modalRouter";
+import { getGuildConfigById } from "../../../guildConfigs"
+import type { ModalData } from "../modalRouter"
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
-  getPrefilledValue: (userData?: UserData) => string | null | undefined;
-};
+  getPrefilledValue: (userData?: UserData) => string | null | undefined
+}
 
 const piiFieldConfigsMap = {
   firstName: {
@@ -73,9 +73,9 @@ const piiFieldConfigsMap = {
       // When the user copies their code, the dashes are not always included, so we want to allow them to
       // add their code without dashes, but then we transform the input to always have dashes on our end.
       .transform((value) => {
-        const cleanedInput = value.replace(/-/g, "");
-        const groups = cleanedInput.match(/.{1,4}/g);
-        return groups ? groups.join("-") : "";
+        const cleanedInput = value.replace(/-/g, "")
+        const groups = cleanedInput.match(/.{1,4}/g)
+        return groups ? groups.join("-") : ""
       })
       .optional()
       .nullable(),
@@ -107,17 +107,17 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-} as const satisfies Record<string, PiiModalFieldConfig>;
+} as const satisfies Record<string, PiiModalFieldConfig>
 
-const piiFieldConfigs = Object.values(piiFieldConfigsMap);
+const piiFieldConfigs = Object.values(piiFieldConfigsMap)
 
-export type PiiFieldName = (typeof piiFieldConfigs)[number]["fieldName"];
+export type PiiFieldName = (typeof piiFieldConfigs)[number]["fieldName"]
 
-const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap);
+const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap)
 
 interface CreateModalProps {
-  guildId: string;
-  userData: UserData | undefined;
+  guildId: string
+  userData: UserData | undefined
 }
 export default {
   data: { name: "userDataModal" },
@@ -128,7 +128,7 @@ export default {
       fieldConfigs: piiFieldConfigs,
       fieldsToGenerate: getGuildConfigById(guildId).optInUserFields,
       modalMetaData: userData,
-    });
+    })
   },
   deferReply: true,
   handleSubmit: async (interaction) => {
@@ -136,24 +136,24 @@ export default {
       interaction,
       "guild",
       "Modal submitted without associated guild",
-    );
+    )
     const displayName =
       interaction.member && "displayName" in interaction.member
         ? interaction.member.displayName
-        : null;
+        : null
 
     const inputParsing = extractAndValidateModalValues({
       interaction,
       fieldConfigs: piiFieldConfigs,
       fieldsToExtract: getGuildConfigById(interaction.guild.id).optInUserFields,
       validationSchema: piiModalInputSchema,
-    });
+    })
 
     if (!inputParsing.success) {
-      const errorMessage = z.prettifyError(inputParsing.error);
-      return errorMessage;
+      const errorMessage = z.prettifyError(inputParsing.error)
+      return errorMessage
     }
-    const validatedInput = inputParsing.data;
+    const validatedInput = inputParsing.data
 
     await setUserData({
       userData: {
@@ -168,7 +168,7 @@ export default {
         switchFriendCode: validatedInput.switchFriendCode,
         pokemonTcgpFriendCode: validatedInput.pokemonTcgpFriendCode,
       },
-    });
-    return "Your user data was submitted successfully!";
+    })
+    return "Your user data was submitted successfully!"
   },
-} satisfies ModalData;
+} satisfies ModalData
