@@ -32,13 +32,21 @@ export const getAllModals = async () => {
   return await importFolderModules<ModalData>("modals")
 }
 
-let modals: Record<string, ModalData>
+let modals: Record<string, ModalData> | undefined
 export const initModals = async () => {
   modals = await getAllModals()
   logger.info("Modals initialized")
 }
 
 export const modalRouter = async (interaction: ModalSubmitInteraction) => {
+  if (!modals) {
+    throw new DoraException(
+      "Modals are not initialized",
+      DoraException.Type.NotDefined,
+      { severity: DoraException.Severity.Error },
+    )
+  }
+
   const modal = modals[interaction.customId] // The name is the id
   if (!modal) {
     throw new DoraException("Unknown modal", DoraException.Type.NotFound, {

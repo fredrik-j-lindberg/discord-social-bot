@@ -11,7 +11,7 @@ import {
 
 export interface Command {
   /**
-   * This contains a lot more properties than what has been set so far in the interest of keeing the type narrow
+   * This contains a lot more properties than what has been set so far in the interest of keeping the type narrow
    *
    * Grab more properties from SlashCommandBuilder if needed
    */
@@ -35,7 +35,7 @@ export const getAllCommands = async () => {
   return await importFolderModules<Command>("commands")
 }
 
-let commands: Record<string, Command>
+let commands: Record<string, Command> | undefined
 export const initCommands = async () => {
   commands = await getAllCommands()
   logger.info("Commands initialized")
@@ -44,6 +44,14 @@ export const initCommands = async () => {
 export const commandRouter = async (
   interaction: ChatInputCommandInteraction,
 ) => {
+  if (!commands) {
+    throw new DoraException(
+      "Commands are not initialized",
+      DoraException.Type.NotDefined,
+      { severity: DoraException.Severity.Error },
+    )
+  }
+
   const command = commands[interaction.commandName]
   if (!command) {
     throw new DoraException("Unknown command", DoraException.Type.NotFound, {

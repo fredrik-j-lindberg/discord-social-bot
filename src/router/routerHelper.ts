@@ -60,15 +60,18 @@ const reply = async ({
 
 type RouterInteraction = CommandInteraction | ModalSubmitInteraction
 type ExecuteResult = InteractionReplyOptions | string | undefined
+
 export type RouterInteractionExecute<TInteraction extends RouterInteraction> = (
   interaction: TInteraction,
 ) => Promise<ExecuteResult> | ExecuteResult
+
 interface Data<TInteraction extends RouterInteraction> {
   execute: RouterInteractionExecute<TInteraction>
   deferReply: boolean
   interaction: TInteraction
   context: "command" | "modal"
 }
+
 export const triggerExecutionMappedToInteraction = async <
   TInteraction extends RouterInteraction,
 >({
