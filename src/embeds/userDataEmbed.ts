@@ -92,12 +92,13 @@ export const getUserDataEmbed = ({
   guildId: string
   member: GuildMember
   userData?: UserData
-}) =>
-  new EmbedBuilder()
+}) => {
+  return new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle(`User Data - ${member.displayName}`)
-    .setThumbnail(member.avatarURL())
+    .setThumbnail(member.displayAvatarURL())
     .addFields(getFieldsRelevantForGuilds({ guildId, userData, member }))
     .setFooter({
       text: "Add or update your user data with the /pii command",
     })
+}
