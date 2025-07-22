@@ -2,6 +2,7 @@ import { logger } from "~/lib/logger"
 
 import { registerEvent } from "../lib/discord/events/registerEvent"
 import { registerInteractionEvent } from "./interaction"
+import { registerMessageEvent } from "./message"
 import { registerScheduledEvents } from "./scheduledEvent"
 
 export const registerEvents = () => {
@@ -19,5 +20,6 @@ export const registerEvents = () => {
   })
   registerInteractionEvent()
   registerScheduledEvents()
+  registerMessageEvent()
   logger.info("Events successfully registered")
 }

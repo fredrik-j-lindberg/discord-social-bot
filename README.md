@@ -25,6 +25,9 @@ This is a Discord bot built to cater to some specific needs I had a hard time fi
 
     _Note: This requires the birthdayWishes channel to be set in the guild config_
 
+- **Random stuff**
+  - If a message contains the text "christian server" the bot will respond with a cross, which is a reference to the legacy pg-13 status of the Eithon community
+
 ## Getting Started
 
 ### Pre-requisites:
@@ -78,6 +81,10 @@ This is the entrypoint for any command or modal or similar, and the routers are 
 Modals are Discord native form dialogs that allow you to collect user input in a nice way.
 
 You can add a new modal by creating a new file under /src/router/modals containing relevant logic. Use [piiModal](./src/router/modals/piiModal.ts) as reference
+
+### Adding a new message listener
+
+You can add a new modal by creating a new file under /src/router/messageListeners containing relevant logic. Use [christianServer](./src/router/messageListeners/christianServer.ts) as reference
 
 ## Modifying database schema
 
