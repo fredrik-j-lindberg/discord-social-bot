@@ -22,7 +22,7 @@ export const initDiscordClient = async () => {
   await initCommands()
   await initModals()
   await initMessageListeners()
-  registerEvents()
+  await registerEvents()
   logger.info("Logging in to Discord...")
   try {
     await client.login(env.DISCORD_BOT_TOKEN)

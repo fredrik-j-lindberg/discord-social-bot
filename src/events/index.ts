@@ -2,10 +2,11 @@ import { logger } from "~/lib/logger"
 
 import { registerEvent } from "../lib/discord/events/registerEvent"
 import { registerInteractionEvent } from "./interaction"
+import { registerUserUpdatedEvent } from "./memberUpdated"
 import { registerMessageEvent } from "./message"
 import { registerScheduledEvents } from "./scheduledEvent"
 
-export const registerEvents = () => {
+export const registerEvents = async () => {
   registerEvent({
     event: "ready",
     listener: (client) => {
@@ -21,5 +22,6 @@ export const registerEvents = () => {
   registerInteractionEvent()
   registerScheduledEvents()
   registerMessageEvent()
+  await registerUserUpdatedEvent()
   logger.info("Events successfully registered")
 }

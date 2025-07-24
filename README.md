@@ -131,3 +131,5 @@ There are also some helpful scripts for this:
   - Look into linting improvements
     - unnecessary conditionals?
 - Make /pii ephemeral (so only you can see your input and failures)
+- Refactor:
+  - Move all router handling into the event registering approach used by member update, then update the readme docs
