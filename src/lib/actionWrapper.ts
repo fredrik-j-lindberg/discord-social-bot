@@ -13,7 +13,7 @@ export const actionWrapper = async <TActionResponse>({
 }: {
   action: () => Promise<TActionResponse> | TActionResponse
   actionDescription: string
-  meta?: Record<string, string>
+  meta?: Record<string, string | null | undefined>
   swallowError?: boolean
 }): Promise<TActionResponse | undefined> => {
   const actionLogger = logger.child({ ...meta, action: actionDescription })

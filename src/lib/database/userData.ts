@@ -1,5 +1,6 @@
 import { and, eq, getTableColumns, isNotNull, sql } from "drizzle-orm"
 
+import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
 import { db } from "./client"
 import {
@@ -91,13 +92,19 @@ export const setUserData = async ({
 }: {
   userData: UserDataPost
 }): Promise<void> => {
-  await db
-    .insert(usersTable)
-    .values(userData)
-    .onConflictDoUpdate({
-      target: [usersTable.userId, usersTable.guildId],
-      set: userData,
-    })
+  await actionWrapper({
+    actionDescription: "Set user data",
+    meta: { userId: userData.userId, displayName: userData.displayName },
+    action: async () => {
+      await db
+        .insert(usersTable)
+        .values(userData)
+        .onConflictDoUpdate({
+          target: [usersTable.userId, usersTable.guildId],
+          set: userData,
+        })
+    },
+  })
 }
 
 export const getUsersWithBirthdayTodayForAllGuilds = async (): Promise<

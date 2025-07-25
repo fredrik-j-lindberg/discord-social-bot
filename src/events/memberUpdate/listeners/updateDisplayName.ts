@@ -1,12 +1,18 @@
 import type { Events } from "discord.js"
 
+import { setUserData } from "~/lib/database/userData"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 
 export default {
   data: { name: "updateDisplayName" },
-  execute: (oldMember, newMember) => {
-    // TODO: Update display name
-    console.log("### fredrik: oldUser.tag", oldMember.user.tag)
-    console.log("### fredrik: newUser.tag", newMember.user.tag)
+  execute: (_oldMember, newMember) => {
+    void setUserData({
+      userData: {
+        guildId: newMember.guild.id,
+        userId: newMember.user.id,
+        username: newMember.user.username,
+        displayName: newMember.displayName,
+      },
+    })
   },
 } satisfies EventListener<Events.GuildMemberUpdate>

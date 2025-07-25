@@ -77,7 +77,7 @@ Discord.js emits Discord events that we can act on. Our listeners for this can b
 
 If you want to add a listener to an event we already have listeners for, simply copy a `/events/<eventName>/listeners/<listener>` file and tweak it.
 
-If you want to add listeners for a new event, copy a `/events/<eventName>` folder and tweak it.
+If you want to add listeners for a new event, copy a `/events/<eventName>` folder and tweak it, then call the new registration method from [src/events/index.ts](src/events/index.ts)
 
 ### Commands
 
@@ -140,7 +140,6 @@ There are also some helpful scripts for this:
 ## TODO
 
 - Feats:
-  - Update nickname when user is updated via events
   - Guild config improvements
     - Move guildconfigs to database?
     - Make it configurable via commands
