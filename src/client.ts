@@ -2,10 +2,9 @@ import { Client, GatewayIntentBits } from "discord.js"
 
 import { env } from "./env"
 import { registerEvents } from "./events"
+import { initCommands } from "./events/interactionCreate/listeners/commandRouter"
+import { initModals } from "./events/interactionCreate/listeners/modalSubmitRouter"
 import { logger } from "./lib/logger"
-import { initCommands } from "./router/commandRouter"
-import { initMessageListeners } from "./router/messageRouter"
-import { initModals } from "./router/modalRouter"
 
 export const client = new Client({
   intents: [
@@ -21,7 +20,6 @@ export const client = new Client({
 export const initDiscordClient = async () => {
   await initCommands()
   await initModals()
-  await initMessageListeners()
   await registerEvents()
   logger.info("Logging in to Discord...")
   try {

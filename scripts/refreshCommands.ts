@@ -1,8 +1,11 @@
 import { REST, Routes } from "discord.js"
 
+import {
+  type Command,
+  getAllCommands,
+} from "~/events/interactionCreate/listeners/commandRouter"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { logger } from "~/lib/logger"
-import { type Command, getAllCommands } from "~/router/commandRouter"
 
 import { env } from "../src/env"
 
@@ -11,7 +14,7 @@ const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN)
 const makeCmdsRestFriendly = (commands: Command[]) => {
   const json = commands.map((cmd) => {
     try {
-      return cmd.data.toJSON()
+      return cmd.command.toJSON()
     } catch (err) {
       throw new DoraException(
         "Failed to parse command",

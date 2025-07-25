@@ -1,4 +1,6 @@
-import type { UserUpdateListener } from "../memberUpdatedEvent"
+import type { Events } from "discord.js"
+
+import type { EventListener } from "~/lib/discord/events/registerEvent"
 
 export default {
   data: { name: "updateDisplayName" },
@@ -7,4 +9,4 @@ export default {
     console.log("### fredrik: oldUser.tag", oldMember.user.tag)
     console.log("### fredrik: newUser.tag", newMember.user.tag)
   },
-} satisfies UserUpdateListener
+} satisfies EventListener<Events.GuildMemberUpdate>
