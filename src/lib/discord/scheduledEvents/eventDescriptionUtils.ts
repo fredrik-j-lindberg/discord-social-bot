@@ -1,4 +1,10 @@
-import { GuildScheduledEvent } from "discord.js"
+import {
+  GuildScheduledEvent,
+  type PartialGuildScheduledEvent,
+} from "discord.js"
+
+import { DoraException } from "~/lib/exceptions/DoraException"
+import { assertHasDefinedProperty, assertIsDefined } from "~/lib/validation"
 
 type ScheduledEventDescriptionProps = Pick<
   GuildScheduledEvent,
@@ -59,4 +65,29 @@ export const setLatestReminderAtInEventDescription = async (
   await scheduledEvent.setDescription(
     `${scheduledEventDescription}\nlatestReminderAt="${Date.now()}"`,
   )
+}
+
+/**
+ * Validates that scheduled event is relevant for adding/removing roles
+ *
+ * @returns The validated scheduled event and role id
+ * @throws DoraException of varying severity if the event does not pass assertions needed to proceed
+ */
+export const validateScheduledEventForRoleChange = (
+  scheduledEvent: GuildScheduledEvent | PartialGuildScheduledEvent,
+) => {
+  assertHasDefinedProperty(
+    scheduledEvent,
+    "guild",
+    "Event triggered without associated guild",
+  )
+
+  const roleId = extractRoleIdFromEventDescription(scheduledEvent)
+  assertIsDefined(
+    roleId,
+    "Unable to find roleId in scheduled event description",
+    DoraException.Severity.Info,
+  )
+
+  return { scheduledEvent, roleId }
 }

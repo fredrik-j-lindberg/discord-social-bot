@@ -1,16 +1,19 @@
 import { SlashCommandBuilder } from "discord.js"
 
+import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getUserData } from "~/lib/database/userData"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import type { Command } from "../commandRouter"
 import piiModal from "../modals/piiModal"
+
+const command = new SlashCommandBuilder()
+  .setName("pii")
+  .setDescription("Triggers form for adding user data about yourself")
 
 export default {
   deferReply: false,
-  data: new SlashCommandBuilder()
-    .setName("pii")
-    .setDescription("Triggers form for adding user data about yourself"),
+  command,
+  data: { name: command.name },
   execute: async (interaction) => {
     assertHasDefinedProperty(
       interaction,

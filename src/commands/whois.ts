@@ -1,25 +1,27 @@
 import { SlashCommandBuilder } from "discord.js"
 
 import { getUserDataEmbed } from "~/embeds/userDataEmbed"
+import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getUserData } from "~/lib/database/userData"
 import { getMember } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import type { Command } from "../commandRouter"
-
 const userOptionName = "user"
+const command = new SlashCommandBuilder()
+  .setName("whois")
+  .setDescription("Get info about a user")
+  .addUserOption((option) =>
+    option
+      .setName(userOptionName)
+      .setDescription("The user to get info about")
+      .setRequired(true),
+  )
+
 export default {
   deferReply: true,
-  data: new SlashCommandBuilder()
-    .setName("whois")
-    .setDescription("Get info about a user")
-    .addUserOption((option) =>
-      option
-        .setName(userOptionName)
-        .setDescription("The user to get info about")
-        .setRequired(true),
-    ),
+  command,
+  data: { name: command.name },
   execute: async (interaction) => {
     assertHasDefinedProperty(
       interaction,

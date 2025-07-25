@@ -1,6 +1,7 @@
 import { TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
+import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import type { UserData } from "~/lib/database/schema"
 import { setUserData } from "~/lib/database/userData"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
@@ -12,8 +13,7 @@ import {
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import { getGuildConfigById } from "../../../guildConfigs"
-import type { ModalData } from "../modalRouter"
+import { getGuildConfigById } from "../../guildConfigs"
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
   getPrefilledValue: (userData?: UserData) => string | null | undefined

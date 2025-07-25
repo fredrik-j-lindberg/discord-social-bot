@@ -1,29 +1,35 @@
+import type { Events, SlashCommandOptionsOnlyBuilder } from "discord.js"
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
+import type { EventListener } from "~/lib/discord/events/registerEvent"
+import {
+  type InteractionExecute,
+  triggerExecutionMappedToInteraction,
+} from "~/lib/discord/interaction"
 import { DoraException } from "~/lib/exceptions/DoraException"
+import { importFolderModules } from "~/lib/helpers/folder"
 import { logger } from "~/lib/logger"
 
-import {
-  importFolderModules,
-  type RouterInteractionExecute,
-  triggerExecutionMappedToInteraction,
-} from "./routerHelper"
+export default {
+  data: { name: "command" },
+  execute: (interaction) => {
+    if (!interaction.isChatInputCommand()) return
+
+    return commandRouter(interaction)
+  },
+} satisfies EventListener<Events.InteractionCreate>
 
 export interface Command {
-  /**
-   * This contains a lot more properties than what has been set so far in the interest of keeping the type narrow
-   *
-   * Grab more properties from SlashCommandBuilder if needed
-   */
+  command: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder
+  /** Context regarding the command */
   data: {
-    name: SlashCommandBuilder["name"]
-    toJSON: SlashCommandBuilder["toJSON"]
+    name: string
   }
   /**
    * Function to run when command is issued
    * @returns The reply to the command
    */
-  execute: RouterInteractionExecute<ChatInputCommandInteraction>
+  execute: InteractionExecute<ChatInputCommandInteraction>
   /**
    * Whether or not to defer the reply. Need more than 3 seconds to compose your reply? Then you need to defer
    * More context: https://discordjs.guide/slash-commands/response-methods.html#deferred-responses
@@ -32,7 +38,7 @@ export interface Command {
 }
 
 export const getAllCommands = async () => {
-  return await importFolderModules<Command>("commands")
+  return await importFolderModules<Command>(`${process.cwd()}/src/commands`)
 }
 
 let commands: Record<string, Command> | undefined
@@ -41,9 +47,7 @@ export const initCommands = async () => {
   logger.info("Commands initialized")
 }
 
-export const commandRouter = async (
-  interaction: ChatInputCommandInteraction,
-) => {
+const commandRouter = async (interaction: ChatInputCommandInteraction) => {
   if (!commands) {
     throw new DoraException(
       "Commands are not initialized",

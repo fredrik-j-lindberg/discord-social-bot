@@ -1,7 +1,7 @@
 import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { logger } from "~/lib/logger"
-import type { PiiFieldName } from "~/router/modals/piiModal"
+import type { PiiFieldName } from "~/modals/piiModal"
 
 export type OptInUserFields = PiiFieldName | "joinedServer" | "accountCreation"
 

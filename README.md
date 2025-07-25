@@ -59,32 +59,50 @@ To run the bot locally, follow the steps below:
    pnpm start
    ```
 
-## Router
+## Repository structure
 
-The /src/router folder houses routers that are responsible for routing user interactions to the right place.
+### Events
 
-This is the entrypoint for any command or modal or similar, and the routers are set up in a way to automatically import the relevant files from the subfolders.
+Discord.js emits Discord events that we can act on. Our listeners for this can be found under `/src/events`. Here is an example of the pattern used to setup an event:
 
-### Adding new commands
+```
+📂 events
+┣ 📂 interactionCreate - The event that we want to listen to
+┃ ┣ 📂 listeners - Files in this dir are automatically picked up as listeners.
+┃ ┃ ┣ 📜 commandRouter.ts - Listens to the events but only proceeds with command interactions
+┃ ┃ ┗ 📜 modalSubmitRouter.ts - Listens to the events but only proceeds with command interactions
+┃ ┣ 📜 index.ts - Just exporting the event file for better looking imports
+┃ ┗ 📜 interactionCreateEvent.ts - Hooks up all the listeners to the event and wraps them with basic error handling and logging.
+```
 
-1. Add a new command file under /src/router/commands containing relevant logic. Example files as reference:
-   - [ping](./src/router/commands/ping.ts) - Very basic command
-   - [userdata](./src/router/commands/userdata.ts) - Command with argument
-   - [pii](./src/router/commands/pii.ts) - Command which triggers modal. See [Adding a new modal](#adding-a-new-modal) for context around modals
+If you want to add a listener to an event we already have listeners for, simply copy a `/events/<eventName>/listeners/<listener>` file and tweak it.
+
+If you want to add listeners for a new event, copy a `/events/<eventName>` folder and tweak it.
+
+### Commands
+
+The `./src/commands` folder houses all of the bot commands. All files under this folder are automatically imported by the [commandRouter](./src/events/interactionCreate/listeners/commandRouter.ts) interactionCreate listener.
+
+The command router will handle some basic error handling for your command, as well as facilitates replying capabilities. Anything returned by the execute function of a command module will be used as the reply to the user
+
+#### Adding new commands
+
+1. Add a new command file under `/src/commands` containing relevant logic. Example files as reference:
+   - [ping](./src/commands/ping.ts) - Very basic command
+   - [userdata](./src/commands/userdata.ts) - Command with argument
+   - [pii](./src/commands/pii.ts) - Command which triggers modal. See [Adding a new modal](#adding-a-new-modal) for context around modals
 
 2. Run `pnpm refreshCommands`
 
+   For Discord to pick up your new command, you need to run the refresh script. Otherwise users won't be able to see and autocomplete the command.
+
    Note that it refreshes it with the credentials currently stored in `.env`, if you for example run the local version of the bot you'll need to make sure to refresh the commands for the production bot as well when you are ready to do so
 
-### Adding a new modal
+### Modals
 
 Modals are Discord native form dialogs that allow you to collect user input in a nice way.
 
-You can add a new modal by creating a new file under /src/router/modals containing relevant logic. Use [piiModal](./src/router/modals/piiModal.ts) as reference
-
-### Adding a new message listener
-
-You can add a new modal by creating a new file under /src/router/messageListeners containing relevant logic. Use [christianServer](./src/router/messageListeners/christianServer.ts) as reference
+You can add a new modal by creating a new file under `/src/modals` containing relevant logic. Use [piiModal](./src/modals/piiModal.ts) as reference
 
 ## Modifying database schema
 
@@ -131,5 +149,3 @@ There are also some helpful scripts for this:
   - Look into linting improvements
     - unnecessary conditionals?
 - Make /pii ephemeral (so only you can see your input and failures)
-- Refactor:
-  - Move all router handling into the event registering approach used by member update, then update the readme docs

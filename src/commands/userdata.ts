@@ -1,5 +1,6 @@
 import { CommandInteraction, SlashCommandBuilder } from "discord.js"
 
+import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
   getUsersWithPokemonTcgpFriendCode,
   getUsersWithUpcomingBirthday,
@@ -8,8 +9,7 @@ import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { createDiscordTimestamp } from "~/lib/helpers/date"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import type { OptInUserFields } from "../../../guildConfigs"
-import type { Command } from "../commandRouter"
+import type { OptInUserFields } from "../../guildConfigs"
 
 interface UserDataTypeOption {
   name: string
@@ -53,21 +53,24 @@ function assertIsValidUserDataField(
   }
 }
 
+const command = new SlashCommandBuilder()
+  .setName("userdata")
+  .setDescription("Lists user data by field")
+  .addStringOption((option) =>
+    option
+      .setName(userDataTypeOptions.name)
+      .setDescription("List user data for field")
+      .setRequired(true)
+      .setChoices(
+        userDataTypeOptions.choices.birthdays,
+        userDataTypeOptions.choices.pokemonTcgp,
+      ),
+  )
+
 export default {
   deferReply: true,
-  data: new SlashCommandBuilder()
-    .setName("userdata")
-    .setDescription("Lists user data by field")
-    .addStringOption((option) =>
-      option
-        .setName(userDataTypeOptions.name)
-        .setDescription("List user data for field")
-        .setRequired(true)
-        .setChoices(
-          userDataTypeOptions.choices.birthdays,
-          userDataTypeOptions.choices.pokemonTcgp,
-        ),
-    ),
+  command,
+  data: { name: command.name },
   execute: async (interaction) => {
     assertHasDefinedProperty(
       interaction,

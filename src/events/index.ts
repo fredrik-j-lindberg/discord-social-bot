@@ -1,27 +1,37 @@
 import { logger } from "~/lib/logger"
 
-import { registerEvent } from "../lib/discord/events/registerEvent"
-import { registerInteractionEvent } from "./interaction"
-import { registerUserUpdatedEvent } from "./memberUpdated"
-import { registerMessageEvent } from "./message"
-import { registerScheduledEvents } from "./scheduledEvent"
+import { registerEventListener } from "../lib/discord/events/registerEvent"
+import { registerInteractionCreateEvent } from "./interactionCreate"
+import { registerMemberUpdateEvent } from "./memberUpdate"
+import { registerMessageCreateEvent } from "./messageCreate"
+import { registerScheduledEventUserAddEvent } from "./scheduledEventUserAdd"
+import { registerScheduledEventUserRemoveEvent } from "./scheduledEventUserRemove"
 
 export const registerEvents = async () => {
-  registerEvent({
+  registerEventListener({
     event: "ready",
-    listener: (client) => {
-      logger.info(`Bot ${client.user.tag} logged in and ready!`)
+    listener: {
+      data: { name: "readyConfirmation" },
+      execute: (client) => {
+        logger.info(`Bot ${client.user.tag} logged in and ready!`)
+      },
     },
   })
-  registerEvent({
+  registerEventListener({
     event: "error",
-    listener: (error) => {
-      logger.info(`Websocket triggered an error event: ${error.message}`)
+    listener: {
+      data: { name: "errorLogger" },
+      execute: (error) => {
+        logger.info(`Websocket triggered an error event: ${error.message}`)
+      },
     },
   })
-  registerInteractionEvent()
-  registerScheduledEvents()
-  registerMessageEvent()
-  await registerUserUpdatedEvent()
+
+  await registerInteractionCreateEvent()
+  await registerScheduledEventUserAddEvent()
+  await registerScheduledEventUserRemoveEvent()
+  await registerMessageCreateEvent()
+  await registerMemberUpdateEvent()
+
   logger.info("Events successfully registered")
 }

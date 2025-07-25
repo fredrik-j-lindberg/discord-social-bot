@@ -1,13 +1,22 @@
+import type { Events } from "discord.js"
 import { ModalBuilder, ModalSubmitInteraction } from "discord.js"
 
+import type { EventListener } from "~/lib/discord/events/registerEvent"
+import {
+  type InteractionExecute,
+  triggerExecutionMappedToInteraction,
+} from "~/lib/discord/interaction"
 import { DoraException } from "~/lib/exceptions/DoraException"
+import { importFolderModules } from "~/lib/helpers/folder"
 import { logger } from "~/lib/logger"
 
-import {
-  importFolderModules,
-  type RouterInteractionExecute,
-  triggerExecutionMappedToInteraction,
-} from "./routerHelper"
+export default {
+  data: { name: "modalSubmit" },
+  execute: (interaction) => {
+    if (!interaction.isModalSubmit()) return
+    return modalRouter(interaction)
+  },
+} satisfies EventListener<Events.InteractionCreate>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ModalData<TModelInput = any> {
@@ -20,7 +29,7 @@ export interface ModalData<TModelInput = any> {
    * Function to run when modal is submitted
    * @returns The reply to the user submitting the modal
    */
-  handleSubmit: RouterInteractionExecute<ModalSubmitInteraction>
+  handleSubmit: InteractionExecute<ModalSubmitInteraction>
   /**
    * Whether or not to defer the reply. Need more than 3 seconds to compose your reply? Then you need to defer
    * More context: https://discordjs.guide/slash-commands/response-methods.html#deferred-responses
@@ -29,7 +38,7 @@ export interface ModalData<TModelInput = any> {
 }
 
 export const getAllModals = async () => {
-  return await importFolderModules<ModalData>("modals")
+  return await importFolderModules<ModalData>(`${process.cwd()}/src/modals`)
 }
 
 let modals: Record<string, ModalData> | undefined
