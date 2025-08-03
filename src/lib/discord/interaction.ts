@@ -1,4 +1,5 @@
 import type {
+  AutocompleteInteraction,
   BaseMessageOptions,
   CommandInteraction,
   InteractionReplyOptions,
@@ -9,6 +10,18 @@ import { DoraUserException } from "../exceptions/DoraUserException"
 
 type ExecuteSupportedInteraction = CommandInteraction | ModalSubmitInteraction
 type ExecuteResult = InteractionReplyOptions | string | undefined
+
+export type InteractionExecute<
+  TInteraction extends ExecuteSupportedInteraction,
+> = (interaction: TInteraction) => Promise<ExecuteResult> | ExecuteResult
+
+interface AutocompleteChoice {
+  name: string
+  value: string
+}
+export type InteractionAutocomplete = (
+  interaction: AutocompleteInteraction,
+) => Promise<AutocompleteChoice[]> | AutocompleteChoice[]
 
 const reply = async ({
   interaction,
@@ -25,10 +38,6 @@ const reply = async ({
   }
   await interaction.reply(replyOptions)
 }
-
-export type InteractionExecute<
-  TInteraction extends ExecuteSupportedInteraction,
-> = (interaction: TInteraction) => Promise<ExecuteResult> | ExecuteResult
 
 interface ExecuteOptions<TInteraction extends ExecuteSupportedInteraction> {
   execute: InteractionExecute<TInteraction>
@@ -50,6 +59,7 @@ export const executeCmdOrModalMappedToInteraction = async <
   }
   try {
     const result = await execute(interaction)
+    console.log("### fredrik: result", result)
     if (result) {
       await reply({
         interaction,

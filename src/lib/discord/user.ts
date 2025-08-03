@@ -8,7 +8,6 @@ export const getMember = ({
 }: {
   guild: Guild
   user: User
-  cache?: boolean
 }): GuildMember | Promise<GuildMember> => {
   try {
     return guild.members.fetch(user.id)

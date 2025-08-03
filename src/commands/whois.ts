@@ -5,9 +5,16 @@ import type { Command } from "~/events/interactionCreate/listeners/commandRouter
 import { getUserData } from "~/lib/database/userData"
 import { getMember } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import { assertHasDefinedProperty } from "~/lib/validation"
+import { createDiscordTimestamp, formatDate } from "~/lib/helpers/date"
+import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
+
+import { getGuildConfigById } from "../../guildConfigs"
+
+const noDataMessage =
+  "No data found. You can ask them to add it via the /pii command!"
 
 const userOptionName = "user"
+const userDataOptionName = "userdata"
 const command = new SlashCommandBuilder()
   .setName("whois")
   .setDescription("Get info about a user")
@@ -17,11 +24,30 @@ const command = new SlashCommandBuilder()
       .setDescription("The user to get info about")
       .setRequired(true),
   )
+  .addStringOption((option) =>
+    option
+      .setName(userDataOptionName)
+      .setDescription("The specific piece of user data to retrieve")
+      .setAutocomplete(true)
+      .setRequired(false),
+  )
 
 export default {
   deferReply: true,
   command,
   data: { name: command.name },
+  autocomplete: (interaction) => {
+    assertHasDefinedProperty(
+      interaction,
+      "guild",
+      "Whois autocomplete issued without associated guild",
+    )
+    const guildConfig = getGuildConfigById(interaction.guild.id)
+    return guildConfig.optInUserFields.map((field) => ({
+      name: field,
+      value: field,
+    }))
+  },
   execute: async (interaction) => {
     assertHasDefinedProperty(
       interaction,
@@ -40,11 +66,47 @@ export default {
       userId: user.id,
       guildId: interaction.guild.id,
     })
-    const embed = getUserDataEmbed({
-      guildId: interaction.guild.id,
-      member,
-      userData,
-    })
-    return { embeds: [embed] }
+
+    const specificField = interaction.options.getString(userDataOptionName)
+    // If we don't have a specific field requested, return the default embed
+    if (!specificField) {
+      const embed = getUserDataEmbed({
+        guildId: interaction.guild.id,
+        member,
+        userData,
+      })
+      return { embeds: [embed] }
+    }
+
+    const validChoices = getGuildConfigById(
+      interaction.guild.id,
+    ).optInUserFields
+
+    if (!isOneOf(specificField, validChoices)) {
+      throw new DoraUserException(
+        `Invalid field for ${userDataOptionName} specified ('${specificField}'). Valid fields are: ${validChoices.join(
+          ", ",
+        )}`,
+      )
+    }
+
+    if (!userData) {
+      return noDataMessage
+    }
+
+    // If the field should have special handling, add an if here. Otherwise it defaults to the value below
+    if (specificField === "joinedServer") {
+      return createDiscordTimestamp(member.joinedTimestamp) || noDataMessage
+    }
+    if (specificField === "accountCreation") {
+      return (
+        createDiscordTimestamp(member.user.createdTimestamp) || noDataMessage
+      )
+    }
+    if (specificField === "birthday") {
+      return `${formatDate(userData[specificField])}, ${createDiscordTimestamp(userData.nextBirthday)}`
+    }
+
+    return userData[specificField] || noDataMessage
   },
 } satisfies Command
