@@ -7,12 +7,15 @@ import type {
 
 import { DoraUserException } from "../exceptions/DoraUserException"
 
+type ExecuteSupportedInteraction = CommandInteraction | ModalSubmitInteraction
+type ExecuteResult = InteractionReplyOptions | string | undefined
+
 const reply = async ({
   interaction,
   deferReply,
   replyOptions,
 }: {
-  interaction: InteractionType
+  interaction: ExecuteSupportedInteraction
   deferReply: boolean
   replyOptions: BaseMessageOptions | string
 }) => {
@@ -23,28 +26,25 @@ const reply = async ({
   await interaction.reply(replyOptions)
 }
 
-type InteractionType = CommandInteraction | ModalSubmitInteraction
-type ExecuteResult = InteractionReplyOptions | string | undefined
+export type InteractionExecute<
+  TInteraction extends ExecuteSupportedInteraction,
+> = (interaction: TInteraction) => Promise<ExecuteResult> | ExecuteResult
 
-export type InteractionExecute<TInteraction extends InteractionType> = (
-  interaction: TInteraction,
-) => Promise<ExecuteResult> | ExecuteResult
-
-interface Data<TInteraction extends InteractionType> {
+interface ExecuteOptions<TInteraction extends ExecuteSupportedInteraction> {
   execute: InteractionExecute<TInteraction>
   deferReply: boolean
   interaction: TInteraction
   context: "command" | "modal"
 }
 
-export const triggerExecutionMappedToInteraction = async <
-  TInteraction extends InteractionType,
+export const executeCmdOrModalMappedToInteraction = async <
+  TInteraction extends ExecuteSupportedInteraction,
 >({
   execute,
   deferReply,
   interaction,
   context,
-}: Data<TInteraction>) => {
+}: ExecuteOptions<TInteraction>) => {
   if (deferReply) {
     await interaction.deferReply()
   }

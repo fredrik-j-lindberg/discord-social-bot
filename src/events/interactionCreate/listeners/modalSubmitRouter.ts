@@ -3,8 +3,8 @@ import { ModalBuilder, ModalSubmitInteraction } from "discord.js"
 
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 import {
+  executeCmdOrModalMappedToInteraction,
   type InteractionExecute,
-  triggerExecutionMappedToInteraction,
 } from "~/lib/discord/interaction"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { importFolderModules } from "~/lib/helpers/folder"
@@ -64,7 +64,7 @@ export const modalRouter = async (interaction: ModalSubmitInteraction) => {
     })
   }
 
-  await triggerExecutionMappedToInteraction({
+  await executeCmdOrModalMappedToInteraction({
     execute: modal.handleSubmit,
     deferReply: modal.deferReply,
     interaction,
