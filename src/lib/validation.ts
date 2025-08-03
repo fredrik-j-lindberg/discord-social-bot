@@ -81,3 +81,8 @@ export function assertIsBefore(
     })
   }
 }
+
+export const isOneOf = <T extends string>(
+  value: string,
+  validValues: T[],
+): value is T => validValues.includes(value as T)

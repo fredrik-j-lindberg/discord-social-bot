@@ -7,7 +7,7 @@ import {
 } from "~/lib/database/userData"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { createDiscordTimestamp } from "~/lib/helpers/date"
-import { assertHasDefinedProperty } from "~/lib/validation"
+import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
 import type { OptInUserFields } from "../../guildConfigs"
 
@@ -29,29 +29,9 @@ const userDataTypeOptions = {
     },
   },
 } satisfies UserDataTypeOption
-
-function assertIsValidUserDataField(
-  field: string | null,
-): asserts field is OptInUserFields {
-  if (!field) {
-    throw new DoraUserException(
-      `Required option '${userDataTypeOptions.name}' is missing`,
-    )
-  }
-
-  const validFieldChoices = Object.values(userDataTypeOptions.choices).map(
-    (choice) => choice.value,
-  )
-  if (
-    validFieldChoices.every((validFieldChoice) => validFieldChoice !== field)
-  ) {
-    throw new DoraUserException(
-      `Invalid field '${field}' provided. Valid fields are: ${validFieldChoices.join(
-        ", ",
-      )}`,
-    )
-  }
-}
+const validFieldChoices = Object.values(userDataTypeOptions.choices).map(
+  (choice) => choice.value,
+)
 
 const command = new SlashCommandBuilder()
   .setName("userdata")
@@ -79,7 +59,19 @@ export default {
     )
 
     const field = interaction.options.getString(userDataTypeOptions.name)
-    assertIsValidUserDataField(field)
+    if (!field) {
+      throw new DoraUserException(
+        `Required option '${userDataTypeOptions.name}' is missing`,
+      )
+    }
+
+    if (!isOneOf(field, validFieldChoices)) {
+      throw new DoraUserException(
+        `Invalid field '${field}' provided. Valid fields are: ${validFieldChoices.join(
+          ", ",
+        )}`,
+      )
+    }
 
     return await handleFieldChoice(interaction, field)
   },
