@@ -19,6 +19,11 @@ export interface ModalFieldConfig {
   placeholder?: string
   validation: ZodType
   isRequired: boolean
+  /**
+   * Discord native limitation on the modal field length, to give the user an indication of how long of a string they can enter
+   * This should be accompanied by a validation schema that enforces the same length
+   */
+  maxLength?: number
 }
 
 export interface ModalFieldConfigsMap {
@@ -118,6 +123,7 @@ export const createModal = <TFieldConfigs extends ModalFieldConfig[]>({
       .setLabel(fieldConfig.label)
       .setValue(fieldConfig.getPrefilledValue(modalMetaData) || "")
       .setStyle(fieldConfig.style)
+      .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
       .setPlaceholder(fieldConfig.placeholder || "")
       .setRequired(fieldConfig.isRequired),
   )

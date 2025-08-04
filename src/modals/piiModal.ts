@@ -88,6 +88,7 @@ const piiFieldConfigsMap = {
     placeholder: "+46712345673",
     style: TextInputStyle.Short,
     validation: z.string().max(15).optional().nullable(),
+    maxLength: 15,
     isRequired: false,
   },
   email: {
@@ -113,7 +114,8 @@ const piiFieldConfigsMap = {
     getPrefilledValue: (userData) => userData?.dietaryPreferences,
     style: TextInputStyle.Short,
     placeholder: "Gluten-free, Vegan, No pork",
-    validation: z.string().max(30).optional().nullable(),
+    validation: z.string().max(50).optional().nullable(),
+    maxLength: 50,
     isRequired: false,
   },
 } as const satisfies Record<string, PiiModalFieldConfig>
