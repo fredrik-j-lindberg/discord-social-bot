@@ -86,38 +86,48 @@ const handleFieldChoice = async (
   field: OptInUserFields,
 ) => {
   if (field === "birthday") {
-    const membersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
-      guildId: interaction.guild.id,
-    })
-    if (membersWithUpcomingBirthday.length === 0) {
-      throw new DoraUserException(
-        "No upcoming birthdays found, add yours via the /pii modal",
-      )
-    }
-    const content = membersWithUpcomingBirthday
-      .map(({ username, displayName, nextBirthday }) => {
-        return `**${displayName || username}**: ${createDiscordTimestamp(nextBirthday) || "-"}`
-      })
-      .join("\n")
-    return content
+    return await handleBirthdayFieldChoice(interaction)
   }
 
   if (field === "pokemonTcgpFriendCode") {
-    const membersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
-      guildId: interaction.guild.id,
-    })
-    if (membersWithTcgpAccount.length === 0) {
-      throw new DoraUserException(
-        "No users with TCGP friend code found, add yours via the /pii modal",
-      )
-    }
-    const content = membersWithTcgpAccount
-      .map(({ username, displayName, pokemonTcgpFriendCode }) => {
-        return `**${displayName || username}**: ${pokemonTcgpFriendCode}`
-      })
-      .join("\n")
-    return content
+    return await handlePokemonTcgpFieldChoice(interaction)
   }
 
   throw new Error(`Was unable to handle userdata field: ${field}`)
+}
+
+const handleBirthdayFieldChoice = async (
+  interaction: CommandInteractionWithGuild,
+): Promise<string> => {
+  const membersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
+    guildId: interaction.guild.id,
+  })
+  if (membersWithUpcomingBirthday.length === 0) {
+    throw new DoraUserException(
+      "No upcoming birthdays found, add yours via the /pii modal",
+    )
+  }
+  return membersWithUpcomingBirthday
+    .map(({ username, displayName, nextBirthday }) => {
+      return `**${displayName || username}**: ${createDiscordTimestamp(nextBirthday) || "-"}`
+    })
+    .join("\n")
+}
+
+const handlePokemonTcgpFieldChoice = async (
+  interaction: CommandInteractionWithGuild,
+): Promise<string> => {
+  const membersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
+    guildId: interaction.guild.id,
+  })
+  if (membersWithTcgpAccount.length === 0) {
+    throw new DoraUserException(
+      "No users with TCGP friend code found, add yours via the /pii modal",
+    )
+  }
+  return membersWithTcgpAccount
+    .map(({ username, displayName, pokemonTcgpFriendCode }) => {
+      return `**${displayName || username}**: ${pokemonTcgpFriendCode}`
+    })
+    .join("\n")
 }
