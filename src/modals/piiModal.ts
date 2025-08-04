@@ -87,7 +87,7 @@ const piiFieldConfigsMap = {
     getPrefilledValue: (userData) => userData?.phoneNumber,
     placeholder: "+46712345673",
     style: TextInputStyle.Short,
-    validation: z.string().max(10).optional().nullable(),
+    validation: z.string().max(15).optional().nullable(),
     isRequired: false,
   },
   email: {
