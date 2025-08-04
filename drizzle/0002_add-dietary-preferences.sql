@@ -1,0 +1,1 @@
+ALTER TABLE "member_data" ADD COLUMN "dietaryPreferences" varchar(255);

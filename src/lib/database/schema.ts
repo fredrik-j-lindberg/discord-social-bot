@@ -23,6 +23,7 @@ export const usersTable = pgTable(
     height: integer(), // Legacy, just kept in case we want to re-implement it
     switchFriendCode: varchar({ length: 255 }),
     pokemonTcgpFriendCode: varchar({ length: 255 }),
+    dietaryPreferences: varchar({ length: 255 }),
   },
   (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
 )

@@ -107,6 +107,15 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
+  dietaryPreferences: {
+    fieldName: "dietaryPreferences",
+    label: "Dietary preferences",
+    getPrefilledValue: (userData) => userData?.dietaryPreferences,
+    style: TextInputStyle.Short,
+    placeholder: "Gluten-free, Vegan, No pork",
+    validation: z.string().max(30).optional().nullable(),
+    isRequired: false,
+  },
 } as const satisfies Record<string, PiiModalFieldConfig>
 
 const piiFieldConfigs = Object.values(piiFieldConfigsMap)
@@ -167,6 +176,7 @@ export default {
         email: validatedInput.email,
         switchFriendCode: validatedInput.switchFriendCode,
         pokemonTcgpFriendCode: validatedInput.pokemonTcgpFriendCode,
+        dietaryPreferences: validatedInput.dietaryPreferences,
       },
     })
     return "Your user data was submitted successfully!"

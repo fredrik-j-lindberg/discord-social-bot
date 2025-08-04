@@ -29,8 +29,9 @@ const devGuildConfigs: GuildConfigs = {
     optInUserFields: [
       "birthday",
       "firstName",
-      "switchFriendCode",
-      "pokemonTcgpFriendCode",
+      "phoneNumber",
+      "email",
+      "dietaryPreferences",
       "joinedServer",
       "accountCreation",
     ],

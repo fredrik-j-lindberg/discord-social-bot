@@ -58,6 +58,13 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
+    dietaryPreferences: [
+      {
+        name: "Dietary Preferences",
+        value: userData?.dietaryPreferences || "-",
+        inline: true,
+      },
+    ],
     joinedServer: [
       {
         name: "Joined server",
