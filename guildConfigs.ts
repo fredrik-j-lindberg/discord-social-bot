@@ -46,7 +46,14 @@ export const prodGuildConfigs: GuildConfigs = {
   // Climbing (Dora the Explorer)
   "1193809867232772126": {
     guildId: "1193809867232772126",
-    optInUserFields: ["birthday", "joinedServer", "accountCreation"],
+    optInUserFields: [
+      "birthday",
+      "phoneNumber",
+      "email",
+      "dietaryPreferences",
+      "joinedServer",
+      "accountCreation",
+    ],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
       roleId: "1308163163149307955",
