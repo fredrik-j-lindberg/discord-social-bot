@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js"
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
@@ -46,6 +46,12 @@ const command = new SlashCommandBuilder()
         userDataTypeOptions.choices.pokemonTcgp,
       ),
   )
+  .addRoleOption((option) =>
+    option
+      .setName("role")
+      .setDescription("Optionally filter by role")
+      .setRequired(false),
+  )
 
 export default {
   deferReply: true,
@@ -73,32 +79,52 @@ export default {
       )
     }
 
-    return await handleFieldChoice(interaction, field)
+    return await handleFieldChoice({ interaction, field })
   },
 } satisfies Command
 
-type CommandInteractionWithGuild = Omit<CommandInteraction, "guild"> & {
+type CommandInteractionWithGuild = Omit<
+  ChatInputCommandInteraction,
+  "guild"
+> & {
   guild: { id: string }
 }
 
-const handleFieldChoice = async (
-  interaction: CommandInteractionWithGuild,
-  field: OptInUserFields,
-) => {
+const handleFieldChoice = async ({
+  interaction,
+  field,
+}: {
+  interaction: CommandInteractionWithGuild
+  field: OptInUserFields
+  role?: { id: string } | null
+}) => {
+  const role = interaction.options.getRole("role")
   if (field === "birthday") {
-    return await handleBirthdayFieldChoice(interaction)
+    if (role) {
+      throw new DoraUserException(
+        "Role filter is not yet supported for the birthday field.",
+      )
+    }
+    return await handleBirthdayFieldChoice({ interaction })
   }
 
   if (field === "pokemonTcgpFriendCode") {
-    return await handlePokemonTcgpFieldChoice(interaction)
+    if (role) {
+      throw new DoraUserException(
+        "Role filter is not yet supported for the pokemonTcgp field.",
+      )
+    }
+    return await handlePokemonTcgpFieldChoice({ interaction })
   }
 
   throw new Error(`Was unable to handle userdata field: ${field}`)
 }
 
-const handleBirthdayFieldChoice = async (
-  interaction: CommandInteractionWithGuild,
-): Promise<string> => {
+const handleBirthdayFieldChoice = async ({
+  interaction,
+}: {
+  interaction: CommandInteractionWithGuild
+}): Promise<string> => {
   const membersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
     guildId: interaction.guild.id,
   })
@@ -114,9 +140,11 @@ const handleBirthdayFieldChoice = async (
     .join("\n")
 }
 
-const handlePokemonTcgpFieldChoice = async (
-  interaction: CommandInteractionWithGuild,
-): Promise<string> => {
+const handlePokemonTcgpFieldChoice = async ({
+  interaction,
+}: {
+  interaction: CommandInteractionWithGuild
+}): Promise<string> => {
   const membersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
     guildId: interaction.guild.id,
   })
