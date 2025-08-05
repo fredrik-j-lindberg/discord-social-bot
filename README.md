@@ -140,6 +140,9 @@ There are also some helpful scripts for this:
 ## TODO
 
 - Feats:
+  - Add image scraping capabilities (scraping a google photos album)
+  - Add mcp capabilities (being able to ask the bot for a specific piece of user info etc)
+    - Note that as long as we use an API for the LLM we need to make this opt in
   - Guild config improvements
     - Move guildconfigs to database?
     - Make it configurable via commands
@@ -148,3 +151,4 @@ There are also some helpful scripts for this:
   - Look into linting improvements
     - unnecessary conditionals?
 - Make /pii ephemeral (so only you can see your input and failures)
+- Use autocomplete handling in /userdata (similar to /whois) to make the options guild-specific

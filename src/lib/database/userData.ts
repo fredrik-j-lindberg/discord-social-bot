@@ -160,3 +160,22 @@ export const getUsersWithPokemonTcgpFriendCode = async ({
 
   return selectedUserDataRecords.map(mapSelectedUserData)
 }
+
+export const getUsersWithDietaryPreferences = async ({
+  guildId,
+}: {
+  guildId: string
+}): Promise<UserData[]> => {
+  const selectedUserDataRecords = await db
+    .select()
+    .from(usersTable)
+    .where(
+      and(
+        eq(usersTable.guildId, guildId),
+        isNotNull(usersTable.dietaryPreferences),
+      ),
+    )
+    .limit(50)
+
+  return selectedUserDataRecords.map(mapSelectedUserData)
+}

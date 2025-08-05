@@ -1,10 +1,16 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
+import {
+  ChatInputCommandInteraction,
+  Guild,
+  SlashCommandBuilder,
+} from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
+  getUsersWithDietaryPreferences,
   getUsersWithPokemonTcgpFriendCode,
   getUsersWithUpcomingBirthday,
 } from "~/lib/database/userData"
+import { getMembersInRole } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { createDiscordTimestamp } from "~/lib/helpers/date"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
@@ -27,6 +33,10 @@ const userDataTypeOptions = {
       name: "Pokemon TCGP Friend Code",
       value: "pokemonTcgpFriendCode",
     },
+    dietaryPreferences: {
+      name: "Dietary Preferences",
+      value: "dietaryPreferences",
+    },
   },
 } satisfies UserDataTypeOption
 const validFieldChoices = Object.values(userDataTypeOptions.choices).map(
@@ -44,6 +54,7 @@ const command = new SlashCommandBuilder()
       .setChoices(
         userDataTypeOptions.choices.birthdays,
         userDataTypeOptions.choices.pokemonTcgp,
+        userDataTypeOptions.choices.dietaryPreferences,
       ),
   )
   .addRoleOption((option) =>
@@ -87,7 +98,7 @@ type CommandInteractionWithGuild = Omit<
   ChatInputCommandInteraction,
   "guild"
 > & {
-  guild: { id: string }
+  guild: NonNullable<ChatInputCommandInteraction["guild"]>
 }
 
 const handleFieldChoice = async ({
@@ -117,7 +128,13 @@ const handleFieldChoice = async ({
     return await handlePokemonTcgpFieldChoice({ interaction })
   }
 
-  throw new Error(`Was unable to handle userdata field: ${field}`)
+  if (field === "dietaryPreferences") {
+    return await handleDietaryPreferencesFieldChoice({ interaction, role })
+  }
+
+  throw new Error(
+    `The '${field}' field does not have an aggregate view yet, ask the Dora team to implement it!`,
+  )
 }
 
 const handleBirthdayFieldChoice = async ({
@@ -125,15 +142,15 @@ const handleBirthdayFieldChoice = async ({
 }: {
   interaction: CommandInteractionWithGuild
 }): Promise<string> => {
-  const membersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
+  const usersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
     guildId: interaction.guild.id,
   })
-  if (membersWithUpcomingBirthday.length === 0) {
+  if (usersWithUpcomingBirthday.length === 0) {
     throw new DoraUserException(
       "No upcoming birthdays found, add yours via the /pii modal",
     )
   }
-  return membersWithUpcomingBirthday
+  return usersWithUpcomingBirthday
     .map(({ username, displayName, nextBirthday }) => {
       return `**${displayName || username}**: ${createDiscordTimestamp(nextBirthday) || "-"}`
     })
@@ -145,17 +162,74 @@ const handlePokemonTcgpFieldChoice = async ({
 }: {
   interaction: CommandInteractionWithGuild
 }): Promise<string> => {
-  const membersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
+  const usersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
     guildId: interaction.guild.id,
   })
-  if (membersWithTcgpAccount.length === 0) {
+  if (usersWithTcgpAccount.length === 0) {
     throw new DoraUserException(
       "No users with TCGP friend code found, add yours via the /pii modal",
     )
   }
-  return membersWithTcgpAccount
+  return usersWithTcgpAccount
     .map(({ username, displayName, pokemonTcgpFriendCode }) => {
       return `**${displayName || username}**: ${pokemonTcgpFriendCode}`
+    })
+    .join("\n")
+}
+
+const optionallyFilterUsersByRole = async <TUser extends { userId: string }>({
+  users,
+  guild,
+  roleId,
+}: {
+  users: TUser[]
+  guild: Guild
+  roleId?: string | null
+}): Promise<TUser[]> => {
+  if (!roleId) return users
+
+  const membersInRole = await getMembersInRole({
+    guild,
+    roleId,
+  })
+  if (!membersInRole) {
+    throw new DoraUserException(
+      `Failed to fetch members in role with id ${roleId}`,
+    )
+  }
+
+  return users.filter((user) => {
+    const member = membersInRole.get(user.userId)
+    return Boolean(member)
+  })
+}
+
+const handleDietaryPreferencesFieldChoice = async ({
+  interaction,
+  role,
+}: {
+  interaction: CommandInteractionWithGuild
+  /** Role to filter on */
+  role: { id: string } | null
+}): Promise<string> => {
+  const usersWithDietaryPreferences = await getUsersWithDietaryPreferences({
+    guildId: interaction.guild.id,
+  })
+
+  const filteredMembers = await optionallyFilterUsersByRole({
+    users: usersWithDietaryPreferences,
+    guild: interaction.guild,
+    roleId: role?.id,
+  })
+
+  if (filteredMembers.length === 0) {
+    throw new DoraUserException(
+      "No users with dietary preferences found, they can be added via the /pii modal",
+    )
+  }
+  return filteredMembers
+    .map(({ username, displayName, dietaryPreferences }) => {
+      return `**${displayName || username}**: ${dietaryPreferences}`
     })
     .join("\n")
 }
