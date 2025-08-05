@@ -53,5 +53,5 @@ export const createDiscordTimestamp = (
     timestampOrDate instanceof Date
       ? timestampOrDate.getTime()
       : timestampOrDate
-  return timestamp && `<t:${Math.round(timestamp / 1000)}:R>`
+  return timestamp ? `<t:${Math.round(timestamp / 1000)}:R>` : undefined
 }

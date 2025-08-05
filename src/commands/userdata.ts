@@ -5,6 +5,7 @@ import {
 } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
+import type { UserData } from "~/lib/database/schema"
 import {
   getUsersWithDietaryPreferences,
   getUsersWithPokemonTcgpFriendCode,
@@ -137,6 +138,23 @@ const handleFieldChoice = async ({
   )
 }
 
+const composeUserdataList = ({
+  title,
+  usersData,
+  valueSetter,
+}: {
+  title: string
+  usersData: UserData[]
+  valueSetter: (user: UserData) => string | null | undefined
+}) => {
+  const list = usersData
+    .map((user) => {
+      return `- **${user.displayName || user.username}**: ${valueSetter(user) || "-"}`
+    })
+    .join("\n")
+  return `*${title}*\n${list}`
+}
+
 const handleBirthdayFieldChoice = async ({
   interaction,
 }: {
@@ -150,11 +168,11 @@ const handleBirthdayFieldChoice = async ({
       "No upcoming birthdays found, add yours via the /pii modal",
     )
   }
-  return usersWithUpcomingBirthday
-    .map(({ username, displayName, nextBirthday }) => {
-      return `**${displayName || username}**: ${createDiscordTimestamp(nextBirthday) || "-"}`
-    })
-    .join("\n")
+  return composeUserdataList({
+    title: "Upcoming Birthdays",
+    usersData: usersWithUpcomingBirthday,
+    valueSetter: (user) => createDiscordTimestamp(user.nextBirthday),
+  })
 }
 
 const handlePokemonTcgpFieldChoice = async ({
@@ -170,11 +188,11 @@ const handlePokemonTcgpFieldChoice = async ({
       "No users with TCGP friend code found, add yours via the /pii modal",
     )
   }
-  return usersWithTcgpAccount
-    .map(({ username, displayName, pokemonTcgpFriendCode }) => {
-      return `**${displayName || username}**: ${pokemonTcgpFriendCode}`
-    })
-    .join("\n")
+  return composeUserdataList({
+    title: "Upcoming Birthdays",
+    usersData: usersWithTcgpAccount,
+    valueSetter: (user) => user.pokemonTcgpFriendCode,
+  })
 }
 
 const optionallyFilterUsersByRole = async <TUser extends { userId: string }>({
@@ -210,7 +228,7 @@ const handleDietaryPreferencesFieldChoice = async ({
 }: {
   interaction: CommandInteractionWithGuild
   /** Role to filter on */
-  role: { id: string } | null
+  role: { id: string; name: string } | null
 }): Promise<string> => {
   const usersWithDietaryPreferences = await getUsersWithDietaryPreferences({
     guildId: interaction.guild.id,
@@ -227,9 +245,11 @@ const handleDietaryPreferencesFieldChoice = async ({
       "No users with dietary preferences found, they can be added via the /pii modal",
     )
   }
-  return filteredMembers
-    .map(({ username, displayName, dietaryPreferences }) => {
-      return `**${displayName || username}**: ${dietaryPreferences}`
-    })
-    .join("\n")
+  return composeUserdataList({
+    title: role
+      ? `Dietary preferences in role '${role.name}'`
+      : "Dietary preferences",
+    usersData: filteredMembers,
+    valueSetter: (user) => user.dietaryPreferences,
+  })
 }
