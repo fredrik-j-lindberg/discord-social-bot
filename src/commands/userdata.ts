@@ -101,21 +101,11 @@ const handleFieldChoice = async ({
 }) => {
   const role = interaction.options.getRole(roleOptionName)
   if (field === "birthday") {
-    if (role) {
-      throw new DoraUserException(
-        "Role filter is not yet supported for the birthday field.",
-      )
-    }
-    return await handleBirthdayFieldChoice({ interaction })
+    return await handleBirthdayFieldChoice({ interaction, role })
   }
 
   if (field === "pokemonTcgpFriendCode") {
-    if (role) {
-      throw new DoraUserException(
-        "Role filter is not yet supported for the pokemonTcgp field.",
-      )
-    }
-    return await handlePokemonTcgpFieldChoice({ interaction })
+    return await handlePokemonTcgpFieldChoice({ interaction, role })
   }
 
   if (field === "dietaryPreferences") {
@@ -152,12 +142,28 @@ const composeUserdataList = ({
 
 const handleBirthdayFieldChoice = async ({
   interaction,
+  role,
 }: {
   interaction: CommandInteractionWithGuild
+  /** Role to filter on */
+  role: { id: string; name: string } | null
 }): Promise<string> => {
+  const membersInRole =
+    role &&
+    (await getMembersInRole({
+      guild: interaction.guild,
+      roleId: role.id,
+    }))
+
+  if (role && !membersInRole?.size) {
+    throw new DoraUserException(`No users found in role '${role.name}'`)
+  }
+
   const usersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
     guildId: interaction.guild.id,
+    userIds: membersInRole?.map((user) => user.id),
   })
+
   return composeUserdataList({
     title: "Upcoming Birthdays",
     usersData: usersWithUpcomingBirthday,
@@ -167,15 +173,25 @@ const handleBirthdayFieldChoice = async ({
 
 const handlePokemonTcgpFieldChoice = async ({
   interaction,
+  role,
 }: {
   interaction: CommandInteractionWithGuild
+  /** Role to filter on */
+  role: { id: string; name: string } | null
 }): Promise<string> => {
   const usersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
     guildId: interaction.guild.id,
   })
+
+  const filteredMembers = await optionallyFilterUsersByRole({
+    users: usersWithTcgpAccount,
+    guild: interaction.guild,
+    roleId: role?.id,
+  })
+
   return composeUserdataList({
     title: "Pokemon TCGP Friend Codes",
-    usersData: usersWithTcgpAccount,
+    usersData: filteredMembers,
     valueSetter: (user) => user.pokemonTcgpFriendCode,
   })
 }
@@ -196,9 +212,7 @@ const optionallyFilterUsersByRole = async <TUser extends { userId: string }>({
     roleId,
   })
   if (!membersInRole) {
-    throw new DoraUserException(
-      `Failed to fetch members in role with id ${roleId}`,
-    )
+    throw new DoraUserException(`No users found in role '${roleId}'`)
   }
 
   return users.filter((user) => {

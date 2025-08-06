@@ -1,4 +1,4 @@
-import { and, eq, getTableColumns, isNotNull, sql } from "drizzle-orm"
+import { and, eq, getTableColumns, inArray, isNotNull, sql } from "drizzle-orm"
 
 import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
@@ -126,8 +126,14 @@ export const getUsersWithBirthdayTodayForAllGuilds = async (): Promise<
 
 export const getUsersWithUpcomingBirthday = async ({
   guildId,
+  userIds,
 }: {
   guildId: string
+  /**
+   * Pass if it should filter based on these userIds
+   * Can be useful if you for example have fetched all users in a role and want to fetch only for those users
+   */
+  userIds?: string[]
 }): Promise<UserData[]> => {
   const selectedUserDataRecords = await db
     .select({
@@ -135,7 +141,13 @@ export const getUsersWithUpcomingBirthday = async ({
       nextBirthday: calculateNextBirthday(),
     })
     .from(usersTable)
-    .where(and(eq(usersTable.guildId, guildId), isNotNull(usersTable.birthday)))
+    .where(
+      and(
+        eq(usersTable.guildId, guildId),
+        isNotNull(usersTable.birthday),
+        userIds ? inArray(usersTable.userId, userIds) : undefined,
+      ),
+    )
     .orderBy(sql`next_birthday`) // Order by the calculated next birthday
     .limit(10) // Limit result to the 10 nearest birthdays
 

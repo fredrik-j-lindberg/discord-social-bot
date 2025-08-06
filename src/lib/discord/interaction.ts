@@ -59,7 +59,6 @@ export const executeCmdOrModalMappedToInteraction = async <
   }
   try {
     const result = await execute(interaction)
-    console.log("### fredrik: result", result)
     if (result) {
       await reply({
         interaction,
