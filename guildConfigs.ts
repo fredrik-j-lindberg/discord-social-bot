@@ -3,6 +3,11 @@ import { DoraException } from "~/lib/exceptions/DoraException"
 import { logger } from "~/lib/logger"
 
 export const SUPPORTED_USER_FIELDS = {
+  // Discord native values, recommended for all guilds
+  joinedServer: "joinedServer",
+  accountCreation: "accountCreation",
+
+  // These require user input via the /pii modal. The modal support a max of 5 fields, so each guild should not have more than that
   birthday: "birthday",
   firstName: "firstName",
   phoneNumber: "phoneNumber",
@@ -10,8 +15,6 @@ export const SUPPORTED_USER_FIELDS = {
   dietaryPreferences: "dietaryPreferences",
   switchFriendCode: "switchFriendCode",
   pokemonTcgpFriendCode: "pokemonTcgpFriendCode",
-  joinedServer: "joinedServer",
-  accountCreation: "accountCreation",
 } as const
 export type DoraUserFields =
   (typeof SUPPORTED_USER_FIELDS)[keyof typeof SUPPORTED_USER_FIELDS]

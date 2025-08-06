@@ -6,8 +6,12 @@ export const registerMessageCreateEvent = () => {
   return registerEventListeners({
     event: Events.MessageCreate,
     listenerFolder: `${import.meta.dirname}/listeners`,
-    metadataSelector: (message) => ({
-      user: message.interactionMetadata?.user.tag,
-    }),
+    metadataSelector: (message) => {
+      return {
+        user: message.author.username,
+        contentStart: `${message.content.substring(0, 5)}...`,
+        channel: message.channelId,
+      }
+    },
   })
 }
