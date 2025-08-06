@@ -3,7 +3,7 @@ import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 import type { UserData } from "~/lib/database/schema"
 import { createDiscordTimestamp } from "~/lib/helpers/date"
 
-import { getGuildConfigById, type OptInUserFields } from "../../guildConfigs"
+import { type DoraUserFields, getGuildConfigById } from "../../guildConfigs"
 
 const getFieldsRelevantForGuilds = ({
   guildId,
@@ -14,7 +14,7 @@ const getFieldsRelevantForGuilds = ({
   userData?: UserData
   member: GuildMember
 }): APIEmbedField[] => {
-  const optInEmbedFields: Record<OptInUserFields, APIEmbedField[]> = {
+  const optInEmbedFields: Record<DoraUserFields, APIEmbedField[]> = {
     firstName: [
       {
         name: "First name",
@@ -83,8 +83,9 @@ const getFieldsRelevantForGuilds = ({
   const guildConfig = getGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)
     .map(([key, value]) => {
-      if (!guildConfig.optInUserFields.includes(key as OptInUserFields))
+      if (!guildConfig.optInUserFields.includes(key as DoraUserFields)) {
         return null
+      }
       return value
     })
     .filter(Boolean) as APIEmbedField[][]

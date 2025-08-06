@@ -13,15 +13,15 @@ import {
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import { getGuildConfigById } from "../../guildConfigs"
+import { getGuildConfigById, SUPPORTED_USER_FIELDS } from "../../guildConfigs"
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
   getPrefilledValue: (userData?: UserData) => string | null | undefined
 }
 
 const piiFieldConfigsMap = {
-  firstName: {
-    fieldName: "firstName",
+  [SUPPORTED_USER_FIELDS.firstName]: {
+    fieldName: SUPPORTED_USER_FIELDS.firstName,
     label: "First name",
     getPrefilledValue: (userData) => userData?.firstName || "",
     style: TextInputStyle.Short,
@@ -33,8 +33,8 @@ const piiFieldConfigsMap = {
     placeholder: "John",
     isRequired: false,
   },
-  birthday: {
-    fieldName: "birthday",
+  [SUPPORTED_USER_FIELDS.birthday]: {
+    fieldName: SUPPORTED_USER_FIELDS.birthday,
     label: "Birthday (DD/MM/YYYY)",
     getPrefilledValue: (userData) =>
       formatDate(userData?.birthday, { dateStyle: "short" }),
@@ -48,8 +48,8 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  switchFriendCode: {
-    fieldName: "switchFriendCode",
+  [SUPPORTED_USER_FIELDS.switchFriendCode]: {
+    fieldName: SUPPORTED_USER_FIELDS.switchFriendCode,
     label: "Nintendo Switch friend code",
     getPrefilledValue: (userData) => userData?.switchFriendCode || "",
     style: TextInputStyle.Short,
@@ -61,8 +61,8 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  pokemonTcgpFriendCode: {
-    fieldName: "pokemonTcgpFriendCode",
+  [SUPPORTED_USER_FIELDS.pokemonTcgpFriendCode]: {
+    fieldName: SUPPORTED_USER_FIELDS.pokemonTcgpFriendCode,
     label: "Pokémon TCGP friend code",
     getPrefilledValue: (userData) => userData?.pokemonTcgpFriendCode || "",
     style: TextInputStyle.Short,
@@ -81,8 +81,8 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  phoneNumber: {
-    fieldName: "phoneNumber",
+  [SUPPORTED_USER_FIELDS.phoneNumber]: {
+    fieldName: SUPPORTED_USER_FIELDS.phoneNumber,
     label: "Phone number",
     getPrefilledValue: (userData) => userData?.phoneNumber,
     placeholder: "+46712345673",
@@ -91,8 +91,8 @@ const piiFieldConfigsMap = {
     maxLength: 15,
     isRequired: false,
   },
-  email: {
-    fieldName: "email",
+  [SUPPORTED_USER_FIELDS.email]: {
+    fieldName: SUPPORTED_USER_FIELDS.email,
     label: "Email",
     getPrefilledValue: (userData) => userData?.email,
     style: TextInputStyle.Short,
@@ -108,8 +108,8 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  dietaryPreferences: {
-    fieldName: "dietaryPreferences",
+  [SUPPORTED_USER_FIELDS.dietaryPreferences]: {
+    fieldName: SUPPORTED_USER_FIELDS.dietaryPreferences,
     label: "Dietary preferences",
     getPrefilledValue: (userData) => userData?.dietaryPreferences,
     style: TextInputStyle.Short,
@@ -121,9 +121,6 @@ const piiFieldConfigsMap = {
 } as const satisfies Record<string, PiiModalFieldConfig>
 
 const piiFieldConfigs = Object.values(piiFieldConfigsMap)
-
-export type PiiFieldName = (typeof piiFieldConfigs)[number]["fieldName"]
-
 const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap)
 
 interface CreateModalProps {

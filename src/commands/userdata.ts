@@ -16,51 +16,27 @@ import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { createDiscordTimestamp } from "~/lib/helpers/date"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
-import type { OptInUserFields } from "../../guildConfigs"
+import {
+  type DoraUserFields,
+  getGuildConfigById,
+  SUPPORTED_USER_FIELDS,
+} from "../../guildConfigs"
 
-interface UserDataTypeOption {
-  name: string
-  choices: Record<string, { name: string; value: OptInUserFields }>
-}
-
-const userDataTypeOptions = {
-  name: "field",
-  choices: {
-    birthdays: {
-      name: "Upcoming Birthdays",
-      value: "birthday",
-    },
-    pokemonTcgp: {
-      name: "Pokemon TCGP Friend Code",
-      value: "pokemonTcgpFriendCode",
-    },
-    dietaryPreferences: {
-      name: "Dietary Preferences",
-      value: "dietaryPreferences",
-    },
-  },
-} satisfies UserDataTypeOption
-const validFieldChoices = Object.values(userDataTypeOptions.choices).map(
-  (choice) => choice.value,
-)
-
+const userDataOptionName = "userdata"
+const roleOptionName = "role"
 const command = new SlashCommandBuilder()
   .setName("userdata")
   .setDescription("Lists user data by field")
   .addStringOption((option) =>
     option
-      .setName(userDataTypeOptions.name)
+      .setName(userDataOptionName)
       .setDescription("List user data for field")
       .setRequired(true)
-      .setChoices(
-        userDataTypeOptions.choices.birthdays,
-        userDataTypeOptions.choices.pokemonTcgp,
-        userDataTypeOptions.choices.dietaryPreferences,
-      ),
+      .setAutocomplete(true),
   )
   .addRoleOption((option) =>
     option
-      .setName("role")
+      .setName(roleOptionName)
       .setDescription("Optionally filter by role")
       .setRequired(false),
   )
@@ -69,6 +45,18 @@ export default {
   deferReply: true,
   command,
   data: { name: command.name },
+  autocomplete: (interaction) => {
+    assertHasDefinedProperty(
+      interaction,
+      "guild",
+      "Whois autocomplete issued without associated guild",
+    )
+    const guildConfig = getGuildConfigById(interaction.guild.id)
+    return guildConfig.optInUserFields.map((field) => ({
+      name: field,
+      value: field,
+    }))
+  },
   execute: async (interaction) => {
     assertHasDefinedProperty(
       interaction,
@@ -76,13 +64,14 @@ export default {
       "Command issued without associated guild",
     )
 
-    const field = interaction.options.getString(userDataTypeOptions.name)
+    const field = interaction.options.getString(userDataOptionName)
     if (!field) {
       throw new DoraUserException(
-        `Required option '${userDataTypeOptions.name}' is missing`,
+        `Required option '${userDataOptionName}' is missing`,
       )
     }
 
+    const validFieldChoices = Object.values(SUPPORTED_USER_FIELDS)
     if (!isOneOf(field, validFieldChoices)) {
       throw new DoraUserException(
         `Invalid field '${field}' provided. Valid fields are: ${validFieldChoices.join(
@@ -107,10 +96,10 @@ const handleFieldChoice = async ({
   field,
 }: {
   interaction: CommandInteractionWithGuild
-  field: OptInUserFields
+  field: DoraUserFields
   role?: { id: string } | null
 }) => {
-  const role = interaction.options.getRole("role")
+  const role = interaction.options.getRole(roleOptionName)
   if (field === "birthday") {
     if (role) {
       throw new DoraUserException(
