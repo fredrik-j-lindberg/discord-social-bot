@@ -147,6 +147,12 @@ const composeUserdataList = ({
   usersData: UserData[]
   valueSetter: (user: UserData) => string | null | undefined
 }) => {
+  if (usersData.length === 0) {
+    throw new DoraUserException(
+      "No data found, it can be added via the /pii command",
+    )
+  }
+
   const list = usersData
     .map((user) => {
       return `- **${user.displayName || user.username}**: ${valueSetter(user) || "-"}`
@@ -163,11 +169,6 @@ const handleBirthdayFieldChoice = async ({
   const usersWithUpcomingBirthday = await getUsersWithUpcomingBirthday({
     guildId: interaction.guild.id,
   })
-  if (usersWithUpcomingBirthday.length === 0) {
-    throw new DoraUserException(
-      "No upcoming birthdays found, add yours via the /pii modal",
-    )
-  }
   return composeUserdataList({
     title: "Upcoming Birthdays",
     usersData: usersWithUpcomingBirthday,
@@ -183,13 +184,8 @@ const handlePokemonTcgpFieldChoice = async ({
   const usersWithTcgpAccount = await getUsersWithPokemonTcgpFriendCode({
     guildId: interaction.guild.id,
   })
-  if (usersWithTcgpAccount.length === 0) {
-    throw new DoraUserException(
-      "No users with TCGP friend code found, add yours via the /pii modal",
-    )
-  }
   return composeUserdataList({
-    title: "Upcoming Birthdays",
+    title: "Pokemon TCGP Friend Codes",
     usersData: usersWithTcgpAccount,
     valueSetter: (user) => user.pokemonTcgpFriendCode,
   })
@@ -240,11 +236,6 @@ const handleDietaryPreferencesFieldChoice = async ({
     roleId: role?.id,
   })
 
-  if (filteredMembers.length === 0) {
-    throw new DoraUserException(
-      "No users with dietary preferences found, they can be added via the /pii modal",
-    )
-  }
   return composeUserdataList({
     title: role
       ? `Dietary preferences in role '${role.name}'`
