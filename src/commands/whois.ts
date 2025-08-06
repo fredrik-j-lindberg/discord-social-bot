@@ -104,7 +104,9 @@ export default {
       )
     }
     if (specificField === "birthday") {
-      return `${formatDate(userData[specificField])}, ${createDiscordTimestamp(userData.nextBirthday)}`
+      return userData.birthday
+        ? `${formatDate(userData[specificField])}, ${createDiscordTimestamp(userData.nextBirthday)}`
+        : noDataMessage
     }
 
     return userData[specificField] || noDataMessage
