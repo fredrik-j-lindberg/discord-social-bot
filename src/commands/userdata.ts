@@ -112,7 +112,7 @@ const handleFieldChoice = async ({
     return await handleDietaryPreferencesFieldChoice({ interaction, role })
   }
 
-  throw new Error(
+  throw new DoraUserException(
     `The '${field}' field does not have an aggregate view yet, ask the Dora team to implement it!`,
   )
 }
