@@ -40,7 +40,7 @@ const remindOfScheduledEvent = async ({
   const shouldRemind = extractShouldRemindFromEventDescription(scheduledEvent)
   assertIsTruthy(
     shouldRemind,
-    "No shouldRemind flag in event description was not found or it was set to false",
+    "No shouldRemind flag in event description or it was set to false",
     DoraException.Severity.Info,
   )
 
