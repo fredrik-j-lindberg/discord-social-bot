@@ -19,6 +19,12 @@ export const SUPPORTED_USER_FIELDS = {
 export type DoraUserFields =
   (typeof SUPPORTED_USER_FIELDS)[keyof typeof SUPPORTED_USER_FIELDS]
 
+export interface PhotoAlbum {
+  /** Name of the album */
+  name: string
+  /** URL to the album */
+  url: string
+}
 export interface GuildConfig {
   guildId: string
   /** Fields that guilds need to opt in to use, as these fields might not be relevant for all guilds */
@@ -28,6 +34,12 @@ export interface GuildConfig {
     channelId?: string
     /** Role to add to users on their birthday */
     roleId?: string
+  }
+  photos?: {
+    /** Channel to send photo-related messages in */
+    channelId: string
+    /** Album urls to monitor */
+    albums: { name: string; url: string }[]
   }
 }
 
@@ -52,6 +64,19 @@ const devGuildConfigs: GuildConfigs = {
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
       roleId: "1276262193515593780",
+    },
+    photos: {
+      channelId: "1216485497501908992", // #dora-test
+      albums: [
+        {
+          name: "Dora",
+          url: "https://photos.app.goo.gl/1Fe96xFY4YCaF3p6A",
+        },
+        {
+          name: "2025-07 Kolmården",
+          url: "https://photos.app.goo.gl/h9RC7LT6hYSoTir68",
+        },
+      ],
     },
   },
 }

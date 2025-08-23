@@ -20,12 +20,15 @@
   "license": "ISC",
   "dependencies": {
     "@t3-oss/env-core": "^0.13.8",
+    "cheerio": "^1.1.2",
     "discord.js": "^14.21.0",
     "drizzle-orm": "^0.44.2",
     "node-schedule": "^2.1.1",
     "pg": "^8.16.3",
     "pino": "^9.7.0",
     "pino-pretty": "^13.0.0",
+    "playwright": "^1.54.2",
+    "puppeteer": "^24.16.0",
     "zod": "^3.25.74"
   },
   "devDependencies": {
