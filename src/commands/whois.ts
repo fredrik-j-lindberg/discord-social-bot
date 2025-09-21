@@ -111,6 +111,9 @@ export default {
     if (specificField === "latestMessageAt") {
       return createDiscordTimestamp(userData[specificField]) || noDataMessage
     }
+    if (specificField === "latestReactionAt") {
+      return createDiscordTimestamp(userData[specificField]) || noDataMessage
+    }
 
     return userData[specificField]?.toString() || noDataMessage
   },

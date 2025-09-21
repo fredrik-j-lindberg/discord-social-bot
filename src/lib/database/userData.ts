@@ -108,7 +108,7 @@ export const setUserData = async ({
   })
 }
 
-/** Creates user or updates user with all the data sent */
+/** Adds a message to the user activity stats */
 export const addUserMessageToStats = async ({
   requiredUserData,
   messageTimestamp,
@@ -138,6 +138,41 @@ export const addUserMessageToStats = async ({
             displayName: requiredUserData.displayName,
             messageCount: sql`${usersTable.messageCount} + 1`,
             latestMessageAt: messageTimestamp,
+          },
+        })
+    },
+  })
+}
+
+/** Adds a reaction to the user activity stats */
+export const addUserReactionToStats = async ({
+  requiredUserData,
+  reactionTimestamp,
+}: {
+  requiredUserData: UserDataPostCoreValues
+  reactionTimestamp: Date
+}): Promise<void> => {
+  const insertData = {
+    ...requiredUserData,
+    reactionCount: 1,
+    latestReactionAt: reactionTimestamp,
+  }
+  await actionWrapper({
+    actionDescription: "Update user reaction stats",
+    meta: {
+      userId: requiredUserData.userId,
+      username: requiredUserData.username,
+    },
+    action: async () => {
+      await db
+        .insert(usersTable)
+        .values(insertData)
+        .onConflictDoUpdate({
+          target: [usersTable.userId, usersTable.guildId],
+          set: {
+            username: requiredUserData.username,
+            reactionCount: sql`${usersTable.reactionCount} + 1`,
+            latestReactionAt: reactionTimestamp,
           },
         })
     },

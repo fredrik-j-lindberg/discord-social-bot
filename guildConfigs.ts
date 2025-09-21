@@ -10,6 +10,8 @@ export const SUPPORTED_USER_FIELDS = {
   // User activity stats
   messageCount: "messageCount",
   latestMessageAt: "latestMessageAt",
+  reactionCount: "reactionCount",
+  latestReactionAt: "latestReactionAt",
 
   // These require user input via the /pii modal. The modal support a max of 5 fields, so each guild should not have more than that
   birthday: "birthday",
@@ -54,6 +56,8 @@ const devGuildConfigs: GuildConfigs = {
       SUPPORTED_USER_FIELDS.accountCreation,
       SUPPORTED_USER_FIELDS.messageCount,
       SUPPORTED_USER_FIELDS.latestMessageAt,
+      SUPPORTED_USER_FIELDS.reactionCount,
+      SUPPORTED_USER_FIELDS.latestReactionAt,
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
@@ -90,6 +94,7 @@ export const prodGuildConfigs: GuildConfigs = {
       SUPPORTED_USER_FIELDS.joinedServer,
       SUPPORTED_USER_FIELDS.accountCreation,
       SUPPORTED_USER_FIELDS.messageCount,
+      SUPPORTED_USER_FIELDS.reactionCount,
     ],
     birthdays: {
       channelId: "106099890320330752", // #general

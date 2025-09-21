@@ -93,6 +93,20 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
+    reactionCount: [
+      {
+        name: "Reaction count",
+        value: userData?.reactionCount.toString() || "-",
+        inline: true,
+      },
+    ],
+    latestReactionAt: [
+      {
+        name: "Latest Reaction",
+        value: createDiscordTimestamp(userData?.latestReactionAt) || "-",
+        inline: true,
+      },
+    ],
   }
   const guildConfig = getGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)

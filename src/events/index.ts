@@ -4,6 +4,7 @@ import { registerEventListener } from "../lib/discord/events/registerEvent"
 import { registerInteractionCreateEvent } from "./interactionCreate"
 import { registerMemberUpdateEvent } from "./memberUpdate"
 import { registerMessageCreateEvent } from "./messageCreate"
+import { registerReactionAddEvent } from "./reactionAdded"
 import { registerScheduledEventUserAddEvent } from "./scheduledEventUserAdd"
 import { registerScheduledEventUserRemoveEvent } from "./scheduledEventUserRemove"
 
@@ -31,6 +32,7 @@ export const registerEvents = async () => {
   await registerScheduledEventUserAddEvent()
   await registerScheduledEventUserRemoveEvent()
   await registerMessageCreateEvent()
+  await registerReactionAddEvent()
   await registerMemberUpdateEvent()
 
   logger.info("Events successfully registered")
