@@ -1,11 +1,12 @@
 // @ts-check
 
 import eslint from "@eslint/js"
+import { defineConfig } from "eslint/config"
 import prettierRecommended from "eslint-plugin-prettier/recommended"
 import simpleImportSort from "eslint-plugin-simple-import-sort"
 import tseslint from "typescript-eslint"
 
-export default tseslint.config(
+export default defineConfig(
   eslint.configs.recommended,
   prettierRecommended,
   ...tseslint.configs.strictTypeChecked,

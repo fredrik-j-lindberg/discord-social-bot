@@ -33,7 +33,7 @@ export const registerEventListener = <TEvent extends keyof ClientEvents>({
 
     void actionWrapper({
       action: () => listener.execute(...eventArgs),
-      meta: { ...metadata, event: String(event) },
+      meta: { ...metadata, event },
       actionDescription: "Handle discord.js event",
       swallowError: true,
     })
