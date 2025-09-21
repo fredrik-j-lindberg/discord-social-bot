@@ -86,6 +86,13 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
+    latestMessageAt: [
+      {
+        name: "Latest Message",
+        value: createDiscordTimestamp(userData?.latestMessageAt) || "-",
+        inline: true,
+      },
+    ],
   }
   const guildConfig = getGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)

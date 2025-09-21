@@ -108,6 +108,9 @@ export default {
         ? `${formatDate(userData[specificField])}, ${createDiscordTimestamp(userData.nextBirthday)}`
         : noDataMessage
     }
+    if (specificField === "latestMessageAt") {
+      return createDiscordTimestamp(userData[specificField]) || noDataMessage
+    }
 
     return userData[specificField]?.toString() || noDataMessage
   },
