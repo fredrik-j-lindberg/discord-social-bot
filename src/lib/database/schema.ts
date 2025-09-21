@@ -3,6 +3,7 @@ import {
   integer,
   pgTable,
   primaryKey,
+  timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
@@ -18,9 +19,9 @@ export const usersTable = pgTable(
     displayName: varchar({ length: 255 }),
 
     messageCount: integer().default(0).notNull(),
-    latestMessageAt: date({ mode: "date" }),
+    latestMessageAt: timestamp({ mode: "date" }),
     reactionCount: integer().default(0).notNull(),
-    latestReactionAt: date({ mode: "date" }),
+    latestReactionAt: timestamp({ mode: "date" }),
 
     firstName: varchar({ length: 255 }),
     birthday: date({ mode: "date" }),
