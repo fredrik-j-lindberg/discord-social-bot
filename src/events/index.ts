@@ -5,6 +5,7 @@ import { registerInteractionCreateEvent } from "./interactionCreate"
 import { registerMemberUpdateEvent } from "./memberUpdate"
 import { registerMessageCreateEvent } from "./messageCreate"
 import { registerReactionAddEvent } from "./reactionAdded"
+import { registerReactionRemoveEvent } from "./reactionRemoved"
 import { registerScheduledEventUserAddEvent } from "./scheduledEventUserAdd"
 import { registerScheduledEventUserRemoveEvent } from "./scheduledEventUserRemove"
 
@@ -33,6 +34,7 @@ export const registerEvents = async () => {
   await registerScheduledEventUserRemoveEvent()
   await registerMessageCreateEvent()
   await registerReactionAddEvent()
+  await registerReactionRemoveEvent()
   await registerMemberUpdateEvent()
 
   logger.info("Events successfully registered")

@@ -179,6 +179,38 @@ export const addUserReactionToStats = async ({
   })
 }
 
+/** Removes a reaction from the user activity stats */
+export const removeUserReactionFromStats = async ({
+  requiredUserData,
+}: {
+  requiredUserData: UserDataPostCoreValues
+}): Promise<void> => {
+  const insertData = {
+    ...requiredUserData,
+    reactionCount: 0,
+    latestReactionAt: null,
+  }
+  await actionWrapper({
+    actionDescription: "Update user reaction stats",
+    meta: {
+      userId: requiredUserData.userId,
+      username: requiredUserData.username,
+    },
+    action: async () => {
+      await db
+        .insert(usersTable)
+        .values(insertData)
+        .onConflictDoUpdate({
+          target: [usersTable.userId, usersTable.guildId],
+          set: {
+            username: requiredUserData.username,
+            reactionCount: sql`${usersTable.reactionCount} - 1`,
+          },
+        })
+    },
+  })
+}
+
 export const getUsersWithBirthdayTodayForAllGuilds = async (): Promise<
   UserData[]
 > => {

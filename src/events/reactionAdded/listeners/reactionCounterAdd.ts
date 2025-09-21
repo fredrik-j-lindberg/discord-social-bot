@@ -5,7 +5,7 @@ import type { EventListener } from "~/lib/discord/events/registerEvent"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 export default {
-  data: { name: "reactionCounter" },
+  data: { name: "reactionCounterAdd" },
   execute: async (reaction, user) => {
     const message = reaction.message
     assertHasDefinedProperty(
