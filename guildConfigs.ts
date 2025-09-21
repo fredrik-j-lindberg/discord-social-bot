@@ -7,6 +7,9 @@ export const SUPPORTED_USER_FIELDS = {
   joinedServer: "joinedServer",
   accountCreation: "accountCreation",
 
+  // User activity stats
+  messageCount: "messageCount",
+
   // These require user input via the /pii modal. The modal support a max of 5 fields, so each guild should not have more than that
   birthday: "birthday",
   firstName: "firstName",
@@ -48,6 +51,7 @@ const devGuildConfigs: GuildConfigs = {
       SUPPORTED_USER_FIELDS.pokemonTcgpFriendCode,
       SUPPORTED_USER_FIELDS.joinedServer,
       SUPPORTED_USER_FIELDS.accountCreation,
+      SUPPORTED_USER_FIELDS.messageCount,
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
@@ -83,6 +87,7 @@ export const prodGuildConfigs: GuildConfigs = {
       SUPPORTED_USER_FIELDS.pokemonTcgpFriendCode,
       SUPPORTED_USER_FIELDS.joinedServer,
       SUPPORTED_USER_FIELDS.accountCreation,
+      SUPPORTED_USER_FIELDS.messageCount,
     ],
     birthdays: {
       channelId: "106099890320330752", // #general

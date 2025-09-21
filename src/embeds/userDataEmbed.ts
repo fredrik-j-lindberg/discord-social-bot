@@ -79,6 +79,13 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
+    messageCount: [
+      {
+        name: "Message count",
+        value: userData?.messageCount.toString() || "-",
+        inline: true,
+      },
+    ],
   }
   const guildConfig = getGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)
