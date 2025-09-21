@@ -104,11 +104,13 @@ Modals are Discord native form dialogs that allow you to collect user input in a
 
 You can add a new modal by creating a new file under `/src/modals` containing relevant logic. Use [piiModal](./src/modals/piiModal.ts) as reference
 
-## Modifying database schema
+## Database
 
 This repo uses [Drizzle](https://orm.drizzle.team/) as the database ORM, and the database schema is configured in code
 
-In order to modify the database schema, do the following steps:
+### Modifying database schema
+
+In order to modify the database schema, follow the following steps:
 
 1. Modify the [schema.ts](./src/lib/database/schema.ts) file. See the drizzle docs for more info on this.
 2. Generate a new database migration with the command:
@@ -125,6 +127,10 @@ pnpm db:schema-migrate
 ```
 
 Now your database should be up to date with the latest migration.
+
+### Inspect the database
+
+Run `pnpm db:inspect` to run Drizzle studio locally, allowing you to inspect how the database looks.
 
 ## Linting & formatting
 

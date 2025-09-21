@@ -13,7 +13,8 @@
     "verify": "pnpm lint && pnpm check-types",
     "refreshCommands": "tsx --env-file=.env ./scripts/refreshCommands.ts",
     "db:schema-generate": "drizzle-kit generate",
-    "db:schema-migrate": "drizzle-kit migrate"
+    "db:schema-migrate": "drizzle-kit migrate",
+    "db:inspect": "drizzle-kit studio"
   },
   "keywords": [],
   "author": "",
