@@ -16,6 +16,12 @@ export const usersTable = pgTable(
     userId: varchar({ length: 255 }).notNull(),
     username: varchar({ length: 255 }).notNull(),
     displayName: varchar({ length: 255 }),
+
+    messageCount: integer().default(0).notNull(),
+    latestMessageAt: date({ mode: "date" }),
+    reactionCount: integer().default(0).notNull(),
+    latestReactionAt: date({ mode: "date" }),
+
     firstName: varchar({ length: 255 }),
     birthday: date({ mode: "date" }),
     phoneNumber: varchar({ length: 255 }),
