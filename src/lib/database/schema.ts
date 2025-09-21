@@ -35,6 +35,11 @@ export const usersTable = pgTable(
 )
 
 export type UserDataPost = Omit<typeof usersTable.$inferInsert, "id">
+/** The values which should be part of any update */
+export type UserDataPostCoreValues = Pick<
+  UserDataPost,
+  "guildId" | "userId" | "username" | "displayName"
+>
 
 export type UserDataSelect = typeof usersTable.$inferSelect & {
   /** Optionally computed field on select */

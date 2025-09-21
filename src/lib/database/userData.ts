@@ -6,6 +6,7 @@ import { db } from "./client"
 import {
   type UserData,
   type UserDataPost,
+  type UserDataPostCoreValues,
   type UserDataSelect,
   usersTable,
 } from "./schema"
@@ -102,6 +103,42 @@ export const setUserData = async ({
         .onConflictDoUpdate({
           target: [usersTable.userId, usersTable.guildId],
           set: userData,
+        })
+    },
+  })
+}
+
+/** Creates user or updates user with all the data sent */
+export const addUserMessageToStats = async ({
+  requiredUserData,
+  messageTimestamp,
+}: {
+  requiredUserData: UserDataPostCoreValues
+  messageTimestamp: Date
+}): Promise<void> => {
+  const insertData = {
+    ...requiredUserData,
+    messageCount: 1,
+    latestMessageAt: messageTimestamp,
+  }
+  await actionWrapper({
+    actionDescription: "Update user message stats",
+    meta: {
+      userId: requiredUserData.userId,
+      displayName: requiredUserData.displayName,
+    },
+    action: async () => {
+      await db
+        .insert(usersTable)
+        .values(insertData)
+        .onConflictDoUpdate({
+          target: [usersTable.userId, usersTable.guildId],
+          set: {
+            username: requiredUserData.username,
+            displayName: requiredUserData.displayName,
+            messageCount: sql`${usersTable.messageCount} + 1`,
+            latestMessageAt: messageTimestamp,
+          },
         })
     },
   })
