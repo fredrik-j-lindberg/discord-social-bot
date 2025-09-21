@@ -67,6 +67,10 @@ export default {
       guildId: interaction.guild.id,
     })
 
+    if (!userData) {
+      return noDataMessage
+    }
+
     const specificField = interaction.options.getString(userDataOptionName)
     // If we don't have a specific field requested, return the default embed
     if (!specificField) {
@@ -90,10 +94,6 @@ export default {
       )
     }
 
-    if (!userData) {
-      return noDataMessage
-    }
-
     // If the field should have special handling, add an if here. Otherwise it defaults to the value below
     if (specificField === "joinedServer") {
       return createDiscordTimestamp(member.joinedTimestamp) || noDataMessage
@@ -109,6 +109,6 @@ export default {
         : noDataMessage
     }
 
-    return userData[specificField] || noDataMessage
+    return userData[specificField]?.toString() || noDataMessage
   },
 } satisfies Command
