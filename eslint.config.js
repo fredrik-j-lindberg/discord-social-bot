@@ -28,6 +28,8 @@ export default defineConfig(
         { allowNumber: true },
       ],
 
+      "no-shadow": "error",
+
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
 

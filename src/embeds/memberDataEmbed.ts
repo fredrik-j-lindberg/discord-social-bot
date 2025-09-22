@@ -1,109 +1,109 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 
-import type { UserData } from "~/lib/database/schema"
+import type { MemberData } from "~/lib/database/schema"
 import { createDiscordTimestamp } from "~/lib/helpers/date"
 
-import { type DoraUserFields, getGuildConfigById } from "../../guildConfigs"
+import { type DoraMemberFields, getGuildConfigById } from "../../guildConfigs"
 
 const getFieldsRelevantForGuilds = ({
   guildId,
-  userData,
-  member,
+  memberData,
+  guildMember,
 }: {
   guildId: string
-  userData?: UserData
-  member: GuildMember
+  memberData?: MemberData
+  guildMember: GuildMember
 }): APIEmbedField[] => {
-  const optInEmbedFields: Record<DoraUserFields, APIEmbedField[]> = {
+  const optInEmbedFields: Record<DoraMemberFields, APIEmbedField[]> = {
     firstName: [
       {
         name: "First name",
-        value: userData?.firstName || "-",
+        value: memberData?.firstName || "-",
         inline: true,
       },
     ],
     birthday: [
-      { name: "Age", value: userData?.age?.toString() || "-", inline: true },
+      { name: "Age", value: memberData?.age?.toString() || "-", inline: true },
       {
         name: "Next birthday",
-        value: createDiscordTimestamp(userData?.nextBirthday) || "-",
+        value: createDiscordTimestamp(memberData?.nextBirthday) || "-",
         inline: true,
       },
     ],
     switchFriendCode: [
       {
         name: "Switch friend code",
-        value: userData?.switchFriendCode || "-",
+        value: memberData?.switchFriendCode || "-",
         inline: true,
       },
     ],
     pokemonTcgpFriendCode: [
       {
         name: "Pokémon TCGP",
-        value: userData?.pokemonTcgpFriendCode || "-",
+        value: memberData?.pokemonTcgpFriendCode || "-",
         inline: true,
       },
     ],
     email: [
       {
         name: "Email",
-        value: userData?.email || "-",
+        value: memberData?.email || "-",
         inline: true,
       },
     ],
     phoneNumber: [
       {
         name: "Phone number",
-        value: userData?.phoneNumber || "-",
+        value: memberData?.phoneNumber || "-",
         inline: true,
       },
     ],
     dietaryPreferences: [
       {
         name: "Dietary Preferences",
-        value: userData?.dietaryPreferences || "-",
+        value: memberData?.dietaryPreferences || "-",
         inline: true,
       },
     ],
     joinedServer: [
       {
         name: "Joined server",
-        value: createDiscordTimestamp(member.joinedTimestamp) || "-",
+        value: createDiscordTimestamp(guildMember.joinedTimestamp) || "-",
         inline: true,
       },
     ],
     accountCreation: [
       {
         name: "Account creation",
-        value: createDiscordTimestamp(member.user.createdTimestamp) || "-",
+        value: createDiscordTimestamp(guildMember.user.createdTimestamp) || "-",
         inline: true,
       },
     ],
     messageCount: [
       {
         name: "Message count",
-        value: userData?.messageCount.toString() || "-",
+        value: memberData?.messageCount.toString() || "-",
         inline: true,
       },
     ],
     latestMessageAt: [
       {
         name: "Latest Message",
-        value: createDiscordTimestamp(userData?.latestMessageAt) || "-",
+        value: createDiscordTimestamp(memberData?.latestMessageAt) || "-",
         inline: true,
       },
     ],
     reactionCount: [
       {
         name: "Reaction count",
-        value: userData?.reactionCount.toString() || "-",
+        value: memberData?.reactionCount.toString() || "-",
         inline: true,
       },
     ],
     latestReactionAt: [
       {
         name: "Latest Reaction",
-        value: createDiscordTimestamp(userData?.latestReactionAt) || "-",
+        value: createDiscordTimestamp(memberData?.latestReactionAt) || "-",
         inline: true,
       },
     ],
@@ -111,7 +111,7 @@ const getFieldsRelevantForGuilds = ({
   const guildConfig = getGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)
     .map(([key, value]) => {
-      if (!guildConfig.optInUserFields.includes(key as DoraUserFields)) {
+      if (!guildConfig.optInMemberFields.includes(key as DoraMemberFields)) {
         return null
       }
       return value
@@ -120,21 +120,21 @@ const getFieldsRelevantForGuilds = ({
   return relevantFields.flat()
 }
 
-export const getUserDataEmbed = ({
+export const getMemberDataEmbed = ({
   guildId,
-  member,
-  userData,
+  guildMember,
+  memberData,
 }: {
   guildId: string
-  member: GuildMember
-  userData?: UserData
+  guildMember: GuildMember
+  memberData?: MemberData
 }) => {
   return new EmbedBuilder()
     .setColor(0x0099ff)
-    .setTitle(`User Data - ${member.displayName}`)
-    .setThumbnail(member.displayAvatarURL())
-    .addFields(getFieldsRelevantForGuilds({ guildId, userData, member }))
+    .setTitle(guildMember.displayName)
+    .setThumbnail(guildMember.displayAvatarURL())
+    .addFields(getFieldsRelevantForGuilds({ guildId, memberData, guildMember }))
     .setFooter({
-      text: "Add or update your user data with the /pii command",
+      text: "Add or update your member data with the /pii command",
     })
 }

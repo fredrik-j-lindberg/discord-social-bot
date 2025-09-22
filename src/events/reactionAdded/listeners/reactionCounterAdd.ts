@@ -1,6 +1,6 @@
 import type { Events } from "discord.js"
 
-import { addUserReactionToStats } from "~/lib/database/userData"
+import { addMemberReactionToStats } from "~/lib/database/memberDataDb"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
@@ -20,8 +20,8 @@ export default {
       "Reaction added for a user without username, can't be added to stats",
     )
 
-    await addUserReactionToStats({
-      requiredUserData: {
+    await addMemberReactionToStats({
+      coreMemberData: {
         guildId: message.guild.id,
         userId: user.id,
         username: user.username,

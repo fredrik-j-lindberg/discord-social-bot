@@ -1,7 +1,7 @@
 import { Guild, GuildMember } from "discord.js"
 
 import { actionWrapper } from "~/lib/actionWrapper"
-import { getUsersWithBirthdayTodayForAllGuilds } from "~/lib/database/userData"
+import { getMembersWithBirthdayTodayForAllGuilds } from "~/lib/database/memberDataDb"
 import { getChannel } from "~/lib/discord/channels"
 import { getGuild } from "~/lib/discord/guilds"
 import { addRole, getRole } from "~/lib/discord/roles"
@@ -20,9 +20,9 @@ export const happyBirthday = async () => {
     })
   }
 
-  const userData = await getUsersWithBirthdayTodayForAllGuilds()
-  for (const user of userData) {
-    const guild = await getGuild(user.guildId)
+  const membersData = await getMembersWithBirthdayTodayForAllGuilds()
+  for (const memberData of membersData) {
+    const guild = await getGuild(memberData.guildId)
     const guildConfig = guildConfigs[guild.id]
     if (!guildConfig) {
       throw new DoraException(
@@ -31,7 +31,7 @@ export const happyBirthday = async () => {
         { metadata: { guildId: guild.id } },
       )
     }
-    const member = await guild.members.fetch(user.userId)
+    const member = await guild.members.fetch(memberData.userId)
     await actionWrapper({
       action: () =>
         handleBirthdayRole({
@@ -40,7 +40,7 @@ export const happyBirthday = async () => {
           member,
         }),
       actionDescription: "Add birthday role",
-      meta: { userId: user.userId, guildId: guild.id },
+      meta: { userId: memberData.userId, guildId: guild.id },
       swallowError: true,
     })
 
@@ -52,7 +52,7 @@ export const happyBirthday = async () => {
           member,
         }),
       actionDescription: "Send birthday wish",
-      meta: { userId: user.userId, guildId: guild.id },
+      meta: { userId: memberData.userId, guildId: guild.id },
       swallowError: true,
     })
   }

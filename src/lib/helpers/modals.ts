@@ -12,7 +12,7 @@ export interface ModalFieldConfig {
   label: string
   style: TextInputStyle
   getPrefilledValue: (
-    /** The metadata relevant to prefill the data. For example for the user / pii modal this might the database values for the user */
+    /** The metadata relevant to prefill the data. For example for the member data (/pii) modal this might the database values for the member */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     modalMetadata: any,
   ) => string | null | undefined

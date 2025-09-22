@@ -2,8 +2,8 @@ import { TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
-import type { UserData } from "~/lib/database/schema"
-import { setUserData } from "~/lib/database/userData"
+import { setMemberData } from "~/lib/database/memberDataDb"
+import type { MemberData } from "~/lib/database/schema"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import {
   createModal,
@@ -13,17 +13,17 @@ import {
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import { getGuildConfigById, SUPPORTED_USER_FIELDS } from "../../guildConfigs"
+import { getGuildConfigById, SUPPORTED_MEMBER_FIELDS } from "../../guildConfigs"
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
-  getPrefilledValue: (userData?: UserData) => string | null | undefined
+  getPrefilledValue: (memberData?: MemberData) => string | null | undefined
 }
 
 const piiFieldConfigsMap = {
-  [SUPPORTED_USER_FIELDS.firstName]: {
-    fieldName: SUPPORTED_USER_FIELDS.firstName,
+  [SUPPORTED_MEMBER_FIELDS.firstName]: {
+    fieldName: SUPPORTED_MEMBER_FIELDS.firstName,
     label: "First name",
-    getPrefilledValue: (userData) => userData?.firstName || "",
+    getPrefilledValue: (memberData) => memberData?.firstName || "",
     style: TextInputStyle.Short,
     validation: z
       .string()
@@ -33,11 +33,11 @@ const piiFieldConfigsMap = {
     placeholder: "John",
     isRequired: false,
   },
-  [SUPPORTED_USER_FIELDS.birthday]: {
-    fieldName: SUPPORTED_USER_FIELDS.birthday,
+  [SUPPORTED_MEMBER_FIELDS.birthday]: {
+    fieldName: SUPPORTED_MEMBER_FIELDS.birthday,
     label: "Birthday (DD/MM/YYYY)",
-    getPrefilledValue: (userData) =>
-      formatDate(userData?.birthday, { dateStyle: "short" }),
+    getPrefilledValue: (memberData) =>
+      formatDate(memberData?.birthday, { dateStyle: "short" }),
     style: TextInputStyle.Short,
     placeholder: "23/11/1998",
     validation: z
@@ -48,10 +48,10 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  [SUPPORTED_USER_FIELDS.switchFriendCode]: {
-    fieldName: SUPPORTED_USER_FIELDS.switchFriendCode,
+  [SUPPORTED_MEMBER_FIELDS.switchFriendCode]: {
+    fieldName: SUPPORTED_MEMBER_FIELDS.switchFriendCode,
     label: "Nintendo Switch friend code",
-    getPrefilledValue: (userData) => userData?.switchFriendCode || "",
+    getPrefilledValue: (memberData) => memberData?.switchFriendCode || "",
     style: TextInputStyle.Short,
     placeholder: "SW-1234-5678-9012",
     validation: z
@@ -61,10 +61,10 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  [SUPPORTED_USER_FIELDS.pokemonTcgpFriendCode]: {
-    fieldName: SUPPORTED_USER_FIELDS.pokemonTcgpFriendCode,
+  [SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode]: {
+    fieldName: SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode,
     label: "Pokémon TCGP friend code",
-    getPrefilledValue: (userData) => userData?.pokemonTcgpFriendCode || "",
+    getPrefilledValue: (memberData) => memberData?.pokemonTcgpFriendCode || "",
     style: TextInputStyle.Short,
     placeholder: "1234-5678-9012-3456",
     validation: z
@@ -81,20 +81,20 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  [SUPPORTED_USER_FIELDS.phoneNumber]: {
-    fieldName: SUPPORTED_USER_FIELDS.phoneNumber,
+  [SUPPORTED_MEMBER_FIELDS.phoneNumber]: {
+    fieldName: SUPPORTED_MEMBER_FIELDS.phoneNumber,
     label: "Phone number",
-    getPrefilledValue: (userData) => userData?.phoneNumber,
+    getPrefilledValue: (memberData) => memberData?.phoneNumber,
     placeholder: "+46712345673",
     style: TextInputStyle.Short,
     validation: z.string().max(15).optional().nullable(),
     maxLength: 15,
     isRequired: false,
   },
-  [SUPPORTED_USER_FIELDS.email]: {
-    fieldName: SUPPORTED_USER_FIELDS.email,
+  [SUPPORTED_MEMBER_FIELDS.email]: {
+    fieldName: SUPPORTED_MEMBER_FIELDS.email,
     label: "Email",
-    getPrefilledValue: (userData) => userData?.email,
+    getPrefilledValue: (memberData) => memberData?.email,
     style: TextInputStyle.Short,
     placeholder: "example@example.com",
     validation: z
@@ -108,10 +108,10 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  [SUPPORTED_USER_FIELDS.dietaryPreferences]: {
-    fieldName: SUPPORTED_USER_FIELDS.dietaryPreferences,
+  [SUPPORTED_MEMBER_FIELDS.dietaryPreferences]: {
+    fieldName: SUPPORTED_MEMBER_FIELDS.dietaryPreferences,
     label: "Dietary preferences",
-    getPrefilledValue: (userData) => userData?.dietaryPreferences,
+    getPrefilledValue: (memberData) => memberData?.dietaryPreferences,
     style: TextInputStyle.Short,
     placeholder: "Gluten-free, Vegan, No pork",
     validation: z.string().max(50).optional().nullable(),
@@ -125,17 +125,17 @@ const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap)
 
 interface CreateModalProps {
   guildId: string
-  userData: UserData | undefined
+  memberData: MemberData | undefined
 }
 export default {
-  data: { name: "userDataModal" },
-  createModal({ guildId, userData }: CreateModalProps) {
+  data: { name: "memberDataModal" },
+  createModal({ guildId, memberData }: CreateModalProps) {
     return createModal({
       modalId: this.data.name,
-      title: "User data form. Optional!",
+      title: "Member data form. Optional!",
       fieldConfigs: piiFieldConfigs,
-      fieldsToGenerate: getGuildConfigById(guildId).optInUserFields,
-      modalMetaData: userData,
+      fieldsToGenerate: getGuildConfigById(guildId).optInMemberFields,
+      modalMetaData: memberData,
     })
   },
   deferReply: true,
@@ -153,7 +153,8 @@ export default {
     const inputParsing = extractAndValidateModalValues({
       interaction,
       fieldConfigs: piiFieldConfigs,
-      fieldsToExtract: getGuildConfigById(interaction.guild.id).optInUserFields,
+      fieldsToExtract: getGuildConfigById(interaction.guild.id)
+        .optInMemberFields,
       validationSchema: piiModalInputSchema,
     })
 
@@ -163,8 +164,8 @@ export default {
     }
     const validatedInput = inputParsing.data
 
-    await setUserData({
-      userData: {
+    await setMemberData({
+      memberData: {
         userId: interaction.user.id,
         guildId: interaction.guild.id,
         username: interaction.user.username,
@@ -178,6 +179,6 @@ export default {
         dietaryPreferences: validatedInput.dietaryPreferences,
       },
     })
-    return "Your user data was submitted successfully!"
+    return "Your member data was submitted successfully!"
   },
 } satisfies ModalData

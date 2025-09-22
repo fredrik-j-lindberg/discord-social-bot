@@ -6,27 +6,40 @@ This is a Discord bot built to cater to some specific needs I had a hard time fi
 
 ## Features
 
-- **Event syncing with a role**
+### Event syncing with a role
 
-  If your event has a `roleId="<idhere>"` in its description, whenever someone adds themselves to the event they receive the role, and vice versa
+If your event has a `roleId="<idhere>"` in its description, whenever someone adds themselves to the event they receive the role, and vice versa
 
-- **Event reminders**
+### Event reminders
 
-  If your event has a `channelId="<idhere>"` as well as `shouldRemind="true"` in its description, a reminder for the event will be sent ~24 hours before, pinging the ones set as interested
+If your event has a `channelId="<idhere>"` as well as `shouldRemind="true"` in its description, a reminder for the event will be sent ~24 hours before, pinging the ones set as interested
 
-- **User data**
+### Member data
 
-  _Note: Much of the userdata fields are required to opt in for on guild by guild basis in the guild config._
-  - Via /pii a user can enter user data about themselves
-  - Via /whois you can view info about a user
-  - Via /userdata you can list specific userdata
+#### Managing and viewing member data
 
-  - Bot will wish happy birthday to those who have their birthday today
+_Commands_
 
-    _Note: This requires the birthdayWishes channel to be set in the guild config_
+- Via /pii a user can enter member data about themselves
+- Via /whois you can view info about a member
+- Via /memberdata you can list specific memberdata
 
-- **Random stuff**
-  - If a message contains the text "christian server" the bot will respond with a cross, which is a reference to the legacy pg-13 status of the Eithon community
+_Notes_
+
+- Some native discord stats are included in the stats, such as account creation date and server join date
+- Bot keeps track of some activity stats, such as reaction and message count
+- Member data fields generally require opt in on a guild level. This is configured in the guild config.
+- Member data is guild-scoped, so e.g. if you are in two separate guilds who both have the bot, the member data does not automatically sync between guilds. This is to make it possible for you to share data in guild X you do not necessarily want exposed in guild Y
+
+#### Birthdays
+
+Bot will wish happy birthday to those who have their birthday today
+
+_Note: This requires the birthdayWishes channel to be set in the guild config and that the user has added their birthday via /pii_
+
+### Random stuff
+
+- If a message contains the text "christian server" the bot will respond with a cross, which is a reference to the legacy pg-13 status of the Eithon community
 
 ## Getting Started
 
@@ -89,7 +102,7 @@ The command router will handle some basic error handling for your command, as we
 
 1. Add a new command file under `/src/commands` containing relevant logic. Example files as reference:
    - [ping](./src/commands/ping.ts) - Very basic command
-   - [userdata](./src/commands/userdata.ts) - Command with argument
+   - [memberdata](./src/commands/memberdata.ts) - Command with argument
    - [pii](./src/commands/pii.ts) - Command which triggers modal. See [Adding a new modal](#adding-a-new-modal) for context around modals
 
 2. Run `pnpm refreshCommands`
@@ -147,11 +160,12 @@ There are also some helpful scripts for this:
 
 ### Feats
 
-- Keep track of how many messages each user has sent and when their latest one was sent
-- Requires message tracking: Send message to user if user has not sent a message in X time
+- Requires message tracking: Send message to admin and/or user if user has not sent a message in X time
+  - Should be opt in via guild config
+  - Potential next step is to add option of automatically kicking user after Y time (with an invite link on how they can re-join, to keep e.g. tight nit servers decently small without a bunch of inactive lurkers)
 - Add image scraping capabilities (scraping a google photos album).
   Update: [POC branch here](https://github.com/fredrik-j-lindberg/discord-social-bot/tree/poc/web-scraper) - Failed to find a reliable dates in shared google photos album url. The date found in the html proved to be the photo data rather than the upload date. A relative time stamp was found in the "comment section" of the album, so that is a potential next test. But then we would need to be able to parse the relative text and figure out whether it warrants an announcement or not.
-- Add mcp capabilities (being able to ask the bot for a specific piece of user info etc)
+- Add mcp capabilities (being able to ask the bot for a specific piece of member info etc)
   - Note that as long as we use an API for the LLM we need to make this opt in
 - Guild config improvements
   - Move guildconfigs to database?
@@ -166,6 +180,5 @@ There are also some helpful scripts for this:
 ### Misc
 
 - Make /pii ephemeral (so only you can see your input and failures)
-- Use autocomplete handling in /userdata (similar to /whois) to make the options guild-specific
-- Consider /userdata -> /listdata (userdata is overused in repo, and then it could be used for listing other stuff as well)
-- Refactor /userdata register list subcommands semi-dynamically. Setup individual listeners with a proper name, cmd and action.
+- Use autocomplete handling in /memberdata (similar to /whois) to make the options guild-specific
+- Refactor /memberdata register list subcommands semi-dynamically. Setup individual listeners with a proper name, cmd and action.

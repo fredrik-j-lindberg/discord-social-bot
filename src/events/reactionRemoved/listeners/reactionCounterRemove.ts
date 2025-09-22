@@ -1,6 +1,6 @@
 import type { Events } from "discord.js"
 
-import { removeUserReactionFromStats } from "~/lib/database/userData"
+import { removeMemberReactionFromStats } from "~/lib/database/memberDataDb"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
@@ -20,8 +20,8 @@ export default {
       "Reaction removed for a user without username, can't be removed from stats",
     )
 
-    await removeUserReactionFromStats({
-      requiredUserData: {
+    await removeMemberReactionFromStats({
+      coreMemberData: {
         guildId: message.guild.id,
         userId: user.id,
         username: user.username,

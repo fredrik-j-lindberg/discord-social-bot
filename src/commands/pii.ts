@@ -1,14 +1,14 @@
 import { SlashCommandBuilder } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
-import { getUserData } from "~/lib/database/userData"
+import { getMemberData } from "~/lib/database/memberDataDb"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 import piiModal from "../modals/piiModal"
 
 const command = new SlashCommandBuilder()
   .setName("pii")
-  .setDescription("Triggers form for adding user data about yourself")
+  .setDescription("Triggers form for adding member data about yourself")
 
 export default {
   deferReply: false,
@@ -21,13 +21,13 @@ export default {
       "Command issued without associated guild",
     )
 
-    const userData = await getUserData({
+    const memberData = await getMemberData({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
     })
     const modal = piiModal.createModal({
       guildId: interaction.guild.id,
-      userData,
+      memberData,
     })
     await interaction.showModal(modal)
     return undefined // Modal submission will handle response

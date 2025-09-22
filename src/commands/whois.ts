@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from "discord.js"
 
-import { getUserDataEmbed } from "~/embeds/userDataEmbed"
+import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
-import { getUserData } from "~/lib/database/userData"
+import { getMemberData } from "~/lib/database/memberDataDb"
 import { getMember } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { createDiscordTimestamp, formatDate } from "~/lib/helpers/date"
@@ -13,21 +13,21 @@ import { getGuildConfigById } from "../../guildConfigs"
 const noDataMessage =
   "No data found. You can ask them to add it via the /pii command!"
 
-const userOptionName = "user"
-const userDataOptionName = "userdata"
+const memberOptionName = "member"
+const memberDataOptionName = "memberdata"
 const command = new SlashCommandBuilder()
   .setName("whois")
-  .setDescription("Get info about a user")
+  .setDescription("Get info about a member")
   .addUserOption((option) =>
     option
-      .setName(userOptionName)
-      .setDescription("The user to get info about")
+      .setName(memberOptionName)
+      .setDescription("The member to get info about")
       .setRequired(true),
   )
   .addStringOption((option) =>
     option
-      .setName(userDataOptionName)
-      .setDescription("The specific piece of user data to retrieve")
+      .setName(memberDataOptionName)
+      .setDescription("The specific piece of member data to retrieve")
       .setAutocomplete(true)
       .setRequired(false),
   )
@@ -40,10 +40,10 @@ export default {
     assertHasDefinedProperty(
       interaction,
       "guild",
-      "Whois autocomplete issued without associated guild",
+      "Command autocomplete issued without associated guild",
     )
     const guildConfig = getGuildConfigById(interaction.guild.id)
-    return guildConfig.optInUserFields.map((field) => ({
+    return guildConfig.optInMemberFields.map((field) => ({
       name: field,
       value: field,
     }))
@@ -55,40 +55,42 @@ export default {
       "Command issued without associated guild",
     )
 
-    const user = interaction.options.getUser(userOptionName)
+    const user = interaction.options.getUser(memberOptionName)
     if (!user) {
-      throw new DoraUserException("Required user option is missing")
+      throw new DoraUserException(
+        `Required '${memberOptionName}' option is missing`,
+      )
     }
 
-    const member = await getMember({ guild: interaction.guild, user })
+    const guildMember = await getMember({ guild: interaction.guild, user })
 
-    const userData = await getUserData({
-      userId: user.id,
+    const memberData = await getMemberData({
+      userId: guildMember.id,
       guildId: interaction.guild.id,
     })
 
-    if (!userData) {
+    if (!memberData) {
       return noDataMessage
     }
 
-    const specificField = interaction.options.getString(userDataOptionName)
+    const specificField = interaction.options.getString(memberDataOptionName)
     // If we don't have a specific field requested, return the default embed
     if (!specificField) {
-      const embed = getUserDataEmbed({
+      const embed = getMemberDataEmbed({
         guildId: interaction.guild.id,
-        member,
-        userData,
+        guildMember,
+        memberData,
       })
       return { embeds: [embed] }
     }
 
     const validChoices = getGuildConfigById(
       interaction.guild.id,
-    ).optInUserFields
+    ).optInMemberFields
 
     if (!isOneOf(specificField, validChoices)) {
       throw new DoraUserException(
-        `Invalid field for ${userDataOptionName} specified ('${specificField}'). Valid fields are: ${validChoices.join(
+        `Invalid field for ${memberDataOptionName} specified ('${specificField}'). Valid fields are: ${validChoices.join(
           ", ",
         )}`,
       )
@@ -96,25 +98,28 @@ export default {
 
     // If the field should have special handling, add an if here. Otherwise it defaults to the value below
     if (specificField === "joinedServer") {
-      return createDiscordTimestamp(member.joinedTimestamp) || noDataMessage
+      return (
+        createDiscordTimestamp(guildMember.joinedTimestamp) || noDataMessage
+      )
     }
     if (specificField === "accountCreation") {
       return (
-        createDiscordTimestamp(member.user.createdTimestamp) || noDataMessage
+        createDiscordTimestamp(guildMember.user.createdTimestamp) ||
+        noDataMessage
       )
     }
     if (specificField === "birthday") {
-      return userData.birthday
-        ? `${formatDate(userData[specificField])}, ${createDiscordTimestamp(userData.nextBirthday)}`
+      return memberData.birthday
+        ? `${formatDate(memberData[specificField])}, ${createDiscordTimestamp(memberData.nextBirthday)}`
         : noDataMessage
     }
     if (specificField === "latestMessageAt") {
-      return createDiscordTimestamp(userData[specificField]) || noDataMessage
+      return createDiscordTimestamp(memberData[specificField]) || noDataMessage
     }
     if (specificField === "latestReactionAt") {
-      return createDiscordTimestamp(userData[specificField]) || noDataMessage
+      return createDiscordTimestamp(memberData[specificField]) || noDataMessage
     }
 
-    return userData[specificField]?.toString() || noDataMessage
+    return memberData[specificField]?.toString() || noDataMessage
   },
 } satisfies Command

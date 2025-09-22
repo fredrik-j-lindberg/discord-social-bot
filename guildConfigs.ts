@@ -2,12 +2,12 @@ import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { logger } from "~/lib/logger"
 
-export const SUPPORTED_USER_FIELDS = {
+export const SUPPORTED_MEMBER_FIELDS = {
   // Discord native values, recommended for all guilds
   joinedServer: "joinedServer",
   accountCreation: "accountCreation",
 
-  // User activity stats
+  // Member activity stats
   messageCount: "messageCount",
   latestMessageAt: "latestMessageAt",
   reactionCount: "reactionCount",
@@ -22,17 +22,17 @@ export const SUPPORTED_USER_FIELDS = {
   switchFriendCode: "switchFriendCode",
   pokemonTcgpFriendCode: "pokemonTcgpFriendCode",
 } as const
-export type DoraUserFields =
-  (typeof SUPPORTED_USER_FIELDS)[keyof typeof SUPPORTED_USER_FIELDS]
+export type DoraMemberFields =
+  (typeof SUPPORTED_MEMBER_FIELDS)[keyof typeof SUPPORTED_MEMBER_FIELDS]
 
 export interface GuildConfig {
   guildId: string
   /** Fields that guilds need to opt in to use, as these fields might not be relevant for all guilds */
-  optInUserFields: DoraUserFields[]
+  optInMemberFields: DoraMemberFields[]
   birthdays: {
     /** Channel to send birthday wishes in */
     channelId?: string
-    /** Role to add to users on their birthday */
+    /** Role to add to members on their birthday */
     roleId?: string
   }
 }
@@ -46,18 +46,18 @@ const devGuildConfigs: GuildConfigs = {
   // Local bot testing
   "1211309484811485264": {
     guildId: "1211309484811485264",
-    optInUserFields: [
-      SUPPORTED_USER_FIELDS.birthday,
-      SUPPORTED_USER_FIELDS.firstName,
-      SUPPORTED_USER_FIELDS.phoneNumber,
-      SUPPORTED_USER_FIELDS.dietaryPreferences,
-      SUPPORTED_USER_FIELDS.pokemonTcgpFriendCode,
-      SUPPORTED_USER_FIELDS.joinedServer,
-      SUPPORTED_USER_FIELDS.accountCreation,
-      SUPPORTED_USER_FIELDS.messageCount,
-      SUPPORTED_USER_FIELDS.latestMessageAt,
-      SUPPORTED_USER_FIELDS.reactionCount,
-      SUPPORTED_USER_FIELDS.latestReactionAt,
+    optInMemberFields: [
+      SUPPORTED_MEMBER_FIELDS.birthday,
+      SUPPORTED_MEMBER_FIELDS.firstName,
+      SUPPORTED_MEMBER_FIELDS.phoneNumber,
+      SUPPORTED_MEMBER_FIELDS.dietaryPreferences,
+      SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode,
+      SUPPORTED_MEMBER_FIELDS.joinedServer,
+      SUPPORTED_MEMBER_FIELDS.accountCreation,
+      SUPPORTED_MEMBER_FIELDS.messageCount,
+      SUPPORTED_MEMBER_FIELDS.latestMessageAt,
+      SUPPORTED_MEMBER_FIELDS.reactionCount,
+      SUPPORTED_MEMBER_FIELDS.latestReactionAt,
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
@@ -70,13 +70,13 @@ export const prodGuildConfigs: GuildConfigs = {
   // Climbing (Dora the Explorer)
   "1193809867232772126": {
     guildId: "1193809867232772126",
-    optInUserFields: [
-      SUPPORTED_USER_FIELDS.birthday,
-      SUPPORTED_USER_FIELDS.phoneNumber,
-      SUPPORTED_USER_FIELDS.email,
-      SUPPORTED_USER_FIELDS.dietaryPreferences,
-      SUPPORTED_USER_FIELDS.joinedServer,
-      SUPPORTED_USER_FIELDS.accountCreation,
+    optInMemberFields: [
+      SUPPORTED_MEMBER_FIELDS.birthday,
+      SUPPORTED_MEMBER_FIELDS.phoneNumber,
+      SUPPORTED_MEMBER_FIELDS.email,
+      SUPPORTED_MEMBER_FIELDS.dietaryPreferences,
+      SUPPORTED_MEMBER_FIELDS.joinedServer,
+      SUPPORTED_MEMBER_FIELDS.accountCreation,
     ],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
@@ -86,15 +86,15 @@ export const prodGuildConfigs: GuildConfigs = {
   // Eithon
   "106099890320330752": {
     guildId: "106099890320330752",
-    optInUserFields: [
-      SUPPORTED_USER_FIELDS.birthday,
-      SUPPORTED_USER_FIELDS.firstName,
-      SUPPORTED_USER_FIELDS.switchFriendCode,
-      SUPPORTED_USER_FIELDS.pokemonTcgpFriendCode,
-      SUPPORTED_USER_FIELDS.joinedServer,
-      SUPPORTED_USER_FIELDS.accountCreation,
-      SUPPORTED_USER_FIELDS.messageCount,
-      SUPPORTED_USER_FIELDS.reactionCount,
+    optInMemberFields: [
+      SUPPORTED_MEMBER_FIELDS.birthday,
+      SUPPORTED_MEMBER_FIELDS.firstName,
+      SUPPORTED_MEMBER_FIELDS.switchFriendCode,
+      SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode,
+      SUPPORTED_MEMBER_FIELDS.joinedServer,
+      SUPPORTED_MEMBER_FIELDS.accountCreation,
+      SUPPORTED_MEMBER_FIELDS.messageCount,
+      SUPPORTED_MEMBER_FIELDS.reactionCount,
     ],
     birthdays: {
       channelId: "106099890320330752", // #general
@@ -110,7 +110,7 @@ export const guildConfigs: GuildConfigs = env.USE_DEV_GUILD_CONFIGS
 
 export const getGuildConfigById = (guildId: string) => {
   const guildConfig = Object.values(guildConfigs).find(
-    (guildConfig) => guildConfig.guildId === guildId,
+    (config) => config.guildId === guildId,
   )
   if (!guildConfig) {
     throw new DoraException(

@@ -8,8 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 
-// TODO: rename things related to the table to member something to better reflect that the data is specific to guild?
-export const usersTable = pgTable(
+export const membersTable = pgTable(
   "member_data",
   {
     id: uuid("id").defaultRandom().notNull().unique(),
@@ -35,19 +34,19 @@ export const usersTable = pgTable(
   (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
 )
 
-export type UserDataPost = Omit<typeof usersTable.$inferInsert, "id">
+export type MemberDataPost = Omit<typeof membersTable.$inferInsert, "id">
 /** The values which should be part of any update */
-export type UserDataPostCoreValues = Pick<
-  UserDataPost,
+export type MemberDataPostCoreValues = Pick<
+  MemberDataPost,
   "guildId" | "userId" | "username" | "displayName"
 >
 
-export type UserDataSelect = typeof usersTable.$inferSelect & {
+export type MemberDataSelect = typeof membersTable.$inferSelect & {
   /** Optionally computed field on select */
   nextBirthday?: Date | null
 }
 
-export type UserData = UserDataSelect & {
+export type MemberData = MemberDataSelect & {
   /** Computed post-select */
   age: number | null
 }
