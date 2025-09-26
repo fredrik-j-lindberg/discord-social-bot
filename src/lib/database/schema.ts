@@ -8,6 +8,14 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 
+const timestamps = {
+  updatedAt: timestamp()
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+  createdAt: timestamp().defaultNow().notNull(),
+}
+
 export const membersTable = pgTable(
   "member_data",
   {
@@ -30,6 +38,8 @@ export const membersTable = pgTable(
     switchFriendCode: varchar({ length: 255 }),
     pokemonTcgpFriendCode: varchar({ length: 255 }),
     dietaryPreferences: varchar({ length: 255 }),
+
+    ...timestamps,
   },
   (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
 )
