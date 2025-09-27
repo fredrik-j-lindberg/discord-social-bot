@@ -3,8 +3,10 @@ import { SlashCommandBuilder } from "discord.js"
 import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getMemberData } from "~/lib/database/memberDataService"
+import { getMemberEmojiCounts } from "~/lib/database/memberEmojisService"
 import {
   createDiscordTimestamp,
+  createEmojiMention,
   createRoleMention,
 } from "~/lib/discord/message"
 import { getMember } from "~/lib/discord/user"
@@ -74,6 +76,8 @@ export default {
       return `No member data was found for ${user.displayName}`
     }
 
+    const reactionCounts = await getMemberEmojiCounts(memberData.id, "reaction")
+
     const specificField = interaction.options.getString(memberDataOptionName)
     // If we don't have a specific field requested, return the default embed
     if (!specificField) {
@@ -81,6 +85,7 @@ export default {
         guildId: interaction.guild.id,
         guildMember,
         memberData,
+        reactionCounts,
       })
       return { embeds: [embed] }
     }
@@ -132,6 +137,17 @@ export default {
         memberData.roleIds
           .map((roleId) => createRoleMention(roleId))
           .join(" ") || `No roles found for ${user.displayName}`
+      )
+    }
+    if (specificField === "favoriteReactions") {
+      return (
+        reactionCounts
+          .slice(0, 10)
+          .map(
+            ({ emojiId, emojiName, count }) =>
+              `${createEmojiMention(emojiName, emojiId)} (${count})`,
+          )
+          .join(", ") || `No roles found for ${user.displayName}`
       )
     }
 

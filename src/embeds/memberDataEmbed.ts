@@ -1,18 +1,24 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 
 import type { MemberData } from "~/lib/database/memberDataService"
-import { createDiscordTimestamp } from "~/lib/discord/message"
+import type { EmojiCount } from "~/lib/database/memberEmojisService"
+import {
+  createDiscordTimestamp,
+  createEmojiMention,
+} from "~/lib/discord/message"
 
 import { type DoraMemberFields, getGuildConfigById } from "../../guildConfigs"
 
 const getFieldsRelevantForGuilds = ({
   guildId,
-  memberData,
   guildMember,
+  memberData,
+  reactionCounts,
 }: {
   guildId: string
-  memberData?: MemberData
   guildMember: GuildMember
+  memberData?: MemberData
+  reactionCounts: EmojiCount[]
 }): APIEmbedField[] => {
   const optInEmbedFields: Record<DoraMemberFields, APIEmbedField[]> = {
     firstName: [
@@ -100,6 +106,18 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
+    favoriteReactions: [
+      {
+        name: "Favorite Reactions",
+        value: reactionCounts
+          .slice(0, 3)
+          .map(
+            ({ emojiId, emojiName, count }) =>
+              `${createEmojiMention(emojiName, emojiId)} (${count})`,
+          )
+          .join(", "),
+      },
+    ],
     latestReactionAt: [
       {
         name: "Latest Reaction",
@@ -135,16 +153,25 @@ export const getMemberDataEmbed = ({
   guildId,
   guildMember,
   memberData,
+  reactionCounts,
 }: {
   guildId: string
   guildMember: GuildMember
   memberData?: MemberData
+  reactionCounts: EmojiCount[]
 }) => {
   return new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle(guildMember.displayName)
     .setThumbnail(guildMember.displayAvatarURL())
-    .addFields(getFieldsRelevantForGuilds({ guildId, memberData, guildMember }))
+    .addFields(
+      getFieldsRelevantForGuilds({
+        guildId,
+        memberData,
+        guildMember,
+        reactionCounts,
+      }),
+    )
     .setFooter({
       text: "Add or update your member data with the /pii command",
     })
