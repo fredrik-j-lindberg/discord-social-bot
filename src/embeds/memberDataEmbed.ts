@@ -17,7 +17,7 @@ const getFieldsRelevantForGuilds = ({
   const optInEmbedFields: Record<DoraMemberFields, APIEmbedField[]> = {
     firstName: [
       {
-        name: "First name",
+        name: "First Name",
         value: memberData?.firstName || "-",
         inline: true,
       },
@@ -25,14 +25,14 @@ const getFieldsRelevantForGuilds = ({
     birthday: [
       { name: "Age", value: memberData?.age?.toString() || "-", inline: true },
       {
-        name: "Next birthday",
+        name: "Next Birthday",
         value: createDiscordTimestamp(memberData?.nextBirthday) || "-",
         inline: true,
       },
     ],
     switchFriendCode: [
       {
-        name: "Switch friend code",
+        name: "Switch Friend Code",
         value: memberData?.switchFriendCode || "-",
         inline: true,
       },
@@ -53,7 +53,7 @@ const getFieldsRelevantForGuilds = ({
     ],
     phoneNumber: [
       {
-        name: "Phone number",
+        name: "Phone Number",
         value: memberData?.phoneNumber || "-",
         inline: true,
       },
@@ -67,21 +67,21 @@ const getFieldsRelevantForGuilds = ({
     ],
     joinedServer: [
       {
-        name: "Joined server",
+        name: "Joined Server",
         value: createDiscordTimestamp(guildMember.joinedTimestamp) || "-",
         inline: true,
       },
     ],
     accountCreation: [
       {
-        name: "Account creation",
+        name: "Account Creation",
         value: createDiscordTimestamp(guildMember.user.createdTimestamp) || "-",
         inline: true,
       },
     ],
     messageCount: [
       {
-        name: "Message count",
+        name: "Message Count",
         value: memberData?.messageCount.toString() || "-",
         inline: true,
       },
@@ -95,7 +95,7 @@ const getFieldsRelevantForGuilds = ({
     ],
     reactionCount: [
       {
-        name: "Reaction count",
+        name: "Reaction Count",
         value: memberData?.reactionCount.toString() || "-",
         inline: true,
       },
