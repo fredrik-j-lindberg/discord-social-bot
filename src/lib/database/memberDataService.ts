@@ -7,15 +7,15 @@ import { db } from "./client"
 import { setMemberRoles } from "./memberRolesService"
 import {
   type MemberDataDbKeys,
+  type MemberDataRecord,
   type MemberDataRecordPost,
   type MemberDataRecordPostCoreValues,
-  type MemberDataRecordSelect,
   type MemberRoleRecord,
   memberRolesTable,
   membersTable,
 } from "./schema"
 
-type MemberRecordSelectWithExtras = MemberDataRecordSelect & {
+type MemberRecordSelectWithExtras = MemberDataRecord & {
   /** Computed field during select */
   nextBirthday: Date
   /** Member roles from the roles table */

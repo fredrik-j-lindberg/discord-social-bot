@@ -45,6 +45,20 @@ export const membersTable = pgTable(
   (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
 )
 
+export const membersRelations = relations(membersTable, ({ many }) => ({
+  roles: many(memberRolesTable),
+}))
+
+export type MemberDataRecordPost = Omit<typeof membersTable.$inferInsert, "id">
+/** The values which should be part of any update */
+export type MemberDataRecordPostCoreValues = Pick<
+  MemberDataRecordPost,
+  "guildId" | "userId" | "username" | "displayName"
+>
+
+export type MemberDataRecord = typeof membersTable.$inferSelect
+export type MemberDataDbKeys = keyof MemberDataRecord
+
 export const memberRolesTable = pgTable(
   "member_role",
   {
@@ -59,10 +73,6 @@ export const memberRolesTable = pgTable(
   (table) => [primaryKey({ columns: [table.memberId, table.roleId] })],
 )
 
-export const membersRelations = relations(membersTable, ({ many }) => ({
-  roles: many(memberRolesTable),
-}))
-
 export const memberRolesRelations = relations(memberRolesTable, ({ one }) => ({
   member: one(membersTable, {
     fields: [memberRolesTable.memberId],
@@ -72,13 +82,3 @@ export const memberRolesRelations = relations(memberRolesTable, ({ one }) => ({
 
 export type MemberRoleRecord = typeof memberRolesTable.$inferSelect
 export type MemberRoleRecordInsert = typeof memberRolesTable.$inferInsert
-
-export type MemberDataRecordPost = Omit<typeof membersTable.$inferInsert, "id">
-/** The values which should be part of any update */
-export type MemberDataRecordPostCoreValues = Pick<
-  MemberDataRecordPost,
-  "guildId" | "userId" | "username" | "displayName"
->
-
-export type MemberDataRecordSelect = typeof membersTable.$inferSelect
-export type MemberDataDbKeys = keyof MemberDataRecordSelect
