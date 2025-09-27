@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm"
 import {
   date,
   integer,
@@ -43,6 +44,34 @@ export const membersTable = pgTable(
   },
   (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
 )
+
+export const memberRolesTable = pgTable(
+  "member_role",
+  {
+    id: uuid().defaultRandom().notNull().unique(),
+    memberId: uuid()
+      .notNull()
+      .references(() => membersTable.id, { onDelete: "cascade" }),
+    roleId: varchar({ length: 255 }).notNull(),
+
+    ...timestamps,
+  },
+  (table) => [primaryKey({ columns: [table.memberId, table.roleId] })],
+)
+
+export const membersRelations = relations(membersTable, ({ many }) => ({
+  roles: many(memberRolesTable),
+}))
+
+export const memberRolesRelations = relations(memberRolesTable, ({ one }) => ({
+  member: one(membersTable, {
+    fields: [memberRolesTable.memberId],
+    references: [membersTable.id],
+  }),
+}))
+
+export type MemberRoleRecord = typeof memberRolesTable.$inferSelect
+export type MemberRoleRecordInsert = typeof memberRolesTable.$inferInsert
 
 export type MemberDataRecordPost = Omit<typeof membersTable.$inferInsert, "id">
 /** The values which should be part of any update */

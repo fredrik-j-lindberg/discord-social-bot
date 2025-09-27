@@ -50,6 +50,13 @@
       "when": 1758976741113,
       "tag": "0006_rename-record-timestamps",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1758976850633,
+      "tag": "0007_add-member-roles",
+      "breakpoints": true
     }
   ]
 }
