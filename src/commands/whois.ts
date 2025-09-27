@@ -3,15 +3,13 @@ import { SlashCommandBuilder } from "discord.js"
 import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getMemberData } from "~/lib/database/memberDataService"
+import { createRoleMention } from "~/lib/discord/message"
 import { getMember } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { createDiscordTimestamp, formatDate } from "~/lib/helpers/date"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
 import { getGuildConfigById } from "../../guildConfigs"
-
-const noDataMessage =
-  "No data found. You can ask them to add it via the /pii command!"
 
 const memberOptionName = "member"
 const memberDataOptionName = "memberdata"
@@ -70,7 +68,7 @@ export default {
     })
 
     if (!memberData) {
-      return noDataMessage
+      return `No member data was found for ${user.displayName}`
     }
 
     const specificField = interaction.options.getString(memberDataOptionName)
@@ -99,27 +97,44 @@ export default {
     // If the field should have special handling, add an if here. Otherwise it defaults to the value below
     if (specificField === "joinedServer") {
       return (
-        createDiscordTimestamp(guildMember.joinedTimestamp) || noDataMessage
+        createDiscordTimestamp(guildMember.joinedTimestamp) ||
+        `No server join date was found for ${user.displayName}`
       )
     }
     if (specificField === "accountCreation") {
       return (
         createDiscordTimestamp(guildMember.user.createdTimestamp) ||
-        noDataMessage
+        `No account creation date was found for ${user.displayName}`
       )
     }
     if (specificField === "birthday") {
       return memberData.birthday
         ? `${formatDate(memberData[specificField])}, ${createDiscordTimestamp(memberData.nextBirthday)}`
-        : noDataMessage
+        : `No birthday was found for ${user.displayName}. They can add it via the /pii command`
     }
     if (specificField === "latestMessageAt") {
-      return createDiscordTimestamp(memberData[specificField]) || noDataMessage
+      return (
+        createDiscordTimestamp(memberData[specificField]) ||
+        `No latest message date found for ${user.displayName}`
+      )
     }
     if (specificField === "latestReactionAt") {
-      return createDiscordTimestamp(memberData[specificField]) || noDataMessage
+      return (
+        createDiscordTimestamp(memberData[specificField]) ||
+        `No latest reaction date found for ${user.displayName}`
+      )
+    }
+    if (specificField === "roles") {
+      return (
+        memberData.roleIds
+          .map((roleId) => createRoleMention(roleId))
+          .join(" ") || `No roles found for ${user.displayName}`
+      )
     }
 
-    return memberData[specificField]?.toString() || noDataMessage
+    return (
+      memberData[specificField]?.toString() ||
+      `No ${specificField} found for ${user.displayName}`
+    )
   },
 } satisfies Command
