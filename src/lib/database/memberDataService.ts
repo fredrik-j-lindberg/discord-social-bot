@@ -1,4 +1,4 @@
-import { and, eq, getTableColumns, inArray, isNotNull, sql } from "drizzle-orm"
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm"
 
 import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
@@ -9,6 +9,37 @@ import {
   type MemberDataRecordSelect,
   membersTable,
 } from "./schema"
+
+type MemberRecordSelectWithExtras = MemberDataRecordSelect & {
+  nextBirthday: Date
+}
+
+// Function to calculate the next birthday SQL expression
+const calculateNextBirthday = () => {
+  return sql`
+  CASE 
+    -- Check if birthday is NULL or not
+    WHEN ${membersTable.birthday} IS NULL THEN NULL -- Return NULL if the birthday is not set
+
+    -- Check if the member's birthday has occurred this year or is today
+    WHEN (EXTRACT(MONTH FROM ${membersTable.birthday}), EXTRACT(DAY FROM ${membersTable.birthday})) >= 
+         (EXTRACT(MONTH FROM CURRENT_DATE), EXTRACT(DAY FROM CURRENT_DATE))
+    THEN
+        -- Calculate the next birthday for this year
+        DATE_TRUNC('year', CURRENT_DATE) + 
+        ((EXTRACT(MONTH FROM ${membersTable.birthday}) - 1) * INTERVAL '1 month') + 
+        (EXTRACT(DAY FROM ${membersTable.birthday}) - 1) * INTERVAL '1 day'
+    ELSE
+        -- Calculate the next birthday for next year
+        DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '1 year' + 
+        ((EXTRACT(MONTH FROM ${membersTable.birthday}) - 1) * INTERVAL '1 month') + 
+        (EXTRACT(DAY FROM ${membersTable.birthday}) - 1) * INTERVAL '1 day'
+  END`
+    .mapWith(membersTable.birthday)
+    .as("next_birthday")
+}
+
+const getSharedExtras = () => ({ nextBirthday: calculateNextBirthday() })
 
 export type MemberData = MemberDataRecordSelect & {
   /** Computed post-select based on birthday field */
@@ -39,31 +70,6 @@ const mapSelectedMemberData = (memberData: MemberDataRecordSelect) => ({
   age: calculateAge(memberData.birthday),
 })
 
-// Function to calculate the next birthday SQL expression
-const calculateNextBirthday = () => {
-  return sql`
-  CASE 
-    -- Check if birthday is NULL or not
-    WHEN ${membersTable.birthday} IS NULL THEN NULL -- Return NULL if the birthday is not set
-
-    -- Check if the member's birthday has occurred this year or is today
-    WHEN (EXTRACT(MONTH FROM ${membersTable.birthday}), EXTRACT(DAY FROM ${membersTable.birthday})) >= 
-         (EXTRACT(MONTH FROM CURRENT_DATE), EXTRACT(DAY FROM CURRENT_DATE))
-    THEN
-        -- Calculate the next birthday for this year
-        DATE_TRUNC('year', CURRENT_DATE) + 
-        ((EXTRACT(MONTH FROM ${membersTable.birthday}) - 1) * INTERVAL '1 month') + 
-        (EXTRACT(DAY FROM ${membersTable.birthday}) - 1) * INTERVAL '1 day'
-    ELSE
-        -- Calculate the next birthday for next year
-        DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '1 year' + 
-        ((EXTRACT(MONTH FROM ${membersTable.birthday}) - 1) * INTERVAL '1 month') + 
-        (EXTRACT(DAY FROM ${membersTable.birthday}) - 1) * INTERVAL '1 day'
-  END`
-    .mapWith(membersTable.birthday)
-    .as("next_birthday")
-}
-
 export const getMemberData = async ({
   userId,
   guildId,
@@ -71,15 +77,14 @@ export const getMemberData = async ({
   userId: string
   guildId: string
 }): Promise<MemberData | undefined> => {
-  const memberRecords = await db
-    .select({
-      ...getTableColumns(membersTable),
-      nextBirthday: calculateNextBirthday(),
+  const memberRecords: MemberRecordSelectWithExtras[] =
+    await db.query.membersTable.findMany({
+      extras: getSharedExtras(),
+      where: and(
+        eq(membersTable.userId, userId),
+        eq(membersTable.guildId, guildId),
+      ),
     })
-    .from(membersTable)
-    .where(
-      and(eq(membersTable.userId, userId), eq(membersTable.guildId, guildId)),
-    )
 
   if (memberRecords.length > 1) {
     throw new DoraException(
@@ -235,16 +240,15 @@ export const removeMemberReactionFromStats = async ({
 export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
   MemberData[]
 > => {
-  const memberRecords = await db
-    .select()
-    .from(membersTable)
-    .where(
-      and(
+  const memberRecords: MemberRecordSelectWithExtras[] =
+    await db.query.membersTable.findMany({
+      extras: getSharedExtras(),
+      where: and(
         isNotNull(membersTable.birthday),
         sql`EXTRACT(MONTH FROM ${membersTable.birthday}) = EXTRACT(MONTH FROM CURRENT_DATE) AND 
-              EXTRACT(DAY FROM ${membersTable.birthday}) = EXTRACT(DAY FROM CURRENT_DATE)`,
+            EXTRACT(DAY FROM ${membersTable.birthday}) = EXTRACT(DAY FROM CURRENT_DATE)`,
       ),
-    )
+    })
 
   return memberRecords.map(mapSelectedMemberData)
 }
@@ -260,21 +264,17 @@ export const getMembersWithUpcomingBirthday = async ({
    */
   userIds?: string[]
 }): Promise<MemberData[]> => {
-  const memberRecords = await db
-    .select({
-      ...getTableColumns(membersTable),
-      nextBirthday: calculateNextBirthday(),
-    })
-    .from(membersTable)
-    .where(
-      and(
+  const memberRecords: MemberRecordSelectWithExtras[] =
+    await db.query.membersTable.findMany({
+      extras: getSharedExtras(),
+      where: and(
         eq(membersTable.guildId, guildId),
         isNotNull(membersTable.birthday),
         userIds ? inArray(membersTable.userId, userIds) : undefined,
       ),
-    )
-    .orderBy(sql`next_birthday`) // Order by the calculated next birthday
-    .limit(10) // Limit result to the 10 nearest birthdays
+      orderBy: sql`next_birthday`,
+      limit: 10,
+    })
 
   return memberRecords.map(mapSelectedMemberData)
 }
@@ -284,16 +284,15 @@ export const getMembersWithPokemonTcgpFriendCode = async ({
 }: {
   guildId: string
 }): Promise<MemberData[]> => {
-  const memberRecords = await db
-    .select()
-    .from(membersTable)
-    .where(
-      and(
+  const memberRecords: MemberRecordSelectWithExtras[] =
+    await db.query.membersTable.findMany({
+      extras: getSharedExtras(),
+      where: and(
         eq(membersTable.guildId, guildId),
         isNotNull(membersTable.pokemonTcgpFriendCode),
       ),
-    )
-    .limit(30)
+      limit: 30,
+    })
 
   return memberRecords.map(mapSelectedMemberData)
 }
@@ -303,16 +302,15 @@ export const getMembersWithDietaryPreferences = async ({
 }: {
   guildId: string
 }): Promise<MemberData[]> => {
-  const memberRecords = await db
-    .select()
-    .from(membersTable)
-    .where(
-      and(
+  const memberRecords: MemberRecordSelectWithExtras[] =
+    await db.query.membersTable.findMany({
+      extras: getSharedExtras(),
+      where: and(
         eq(membersTable.guildId, guildId),
         isNotNull(membersTable.dietaryPreferences),
       ),
-    )
-    .limit(50)
+      limit: 50,
+    })
 
   return memberRecords.map(mapSelectedMemberData)
 }
