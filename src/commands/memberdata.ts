@@ -9,8 +9,8 @@ import {
   getMembersWithDietaryPreferences,
   getMembersWithPokemonTcgpFriendCode,
   getMembersWithUpcomingBirthday,
+  type MemberData,
 } from "~/lib/database/memberDataService"
-import type { MemberData } from "~/lib/database/schema"
 import { getMembersInRole } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { createDiscordTimestamp } from "~/lib/helpers/date"

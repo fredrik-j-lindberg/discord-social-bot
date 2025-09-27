@@ -1,6 +1,6 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 
-import type { MemberData } from "~/lib/database/schema"
+import type { MemberData } from "~/lib/database/memberDataService"
 import { createDiscordTimestamp } from "~/lib/helpers/date"
 
 import { type DoraMemberFields, getGuildConfigById } from "../../guildConfigs"

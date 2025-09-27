@@ -4,12 +4,16 @@ import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
 import { db } from "./client"
 import {
-  type MemberData,
-  type MemberDataPost,
-  type MemberDataPostCoreValues,
-  type MemberDataSelect,
+  type MemberDataRecordPost,
+  type MemberDataRecordPostCoreValues,
+  type MemberDataRecordSelect,
   membersTable,
 } from "./schema"
+
+export type MemberData = MemberDataRecordSelect & {
+  /** Computed post-select based on birthday field */
+  age: number | null
+}
 
 const calculateAge = (birthday: Date | null) => {
   if (!birthday) return null
@@ -24,13 +28,13 @@ const calculateAge = (birthday: Date | null) => {
     monthDifference === 0 && today.getDate() < birthday.getDate()
 
   if (isBirthdayMonthPassed || isBirthdayDayPassed) {
-    age--
+    age -= 1
   }
 
   return age
 }
 
-const mapSelectedMemberData = (memberData: MemberDataSelect) => ({
+const mapSelectedMemberData = (memberData: MemberDataRecordSelect) => ({
   ...memberData,
   age: calculateAge(memberData.birthday),
 })
@@ -93,7 +97,7 @@ export const getMemberData = async ({
 export const setMemberData = async ({
   memberData,
 }: {
-  memberData: MemberDataPost
+  memberData: MemberDataRecordPost
 }): Promise<void> => {
   await actionWrapper({
     actionDescription: "Set member data",
@@ -131,7 +135,7 @@ export const addMemberMessageToStats = async ({
   coreMemberData,
   messageTimestamp,
 }: {
-  coreMemberData: MemberDataPostCoreValues
+  coreMemberData: MemberDataRecordPostCoreValues
   messageTimestamp: Date
 }): Promise<void> => {
   const insertData = {
@@ -167,7 +171,7 @@ export const addMemberReactionToStats = async ({
   coreMemberData,
   reactionTimestamp,
 }: {
-  coreMemberData: MemberDataPostCoreValues
+  coreMemberData: MemberDataRecordPostCoreValues
   reactionTimestamp: Date
 }): Promise<void> => {
   const insertData = {
@@ -201,7 +205,7 @@ export const addMemberReactionToStats = async ({
 export const removeMemberReactionFromStats = async ({
   coreMemberData,
 }: {
-  coreMemberData: MemberDataPostCoreValues
+  coreMemberData: MemberDataRecordPostCoreValues
 }): Promise<void> => {
   const insertData = {
     ...coreMemberData,

@@ -19,7 +19,7 @@ const timestamps = {
 export const membersTable = pgTable(
   "member_data",
   {
-    id: uuid("id").defaultRandom().notNull().unique(),
+    id: uuid().defaultRandom().notNull().unique(),
     guildId: varchar({ length: 255 }).notNull(),
     userId: varchar({ length: 255 }).notNull(),
     username: varchar({ length: 255 }).notNull(),
@@ -44,19 +44,14 @@ export const membersTable = pgTable(
   (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
 )
 
-export type MemberDataPost = Omit<typeof membersTable.$inferInsert, "id">
+export type MemberDataRecordPost = Omit<typeof membersTable.$inferInsert, "id">
 /** The values which should be part of any update */
-export type MemberDataPostCoreValues = Pick<
-  MemberDataPost,
+export type MemberDataRecordPostCoreValues = Pick<
+  MemberDataRecordPost,
   "guildId" | "userId" | "username" | "displayName"
 >
 
-export type MemberDataSelect = typeof membersTable.$inferSelect & {
+export type MemberDataRecordSelect = typeof membersTable.$inferSelect & {
   /** Optionally computed field on select */
   nextBirthday?: Date | null
-}
-
-export type MemberData = MemberDataSelect & {
-  /** Computed post-select */
-  age: number | null
 }
