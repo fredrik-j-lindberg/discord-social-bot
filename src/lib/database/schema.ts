@@ -80,7 +80,5 @@ export type MemberDataRecordPostCoreValues = Pick<
   "guildId" | "userId" | "username" | "displayName"
 >
 
-export type MemberDataRecordSelect = typeof membersTable.$inferSelect & {
-  /** Optionally computed field on select */
-  nextBirthday?: Date | null
-}
+export type MemberDataRecordSelect = typeof membersTable.$inferSelect
+export type MemberDataDbKeys = keyof MemberDataRecordSelect

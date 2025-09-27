@@ -5,8 +5,8 @@ import {
   MessageFlags,
 } from "discord.js"
 
-import { createDiscordTimestamp } from "../helpers/date"
 import { assertChannelIsTextBased, assertIsDefined } from "../validation"
+import { createDiscordTimestamp } from "./message"
 
 const sendMsg = async (
   channel: GuildBasedChannel | null,

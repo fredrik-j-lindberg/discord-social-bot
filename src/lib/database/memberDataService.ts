@@ -6,17 +6,37 @@ import { calculateAge } from "../helpers/date"
 import { db } from "./client"
 import { setMemberRoles } from "./memberRolesService"
 import {
+  type MemberDataDbKeys,
   type MemberDataRecordPost,
   type MemberDataRecordPostCoreValues,
   type MemberDataRecordSelect,
   type MemberRoleRecord,
+  memberRolesTable,
   membersTable,
 } from "./schema"
 
 type MemberRecordSelectWithExtras = MemberDataRecordSelect & {
+  /** Computed field during select */
   nextBirthday: Date
+  /** Member roles from the roles table */
   roles: MemberRoleRecord[]
 }
+
+const getMemberFilter = (userId: string, guildId: string) => [
+  eq(membersTable.userId, userId),
+  eq(membersTable.guildId, guildId),
+]
+const getRoleFilter = (roleIds?: string[]) => [
+  roleIds
+    ? inArray(
+        membersTable.id,
+        db
+          .select({ id: memberRolesTable.memberId })
+          .from(memberRolesTable)
+          .where(inArray(memberRolesTable.roleId, roleIds)),
+      )
+    : undefined,
+]
 
 // Function to calculate the next birthday SQL expression
 const calculateNextBirthday = () => {
@@ -45,16 +65,19 @@ const calculateNextBirthday = () => {
 
 const getSharedExtras = () => ({ nextBirthday: calculateNextBirthday() })
 
-export type MemberData = MemberDataRecordSelect & {
+export type MemberData = Omit<MemberRecordSelectWithExtras, "roles"> & {
   /** Computed post-select based on birthday field */
   age: number | null
   roleIds: string[]
 }
 
-const mapSelectedMemberData = (memberData: MemberRecordSelectWithExtras) => ({
+const mapSelectedMemberData = ({
+  roles,
+  ...memberData
+}: MemberRecordSelectWithExtras): MemberData => ({
   ...memberData,
   age: calculateAge(memberData.birthday),
-  roleIds: memberData.roles.map((role) => role.roleId),
+  roleIds: roles.map((role) => role.roleId),
 })
 
 export const getMemberData = async ({
@@ -67,10 +90,7 @@ export const getMemberData = async ({
   const memberRecords: MemberRecordSelectWithExtras[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
-      where: and(
-        eq(membersTable.userId, userId),
-        eq(membersTable.guildId, guildId),
-      ),
+      where: and(...getMemberFilter(userId, guildId)),
       with: { roles: true },
     })
 
@@ -252,14 +272,11 @@ export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
 
 export const getMembersWithUpcomingBirthday = async ({
   guildId,
-  userIds,
+  roleIds,
 }: {
   guildId: string
-  /**
-   * Pass if it should filter based on these userIds
-   * Can be useful if you for example have fetched all members in a role and want to fetch only for those members
-   */
-  userIds?: string[]
+  /** Pass if it should filter based on these roleIds */
+  roleIds?: string[]
 }): Promise<MemberData[]> => {
   const memberRecords: MemberRecordSelectWithExtras[] =
     await db.query.membersTable.findMany({
@@ -267,7 +284,7 @@ export const getMembersWithUpcomingBirthday = async ({
       where: and(
         eq(membersTable.guildId, guildId),
         isNotNull(membersTable.birthday),
-        userIds ? inArray(membersTable.userId, userIds) : undefined,
+        ...getRoleFilter(roleIds),
       ),
       orderBy: sql`next_birthday`,
       with: { roles: true },
@@ -277,37 +294,26 @@ export const getMembersWithUpcomingBirthday = async ({
   return memberRecords.map(mapSelectedMemberData)
 }
 
-export const getMembersWithPokemonTcgpFriendCode = async ({
+/** Get members that has a specific member data field */
+export const getMembersWithField = async ({
   guildId,
+  field,
+  roleIds,
 }: {
   guildId: string
+  field: MemberDataDbKeys
+  /** Pass if it should filter based on these roleIds */
+  roleIds?: string[]
 }): Promise<MemberData[]> => {
   const memberRecords: MemberRecordSelectWithExtras[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
       where: and(
         eq(membersTable.guildId, guildId),
-        isNotNull(membersTable.pokemonTcgpFriendCode),
+        isNotNull(membersTable[field]),
+        ...getRoleFilter(roleIds),
       ),
-      with: { roles: true },
-      limit: 30,
-    })
-
-  return memberRecords.map(mapSelectedMemberData)
-}
-
-export const getMembersWithDietaryPreferences = async ({
-  guildId,
-}: {
-  guildId: string
-}): Promise<MemberData[]> => {
-  const memberRecords: MemberRecordSelectWithExtras[] =
-    await db.query.membersTable.findMany({
-      extras: getSharedExtras(),
-      where: and(
-        eq(membersTable.guildId, guildId),
-        isNotNull(membersTable.dietaryPreferences),
-      ),
+      orderBy: sql`next_birthday`,
       with: { roles: true },
       limit: 50,
     })

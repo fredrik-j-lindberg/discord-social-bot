@@ -1,19 +1,14 @@
-import {
-  ChatInputCommandInteraction,
-  Guild,
-  SlashCommandBuilder,
-} from "discord.js"
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
-  getMembersWithDietaryPreferences,
-  getMembersWithPokemonTcgpFriendCode,
+  getMembersWithField,
   getMembersWithUpcomingBirthday,
   type MemberData,
 } from "~/lib/database/memberDataService"
-import { getMembersInRole } from "~/lib/discord/user"
+import type { MemberDataDbKeys } from "~/lib/database/schema"
+import { createDiscordTimestamp } from "~/lib/discord/message"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import { createDiscordTimestamp } from "~/lib/helpers/date"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
 import {
@@ -100,16 +95,27 @@ const handleFieldChoice = async ({
   role?: { id: string } | null
 }) => {
   const role = interaction.options.getRole(roleOptionName)
+  const guildId = interaction.guild.id
+  const commonOptions = { interaction, role, guildId }
+
   if (field === "birthday") {
-    return await handleBirthdayFieldChoice({ interaction, role })
+    return await handleBirthdayFieldChoice({ ...commonOptions })
   }
 
   if (field === "pokemonTcgpFriendCode") {
-    return await handlePokemonTcgpFieldChoice({ interaction, role })
+    return await handleGenericDbFieldChoice({
+      ...commonOptions,
+      field,
+      title: "Pokemon TCGP Friend Codes",
+    })
   }
 
   if (field === "dietaryPreferences") {
-    return await handleDietaryPreferencesFieldChoice({ interaction, role })
+    return await handleGenericDbFieldChoice({
+      ...commonOptions,
+      field,
+      title: "Dietary Preferences",
+    })
   }
 
   throw new DoraUserException(
@@ -127,9 +133,7 @@ const composeMemberDataList = ({
   valueSetter: (memberData: MemberData) => string | null | undefined
 }) => {
   if (membersData.length === 0) {
-    throw new DoraUserException(
-      "No data found, it can be added via the /pii command",
-    )
+    throw new DoraUserException("No data found")
   }
 
   const list = membersData
@@ -140,6 +144,31 @@ const composeMemberDataList = ({
   return `*${title}*\n${list}`
 }
 
+/** Generic handling for fields that can be selected from the DB */
+const handleGenericDbFieldChoice = async ({
+  field,
+  guildId,
+  title,
+  role,
+}: {
+  field: MemberDataDbKeys
+  guildId: string
+  title: string
+  role: { id: string; name: string } | null
+}) => {
+  const filteredMembers = await getMembersWithField({
+    guildId,
+    field,
+    roleIds: role ? [role.id] : undefined,
+  })
+
+  return composeMemberDataList({
+    title: role ? `${title} in role '${role.name}'` : title,
+    membersData: filteredMembers,
+    valueSetter: (memberData) => memberData[field]?.toString(),
+  })
+}
+
 const handleBirthdayFieldChoice = async ({
   interaction,
   role,
@@ -148,20 +177,9 @@ const handleBirthdayFieldChoice = async ({
   /** Role to filter on */
   role: { id: string; name: string } | null
 }): Promise<string> => {
-  const membersInRole =
-    role &&
-    (await getMembersInRole({
-      guild: interaction.guild,
-      roleId: role.id,
-    }))
-
-  if (role && !membersInRole?.size) {
-    throw new DoraUserException(`No members found in role '${role.name}'`)
-  }
-
   const membersWithUpcomingBirthday = await getMembersWithUpcomingBirthday({
     guildId: interaction.guild.id,
-    userIds: membersInRole?.map((guildMember) => guildMember.id),
+    roleIds: role ? [role.id] : undefined,
   })
 
   return composeMemberDataList({
@@ -169,80 +187,5 @@ const handleBirthdayFieldChoice = async ({
     membersData: membersWithUpcomingBirthday,
     valueSetter: (memberData) =>
       createDiscordTimestamp(memberData.nextBirthday),
-  })
-}
-
-const handlePokemonTcgpFieldChoice = async ({
-  interaction,
-  role,
-}: {
-  interaction: CommandInteractionWithGuild
-  /** Role to filter on */
-  role: { id: string; name: string } | null
-}): Promise<string> => {
-  const filteredMembers = await optionallyFilterMembersByRole({
-    membersData: await getMembersWithPokemonTcgpFriendCode({
-      guildId: interaction.guild.id,
-    }),
-    guild: interaction.guild,
-    roleId: role?.id,
-  })
-
-  return composeMemberDataList({
-    title: "Pokemon TCGP Friend Codes",
-    membersData: filteredMembers,
-    valueSetter: (memberData) => memberData.pokemonTcgpFriendCode,
-  })
-}
-
-const optionallyFilterMembersByRole = async <
-  TMemberData extends { userId: string },
->({
-  membersData,
-  guild,
-  roleId,
-}: {
-  membersData: TMemberData[]
-  guild: Guild
-  /** If sent as falsy, will return the members list unfiltered */
-  roleId?: string | null
-}): Promise<TMemberData[]> => {
-  if (!roleId) return membersData
-
-  const membersInRole = await getMembersInRole({
-    guild,
-    roleId,
-  })
-  if (!membersInRole) {
-    throw new DoraUserException(`No members found in role '${roleId}'`)
-  }
-
-  return membersData.filter((member) => {
-    return Boolean(membersInRole.get(member.userId))
-  })
-}
-
-const handleDietaryPreferencesFieldChoice = async ({
-  interaction,
-  role,
-}: {
-  interaction: CommandInteractionWithGuild
-  /** Role to filter on */
-  role: { id: string; name: string } | null
-}): Promise<string> => {
-  const filteredMembers = await optionallyFilterMembersByRole({
-    membersData: await getMembersWithDietaryPreferences({
-      guildId: interaction.guild.id,
-    }),
-    guild: interaction.guild,
-    roleId: role?.id,
-  })
-
-  return composeMemberDataList({
-    title: role
-      ? `Dietary preferences in role '${role.name}'`
-      : "Dietary preferences",
-    membersData: filteredMembers,
-    valueSetter: (memberData) => memberData.dietaryPreferences,
   })
 }

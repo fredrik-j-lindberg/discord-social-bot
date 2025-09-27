@@ -45,17 +45,6 @@ export const ukDateStringToDate = (ukDateString: string) => {
   return new Date(Date.UTC(year, month - 1, day))
 }
 
-/** Converts a date or a timestamp into Discord's native timestamp string format */
-export const createDiscordTimestamp = (
-  timestampOrDate?: Date | number | null,
-) => {
-  const timestamp =
-    timestampOrDate instanceof Date
-      ? timestampOrDate.getTime()
-      : timestampOrDate
-  return timestamp ? `<t:${Math.round(timestamp / 1000)}:R>` : undefined
-}
-
 export const calculateAge = (birthday: Date | null) => {
   if (!birthday) return null
   const today = new Date()
