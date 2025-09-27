@@ -194,30 +194,48 @@ export const addMemberReactionToStats = async ({
 }: {
   coreMemberData: MemberDataRecordPostCoreValues
   reactionTimestamp: Date
-}): Promise<void> => {
+}): Promise<MemberDataRecord> => {
   const insertData = {
     ...coreMemberData,
     reactionCount: 1,
     latestReactionAt: reactionTimestamp,
   }
-  await actionWrapper({
+  return await actionWrapper({
     actionDescription: "Add member reaction to stats",
     meta: {
       userId: coreMemberData.userId,
       username: coreMemberData.username,
     },
     action: async () => {
-      await db
-        .insert(membersTable)
-        .values(insertData)
-        .onConflictDoUpdate({
-          target: [membersTable.userId, membersTable.guildId],
-          set: {
-            username: coreMemberData.username,
-            reactionCount: sql`${membersTable.reactionCount} + 1`,
-            latestReactionAt: reactionTimestamp,
-          },
-        })
+      return await db.transaction(async (transaction) => {
+        const updatedRecords = await transaction
+          .insert(membersTable)
+          .values(insertData)
+          .onConflictDoUpdate({
+            target: [membersTable.userId, membersTable.guildId],
+            set: {
+              username: coreMemberData.username,
+              reactionCount: sql`${membersTable.reactionCount} + 1`,
+              latestReactionAt: reactionTimestamp,
+            },
+          })
+          .returning()
+
+        if (updatedRecords.length > 1) {
+          throw new DoraException(
+            "Multiple members updated, expected to only be one. Rolling back transaction",
+          )
+        }
+
+        const updatedMember = updatedRecords[0]
+        if (!updatedMember) {
+          throw new DoraException(
+            "Failed to update member data. Rolling back transaction",
+          )
+        }
+
+        return updatedMember
+      })
     },
   })
 }
