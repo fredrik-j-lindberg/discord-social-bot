@@ -55,3 +55,22 @@ export const createDiscordTimestamp = (
       : timestampOrDate
   return timestamp ? `<t:${Math.round(timestamp / 1000)}:R>` : undefined
 }
+
+export const calculateAge = (birthday: Date | null) => {
+  if (!birthday) return null
+  const today = new Date()
+
+  let age = today.getFullYear() - birthday.getFullYear()
+  const monthDifference = today.getMonth() - birthday.getMonth()
+
+  // Adjust age if the birth date hasn't occurred yet this year
+  const isBirthdayMonthPassed = monthDifference < 0
+  const isBirthdayDayPassed =
+    monthDifference === 0 && today.getDate() < birthday.getDate()
+
+  if (isBirthdayMonthPassed || isBirthdayDayPassed) {
+    age -= 1
+  }
+
+  return age
+}

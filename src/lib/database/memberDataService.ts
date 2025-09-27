@@ -2,6 +2,7 @@ import { and, eq, inArray, isNotNull, sql } from "drizzle-orm"
 
 import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
+import { calculateAge } from "../helpers/date"
 import { db } from "./client"
 import {
   type MemberDataRecordPost,
@@ -44,25 +45,6 @@ const getSharedExtras = () => ({ nextBirthday: calculateNextBirthday() })
 export type MemberData = MemberDataRecordSelect & {
   /** Computed post-select based on birthday field */
   age: number | null
-}
-
-const calculateAge = (birthday: Date | null) => {
-  if (!birthday) return null
-  const today = new Date()
-
-  let age = today.getFullYear() - birthday.getFullYear()
-  const monthDifference = today.getMonth() - birthday.getMonth()
-
-  // Adjust age if the birth date hasn't occurred yet this year
-  const isBirthdayMonthPassed = monthDifference < 0
-  const isBirthdayDayPassed =
-    monthDifference === 0 && today.getDate() < birthday.getDate()
-
-  if (isBirthdayMonthPassed || isBirthdayDayPassed) {
-    age -= 1
-  }
-
-  return age
 }
 
 const mapSelectedMemberData = (memberData: MemberDataRecordSelect) => ({
