@@ -1,7 +1,9 @@
 import type { Events, Message, PartialMessage } from "discord.js"
 
 import { addMemberReactionToStats } from "~/lib/database/memberDataService"
+import { addMemberEmojiUsage } from "~/lib/database/memberEmojisService"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
+import { getGuild } from "~/lib/discord/guilds"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 const getFullMessage = async (message: Message | PartialMessage) => {
@@ -26,13 +28,41 @@ export default {
       "Reaction added for a user without username, can't be added to stats",
     )
 
-    await addMemberReactionToStats({
+    const guildId = message.guild.id
+
+    const reactionTimestamp = new Date()
+    const updatedMember = await addMemberReactionToStats({
       coreMemberData: {
-        guildId: message.guild.id,
+        guildId,
         userId: user.id,
         username: user.username,
       },
-      reactionTimestamp: new Date(),
+      reactionTimestamp,
+    })
+
+    assertHasDefinedProperty(
+      reaction.emoji,
+      "name",
+      "Reaction added but emoji name couldn't be found, can't be added to stats",
+    )
+
+    const oauthGuild = await getGuild(guildId)
+    const guild = await oauthGuild.fetch()
+    const emojis = await guild.emojis.fetch()
+    const isGuildEmoji = emojis.some((emoji) => emoji.id === reaction.emoji.id)
+
+    await addMemberEmojiUsage({
+      values: {
+        memberId: updatedMember.id,
+        guildId,
+        isGuildEmoji,
+        emojiId: reaction.emoji.id,
+        emojiName: reaction.emoji.name,
+        messageId: message.id,
+        messageAuthorUserId: message.author.id,
+        timestamp: reactionTimestamp,
+        context: "reaction",
+      },
     })
   },
 } satisfies EventListener<Events.MessageReactionAdd>
