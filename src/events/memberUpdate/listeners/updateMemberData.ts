@@ -4,7 +4,7 @@ import { setMemberData } from "~/lib/database/memberDataService"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 
 export default {
-  data: { name: "updateDisplayName" },
+  data: { name: "updateMemberData" },
   execute: (_oldMember, newMember) => {
     void setMemberData({
       memberData: {
