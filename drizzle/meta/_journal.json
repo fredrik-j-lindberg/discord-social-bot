@@ -57,6 +57,13 @@
       "when": 1758976850633,
       "tag": "0007_add-member-roles",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1759015478118,
+      "tag": "0008_add-member-emojis",
+      "breakpoints": true
     }
   ]
 }

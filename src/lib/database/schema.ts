@@ -1,7 +1,9 @@
 import { relations } from "drizzle-orm"
 import {
+  boolean,
   date,
   integer,
+  pgEnum,
   pgTable,
   primaryKey,
   timestamp,
@@ -47,6 +49,7 @@ export const membersTable = pgTable(
 
 export const membersRelations = relations(membersTable, ({ many }) => ({
   roles: many(memberRolesTable),
+  emojis: many(memberEmojisTable),
 }))
 
 export type MemberDataRecordPost = Omit<typeof membersTable.$inferInsert, "id">
@@ -82,3 +85,38 @@ export const memberRolesRelations = relations(memberRolesTable, ({ one }) => ({
 
 export type MemberRoleRecord = typeof memberRolesTable.$inferSelect
 export type MemberRoleRecordInsert = typeof memberRolesTable.$inferInsert
+
+export const emojisUsageEnum = pgEnum("context", ["reaction", "message"])
+
+export const memberEmojisTable = pgTable("member_emojis", {
+  id: uuid().defaultRandom().notNull().unique().primaryKey(),
+  memberId: uuid()
+    .notNull()
+    .references(() => membersTable.id),
+  /** The id of the emoji, nullable since native unicode emojis do not have an id */
+  emojiId: varchar({ length: 255 }),
+  emojiName: varchar({ length: 255 }).notNull(),
+  guildId: varchar({ length: 255 }).notNull(),
+  timestamp: timestamp({ mode: "date" }).notNull(),
+  /** The user id of the message that received the reaction, or the message that contained the emoji */
+  messageAuthorUserId: varchar({ length: 255 }).notNull(),
+  /** The id of the message that received the reaction, or that contained the emoji */
+  messageId: varchar({ length: 255 }).notNull(),
+  /** Whether or not the emoji exists on the server itself */
+  isGuildEmoji: boolean().notNull(),
+  /** In which context the emoji was used. E.g. reaction or in a message */
+  context: emojisUsageEnum().notNull(),
+})
+
+export const memberEmojisRelations = relations(
+  memberEmojisTable,
+  ({ one }) => ({
+    member: one(membersTable, {
+      fields: [memberEmojisTable.memberId],
+      references: [membersTable.id],
+    }),
+  }),
+)
+
+export type MemberEmojiRecord = typeof memberEmojisTable.$inferSelect
+export type MemberEmojiRecordInsert = typeof memberEmojisTable.$inferInsert
