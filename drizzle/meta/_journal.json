@@ -43,6 +43,13 @@
       "when": 1758926765634,
       "tag": "0005_add-record-timestamps",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1758976741113,
+      "tag": "0006_rename-record-timestamps",
+      "breakpoints": true
     }
   ]
 }

@@ -9,11 +9,11 @@ import {
 } from "drizzle-orm/pg-core"
 
 const timestamps = {
-  updatedAt: timestamp()
+  recordUpdatedAt: timestamp()
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
-  createdAt: timestamp().defaultNow().notNull(),
+  recordCreatedAt: timestamp().defaultNow().notNull(),
 }
 
 export const membersTable = pgTable(
