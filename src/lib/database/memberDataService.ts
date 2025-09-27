@@ -99,13 +99,29 @@ export const setMemberData = async ({
     actionDescription: "Set member data",
     meta: { userId: memberData.userId, displayName: memberData.displayName },
     action: async () => {
-      await db
-        .insert(membersTable)
-        .values(memberData)
-        .onConflictDoUpdate({
-          target: [membersTable.userId, membersTable.guildId],
-          set: memberData,
-        })
+      await db.transaction(async (transaction) => {
+        const insertedRecords = await transaction
+          .insert(membersTable)
+          .values(memberData)
+          .onConflictDoUpdate({
+            target: [membersTable.userId, membersTable.guildId],
+            set: memberData,
+          })
+          .returning()
+
+        if (insertedRecords.length > 1) {
+          throw new DoraException(
+            "Multiple members inserted or updated, expected to only be one. Rolling back transaction",
+          )
+        }
+
+        const insertedMember = insertedRecords[0]
+        if (!insertedMember) {
+          throw new DoraException(
+            "Failed to insert or update member data. Rolling back transaction",
+          )
+        }
+      })
     },
   })
 }

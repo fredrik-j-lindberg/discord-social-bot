@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from "discord.js"
 
 import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
-import { getMemberData } from "~/lib/database/memberDataDb"
+import { getMemberData } from "~/lib/database/memberDataService"
 import { getMember } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { createDiscordTimestamp, formatDate } from "~/lib/helpers/date"

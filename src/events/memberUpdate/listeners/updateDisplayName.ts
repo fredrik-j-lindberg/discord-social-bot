@@ -1,6 +1,6 @@
 import type { Events } from "discord.js"
 
-import { setMemberData } from "~/lib/database/memberDataDb"
+import { setMemberData } from "~/lib/database/memberDataService"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 
 export default {

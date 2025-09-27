@@ -31,7 +31,7 @@ export class DoraException extends Error {
 
   constructor(
     message: string,
-    type: ExceptionType,
+    type?: ExceptionType,
     options?: {
       cause?: unknown
       severity?: Severity
@@ -40,7 +40,7 @@ export class DoraException extends Error {
   ) {
     super(message, { cause: options?.cause })
     this.name = "DoraException"
-    this.type = type
+    this.type = type || "Unknown"
     this.severity = options?.severity || severity.Error
     this.metadata = {
       ...options?.metadata,

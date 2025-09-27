@@ -2,7 +2,7 @@ import { TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
-import { setMemberData } from "~/lib/database/memberDataDb"
+import { setMemberData } from "~/lib/database/memberDataService"
 import type { MemberData } from "~/lib/database/schema"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import {

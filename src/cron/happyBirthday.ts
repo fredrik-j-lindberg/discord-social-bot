@@ -1,7 +1,7 @@
 import { Guild, GuildMember } from "discord.js"
 
 import { actionWrapper } from "~/lib/actionWrapper"
-import { getMembersWithBirthdayTodayForAllGuilds } from "~/lib/database/memberDataDb"
+import { getMembersWithBirthdayTodayForAllGuilds } from "~/lib/database/memberDataService"
 import { getChannel } from "~/lib/discord/channels"
 import { getGuild } from "~/lib/discord/guilds"
 import { addRole, getRole } from "~/lib/discord/roles"

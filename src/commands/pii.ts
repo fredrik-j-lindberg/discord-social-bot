@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
-import { getMemberData } from "~/lib/database/memberDataDb"
+import { getMemberData } from "~/lib/database/memberDataService"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 import piiModal from "../modals/piiModal"

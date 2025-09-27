@@ -9,7 +9,7 @@ import {
   getMembersWithDietaryPreferences,
   getMembersWithPokemonTcgpFriendCode,
   getMembersWithUpcomingBirthday,
-} from "~/lib/database/memberDataDb"
+} from "~/lib/database/memberDataService"
 import type { MemberData } from "~/lib/database/schema"
 import { getMembersInRole } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"

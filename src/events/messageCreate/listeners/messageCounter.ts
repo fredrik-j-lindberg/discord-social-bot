@@ -1,6 +1,6 @@
 import type { Events } from "discord.js"
 
-import { addMemberMessageToStats } from "~/lib/database/memberDataDb"
+import { addMemberMessageToStats } from "~/lib/database/memberDataService"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
