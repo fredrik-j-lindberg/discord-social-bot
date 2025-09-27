@@ -4,15 +4,18 @@ import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
 import { calculateAge } from "../helpers/date"
 import { db } from "./client"
+import { setMemberRoles } from "./memberRolesService"
 import {
   type MemberDataRecordPost,
   type MemberDataRecordPostCoreValues,
   type MemberDataRecordSelect,
+  type MemberRoleRecord,
   membersTable,
 } from "./schema"
 
 type MemberRecordSelectWithExtras = MemberDataRecordSelect & {
   nextBirthday: Date
+  roles: MemberRoleRecord[]
 }
 
 // Function to calculate the next birthday SQL expression
@@ -45,11 +48,13 @@ const getSharedExtras = () => ({ nextBirthday: calculateNextBirthday() })
 export type MemberData = MemberDataRecordSelect & {
   /** Computed post-select based on birthday field */
   age: number | null
+  roleIds: string[]
 }
 
-const mapSelectedMemberData = (memberData: MemberDataRecordSelect) => ({
+const mapSelectedMemberData = (memberData: MemberRecordSelectWithExtras) => ({
   ...memberData,
   age: calculateAge(memberData.birthday),
+  roleIds: memberData.roles.map((role) => role.roleId),
 })
 
 export const getMemberData = async ({
@@ -66,6 +71,7 @@ export const getMemberData = async ({
         eq(membersTable.userId, userId),
         eq(membersTable.guildId, guildId),
       ),
+      with: { roles: true },
     })
 
   if (memberRecords.length > 1) {
@@ -82,9 +88,9 @@ export const getMemberData = async ({
 
 /** Creates member or updates member with all the data sent */
 export const setMemberData = async ({
-  memberData,
+  memberData: { roleIds, ...memberData },
 }: {
-  memberData: MemberDataRecordPost
+  memberData: MemberDataRecordPost & { roleIds?: string[] }
 }): Promise<void> => {
   await actionWrapper({
     actionDescription: "Set member data",
@@ -111,6 +117,14 @@ export const setMemberData = async ({
           throw new DoraException(
             "Failed to insert or update member data. Rolling back transaction",
           )
+        }
+
+        if (roleIds) {
+          await setMemberRoles({
+            memberId: insertedMember.id,
+            roleIds,
+            transaction,
+          })
         }
       })
     },
@@ -230,6 +244,7 @@ export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
         sql`EXTRACT(MONTH FROM ${membersTable.birthday}) = EXTRACT(MONTH FROM CURRENT_DATE) AND 
             EXTRACT(DAY FROM ${membersTable.birthday}) = EXTRACT(DAY FROM CURRENT_DATE)`,
       ),
+      with: { roles: true },
     })
 
   return memberRecords.map(mapSelectedMemberData)
@@ -255,6 +270,7 @@ export const getMembersWithUpcomingBirthday = async ({
         userIds ? inArray(membersTable.userId, userIds) : undefined,
       ),
       orderBy: sql`next_birthday`,
+      with: { roles: true },
       limit: 10,
     })
 
@@ -273,6 +289,7 @@ export const getMembersWithPokemonTcgpFriendCode = async ({
         eq(membersTable.guildId, guildId),
         isNotNull(membersTable.pokemonTcgpFriendCode),
       ),
+      with: { roles: true },
       limit: 30,
     })
 
@@ -291,6 +308,7 @@ export const getMembersWithDietaryPreferences = async ({
         eq(membersTable.guildId, guildId),
         isNotNull(membersTable.dietaryPreferences),
       ),
+      with: { roles: true },
       limit: 50,
     })
 

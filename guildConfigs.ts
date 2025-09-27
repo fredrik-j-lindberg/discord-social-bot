@@ -21,6 +21,9 @@ export const SUPPORTED_MEMBER_FIELDS = {
   dietaryPreferences: "dietaryPreferences",
   switchFriendCode: "switchFriendCode",
   pokemonTcgpFriendCode: "pokemonTcgpFriendCode",
+
+  // Values owned by Discord but synced to DB
+  roles: "roles",
 } as const
 export type DoraMemberFields =
   (typeof SUPPORTED_MEMBER_FIELDS)[keyof typeof SUPPORTED_MEMBER_FIELDS]
@@ -58,6 +61,7 @@ const devGuildConfigs: GuildConfigs = {
       SUPPORTED_MEMBER_FIELDS.latestMessageAt,
       SUPPORTED_MEMBER_FIELDS.reactionCount,
       SUPPORTED_MEMBER_FIELDS.latestReactionAt,
+      SUPPORTED_MEMBER_FIELDS.roles,
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test

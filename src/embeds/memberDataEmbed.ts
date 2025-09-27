@@ -107,6 +107,17 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
+    roles: [
+      {
+        name: "Roles",
+        value:
+          memberData?.roleIds
+            .filter((roleId) => roleId !== guildId) // Remove the irrelevant @everyone role
+            .map((roleId) => `<@&${roleId}>`)
+            .join(" ") || "-",
+        inline: true,
+      },
+    ],
   }
   const guildConfig = getGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)
