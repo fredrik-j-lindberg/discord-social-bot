@@ -1,13 +1,19 @@
-import type { Events } from "discord.js"
+import type { Events, Message, PartialMessage } from "discord.js"
 
 import { addMemberReactionToStats } from "~/lib/database/memberDataService"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
+const getFullMessage = async (message: Message | PartialMessage) => {
+  if (!message.partial) return message
+  return await message.fetch()
+}
+
 export default {
   data: { name: "reactionCounterAdd" },
   execute: async (reaction, user) => {
-    const message = reaction.message
+    const message = await getFullMessage(reaction.message)
+
     assertHasDefinedProperty(
       message,
       "guild",

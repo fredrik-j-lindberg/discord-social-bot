@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from "discord.js"
+import { Client, GatewayIntentBits, Partials } from "discord.js"
 
 import { env } from "./env"
 import { registerEvents } from "./events"
@@ -16,6 +16,7 @@ export const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMessageReactions,
   ],
+  partials: [Partials.Channel, Partials.Message, Partials.Reaction],
 })
 
 export const initDiscordClient = async () => {
