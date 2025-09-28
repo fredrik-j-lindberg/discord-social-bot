@@ -37,6 +37,10 @@ Bot will wish happy birthday to those who have their birthday today
 
 _Note: This requires the birthdayWishes channel to be set in the guild config and that the user has added their birthday via /pii_
 
+### Server data
+
+Via the /serverdata command you can access some information relating to the server. E.g. the most or least popular server emojis
+
 ### Random stuff
 
 - If a message contains the text "christian server" the bot will respond with a cross, which is a reference to the legacy pg-13 status of the Eithon community
