@@ -182,3 +182,4 @@ There are also some helpful scripts for this:
 - Make /pii ephemeral (so only you can see your input and failures)
 - Use autocomplete handling in /memberdata (similar to /whois) to make the options guild-specific
 - Refactor /memberdata register list subcommands semi-dynamically. Setup individual listeners with a proper name, cmd and action.
+- Align action wrapper usage around database methods (e.g. the new services)

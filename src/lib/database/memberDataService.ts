@@ -76,6 +76,7 @@ const mapSelectedMemberData = ({
   ...memberData
 }: MemberRecordSelectWithExtras): MemberData => ({
   ...memberData,
+  nextBirthday: new Date(memberData.nextBirthday), // This seems to be a bug in drizzle where the query + extra syntax returns it as string instead of date
   age: calculateAge(memberData.birthday),
   roleIds: roles.map((role) => role.roleId),
 })
