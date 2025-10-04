@@ -164,6 +164,23 @@ There are also some helpful scripts for this:
 
 ### Feats
 
+- Implement inactivity system:
+  - Step 1: Send member activity list to e.g. 106098921985556480 (Neylion) to test sending dms and checking that the activity works as expected
+    - Member activity should be based on latest message or latest reaction
+    - This should be opt in via the the guild config
+  - Step 2: Draft a message to send to inactive members. Send it initially to Neylion to see if it works
+    - E.g. Once a week, send a message for those who haven't had any activity for the last 3 months or so
+    - Once the message is sent, the memberdata for the those who haven't had any activity should be updated with a "inactivity warning" timestamp
+    - If the user sends a message or adds a reaction, the inactivity warning timestamp should be removed
+  - Step 3: Draft a message to send to kicked members. Send it initially to Neylion to see if it works
+    - Should be sent 1 month after the inactivity warning timestamp was added
+    - Should include a link back to the server they were kicked from, to make it easy to re-join
+
+  Once the previous steps are confirmed to be working
+  - Step 4: Start sending the messages to actual members
+  - Step 5: Implement the kick
+  - Step 6: Consider adding an "inactive" role to users who have received the warning
+
 - Requires message tracking: Send message to admin and/or user if user has not sent a message in X time
   - Should be opt in via guild config
   - Potential next step is to add option of automatically kicking user after Y time (with an invite link on how they can re-join, to keep e.g. tight nit servers decently small without a bunch of inactive lurkers)
