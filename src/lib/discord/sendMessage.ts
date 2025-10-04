@@ -3,8 +3,13 @@ import {
   GuildScheduledEvent,
   type MessageCreateOptions,
   MessageFlags,
+  User,
 } from "discord.js"
 
+import type { InactivityMemberData } from "~/cron/inactivityCheck"
+
+import type { GuildConfig } from "../../../guildConfigs"
+import { addDaysToDate } from "../helpers/date"
 import { assertChannelIsTextBased, assertIsDefined } from "../validation"
 import { createDiscordTimestamp } from "./message"
 
@@ -59,4 +64,96 @@ const removeEmojis = (input: string) => {
   const withoutEmojis = input.replace(regexMatchingAllEmojis, "")
   const withoutDoubleSpaces = withoutEmojis.replace("  ", " ") // <text> <emoji> <text> will result in double spaces
   return withoutDoubleSpaces.trim()
+}
+
+const getInactivityInfoText = ({
+  inactivityConfig,
+}: {
+  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+}) => {
+  const { daysUntilInactive, daysAsInactiveBeforeKick } = inactivityConfig
+  return `Anyone with no activity for **${daysUntilInactive}** days is considered inactive, once marked as inactive you will be removed from the server after **${daysAsInactiveBeforeKick}** days. All that is needed to lose the inactive status is to send a message in the server!`
+}
+
+export const sendDebugInactivitySummaryToUser = async ({
+  inactiveMembers,
+  debugUser,
+  guildName,
+  inactivityConfig,
+}: {
+  inactiveMembers: InactivityMemberData[]
+  debugUser: User
+  guildName: string
+  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+}) => {
+  if (inactiveMembers.length === 0) {
+    return
+  }
+
+  const intro = `The following members have been inactive recently in **${guildName}**. They were last seen:`
+  const lines = inactiveMembers.map((memberData) => {
+    const lastSeenText = memberData.latestActivityAt
+      ? createDiscordTimestamp(memberData.latestActivityAt)
+      : "N/A"
+
+    const willBeKickedText = createDiscordTimestamp(
+      addDaysToDate(
+        memberData.inactiveSince || new Date(),
+        inactivityConfig.daysAsInactiveBeforeKick,
+      ),
+    )
+    return `**${memberData.displayName}** (${memberData.userId}) - Last seen: ${lastSeenText}, will be kicked: ${willBeKickedText}`
+  })
+
+  await debugUser.send({
+    content: `${intro}\n\n${lines.join("\n")}\n\n${getInactivityInfoText({ inactivityConfig })}`,
+  })
+}
+
+export const sendInactivityNotice = async ({
+  inactiveMember,
+  debugUser,
+  guildName,
+  inactivityConfig,
+}: {
+  inactiveMember: InactivityMemberData
+  debugUser: User
+  guildName: string
+  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+}) => {
+  const lastSeenText = inactiveMember.latestActivityAt
+    ? `were last seen ${createDiscordTimestamp(inactiveMember.latestActivityAt)}`
+    : "have no recorded activity"
+  const intro = `Hello **${inactiveMember.displayName}** :wave: You are now marked as inactive in the **${guildName}** server as you ${lastSeenText}`
+  const info = `_${getInactivityInfoText({ inactivityConfig })}_`
+
+  await debugUser.send({
+    content: `${intro}\n\n${info}`,
+  })
+}
+
+export const sendKickNotice = async ({
+  member,
+  guildName,
+  debugUser,
+  inactivityConfig: { inviteLink },
+}: {
+  guildName: string
+  member: InactivityMemberData
+  debugUser: User
+  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+}) => {
+  const intro = `Hello **${member.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
+
+  if (!inviteLink) {
+    await debugUser.send({
+      content: intro,
+    })
+    return
+  }
+
+  const rejoinInfo = `_You can re-join the server at any time using the invite link:_ ${inviteLink}`
+  await debugUser.send({
+    content: `${intro}\n\n${rejoinInfo}`,
+  })
 }

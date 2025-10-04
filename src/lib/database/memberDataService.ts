@@ -165,6 +165,7 @@ export const addMemberMessageToStats = async ({
     messageCount: 1,
     latestMessageAt: messageTimestamp,
     latestActivityAt: messageTimestamp,
+    inactiveSince: null,
   }
   await actionWrapper({
     actionDescription: "Update member message stats",
@@ -179,10 +180,8 @@ export const addMemberMessageToStats = async ({
         .onConflictDoUpdate({
           target: [membersTable.userId, membersTable.guildId],
           set: {
-            username: coreMemberData.username,
-            displayName: coreMemberData.displayName,
+            ...insertData,
             messageCount: sql`${membersTable.messageCount} + 1`,
-            latestMessageAt: messageTimestamp,
           },
         })
     },
@@ -202,6 +201,7 @@ export const addMemberReactionToStats = async ({
     reactionCount: 1,
     latestReactionAt: reactionTimestamp,
     latestActivityAt: reactionTimestamp,
+    inactiveSince: null,
   }
   return await actionWrapper({
     actionDescription: "Add member reaction to stats",
@@ -217,9 +217,8 @@ export const addMemberReactionToStats = async ({
           .onConflictDoUpdate({
             target: [membersTable.userId, membersTable.guildId],
             set: {
-              username: coreMemberData.username,
+              ...insertData,
               reactionCount: sql`${membersTable.reactionCount} + 1`,
-              latestReactionAt: reactionTimestamp,
             },
           })
           .returning()
@@ -266,7 +265,7 @@ export const removeMemberReactionFromStats = async ({
         .onConflictDoUpdate({
           target: [membersTable.userId, membersTable.guildId],
           set: {
-            username: coreMemberData.username,
+            ...insertData,
             reactionCount: sql`${membersTable.reactionCount} - 1`,
           },
         })

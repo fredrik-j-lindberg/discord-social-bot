@@ -165,21 +165,28 @@ There are also some helpful scripts for this:
 ### Feats
 
 - Implement inactivity system:
-  - Step 1: Send member activity list to e.g. 106098921985556480 (Neylion) to test sending dms and checking that the activity works as expected
-    - Member activity should be based on latest message or latest reaction
-    - This should be opt in via the the guild config
-  - Step 2: Draft a message to send to inactive members. Send it initially to Neylion to see if it works
-    - E.g. Once a week, send a message for those who haven't had any activity for the last 3 months or so
-    - Once the message is sent, the memberdata for the those who haven't had any activity should be updated with a "inactivity warning" timestamp
-    - If the user sends a message or adds a reaction, the inactivity warning timestamp should be removed
-  - Step 3: Draft a message to send to kicked members. Send it initially to Neylion to see if it works
-    - Should be sent 1 month after the inactivity warning timestamp was added
-    - Should include a link back to the server they were kicked from, to make it easy to re-join
+  - ~~Step 1: Send member activity list to e.g. 106098921985556480 (Neylion) to test sending dms and checking that the activity works as expected~~
+    - ~~Member activity should be based on latest message or latest reaction~~
+    - ~~This should be opt in via the the guild config~~
+  - ~~Step 2: Draft a message to send to inactive members. Send it initially to Neylion to see if it works~~
+    - ~~E.g. Once a week, send a message for those who haven't had any activity for the last 3 months or so~~
+    - ~~Once the message is sent, the memberdata for the those who haven't had any activity should be updated with a "inactivity warning" timestamp~~
+    - ~~If the user sends a message or adds a reaction, the inactivity warning timestamp should be removed~~
+  - ~~Step 3: Draft a message to send to kicked members. Send it initially to Neylion to see if it works~~
+    - ~~Should be sent 1 month after the inactivity warning timestamp was added~~
+    - ~~Should include a link back to the server they were kicked from, to make it easy to re-join~~
 
-  Once the previous steps are confirmed to be working
+  Once the previous steps are confirmed to be working.
   - Step 4: Start sending the messages to actual members
+    - When sending a message to a user, a message should also be sent to the admin(s)
+    - When the admin message is implemented, remove the debug summary message thing as it will be redundant
   - Step 5: Implement the kick
-  - Step 6: Consider adding an "inactive" role to users who have received the warning
+  - Step 6: Add tests for the feature before production "release" (as a feature that handles kicking is a high impact area)
+
+  Extras:
+  - Post the inactivity summary in a server channel
+  - Consider if we should have a way to exempt users from the inactivity check
+  - Consider adding an "inactive" role to users who have received the warning
 
 - Requires message tracking: Send message to admin and/or user if user has not sent a message in X time
   - Should be opt in via guild config
@@ -200,7 +207,10 @@ There are also some helpful scripts for this:
 
 ### Misc
 
+- Send error logs to 106098921985556480 (Neylion)
+  - Iteration 2 of this could be to add a logger channel
 - Make /pii ephemeral (so only you can see your input and failures)
 - Use autocomplete handling in /memberdata (similar to /whois) to make the options guild-specific
 - Refactor /memberdata register list subcommands semi-dynamically. Setup individual listeners with a proper name, cmd and action.
 - Align action wrapper usage around database methods (e.g. the new services)
+- Format favorite reaction numbers (e.g. 1k instead of 10 000)
