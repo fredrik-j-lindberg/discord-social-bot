@@ -3,8 +3,10 @@ import {
   GuildScheduledEvent,
   type MessageCreateOptions,
   MessageFlags,
+  User,
 } from "discord.js"
 
+import type { GuildConfig } from "../../../guildConfigs"
 import { assertChannelIsTextBased, assertIsDefined } from "../validation"
 import { createDiscordTimestamp } from "./message"
 
@@ -59,4 +61,67 @@ const removeEmojis = (input: string) => {
   const withoutEmojis = input.replace(regexMatchingAllEmojis, "")
   const withoutDoubleSpaces = withoutEmojis.replace("  ", " ") // <text> <emoji> <text> will result in double spaces
   return withoutDoubleSpaces.trim()
+}
+
+interface MemberInactivityData {
+  userId: string
+  username: string
+  latestActivityAt?: Date | null
+}
+
+export const sendDebugInactivitySummaryToUser = async ({
+  inactiveMembers,
+  debugUser,
+  guildName,
+  thresholdDate,
+  inactivityConfig,
+}: {
+  inactiveMembers: MemberInactivityData[]
+  debugUser: User
+  guildName: string
+  thresholdDate: Date
+  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+}) => {
+  if (inactiveMembers.length === 0) {
+    return
+  }
+
+  const intro = `The following members have been inactive recently in **${guildName}**. They were last seen:`
+  const lines = inactiveMembers.map((memberData) => {
+    const lastSeenText = memberData.latestActivityAt
+      ? createDiscordTimestamp(memberData.latestActivityAt)
+      : "No recorded activity"
+    return `**${memberData.username}** (${memberData.userId}) - ${lastSeenText}`
+  })
+  const outro = `_Based on the guild config anyone with no activity since ${createDiscordTimestamp(thresholdDate)} is considered inactive. Inactive members will be removed from the server after ${inactivityConfig.daysAsInactiveBeforeKick} days._`
+
+  await debugUser.send({
+    content: `${intro}\n\n${lines.join("\n")}\n\n${outro}`,
+  })
+}
+
+export const sendInactivityNotice = async ({
+  inactiveMember,
+  debugUser,
+  guildName,
+  thresholdDate,
+  inactivityConfig,
+}: {
+  inactiveMember: MemberInactivityData
+  debugUser: User
+  guildName: string
+  thresholdDate: Date
+  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+}) => {
+  const { daysAsInactiveBeforeKick, daysUntilInactive } = inactivityConfig
+
+  const intro = `Hello **${inactiveMember.username}** :wave: You are now marked as inactive in the **${guildName}** server and will be automatically removed from it after ${daysAsInactiveBeforeKick} days`
+  const lastSeenText = inactiveMember.latestActivityAt
+    ? `were last seen ${createDiscordTimestamp(inactiveMember.latestActivityAt)}`
+    : "have no recorded activity"
+  const info = `_Anyone with no activity for ${daysUntilInactive} days (${createDiscordTimestamp(thresholdDate)}) is considered inactive and you ${lastSeenText}. All you need to do to lose the inactive status is to send a message in the server, but you can ofc re-join as well after having been removed!_`
+
+  await debugUser.send({
+    content: `${intro}\n\n${info}`,
+  })
 }

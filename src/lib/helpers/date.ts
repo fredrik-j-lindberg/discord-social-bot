@@ -63,3 +63,9 @@ export const calculateAge = (birthday: Date | null) => {
 
   return age
 }
+
+export const subtractDaysFromDate = (date: Date, days: number) => {
+  const result = new Date(date)
+  result.setDate(result.getDate() - days)
+  return result
+}
