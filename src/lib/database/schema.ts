@@ -32,6 +32,9 @@ export const membersTable = pgTable(
     latestMessageAt: timestamp({ mode: "date" }),
     reactionCount: integer().default(0).notNull(),
     latestReactionAt: timestamp({ mode: "date" }),
+    latestActivityAt: timestamp({ mode: "date" }),
+    /** If the member is marked as inactive, this timestamp will be set */
+    inactiveSince: timestamp({ mode: "date" }),
 
     firstName: varchar({ length: 255 }),
     birthday: date({ mode: "date" }),
@@ -52,10 +55,13 @@ export const membersRelations = relations(membersTable, ({ many }) => ({
   emojis: many(memberEmojisTable),
 }))
 
-export type MemberDataRecordPost = Omit<typeof membersTable.$inferInsert, "id">
+export type MemberDataRecordInsert = Omit<
+  typeof membersTable.$inferInsert,
+  "id"
+>
 /** The values which should be part of any update */
 export type MemberDataRecordPostCoreValues = Pick<
-  MemberDataRecordPost,
+  MemberDataRecordInsert,
   "guildId" | "userId" | "username" | "displayName"
 >
 

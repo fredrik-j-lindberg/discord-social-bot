@@ -8,7 +8,7 @@ import { setMemberRoles } from "./memberRolesService"
 import {
   type MemberDataDbKeys,
   type MemberDataRecord,
-  type MemberDataRecordPost,
+  type MemberDataRecordInsert,
   type MemberDataRecordPostCoreValues,
   type MemberRoleRecord,
   memberRolesTable,
@@ -111,7 +111,7 @@ export const getMemberData = async ({
 export const setMemberData = async ({
   memberData: { roleIds, ...memberData },
 }: {
-  memberData: MemberDataRecordPost & { roleIds?: string[] }
+  memberData: MemberDataRecordInsert & { roleIds?: string[] }
 }): Promise<void> => {
   await actionWrapper({
     actionDescription: "Set member data",
@@ -160,10 +160,11 @@ export const addMemberMessageToStats = async ({
   coreMemberData: MemberDataRecordPostCoreValues
   messageTimestamp: Date
 }): Promise<void> => {
-  const insertData = {
+  const insertData: MemberDataRecordInsert = {
     ...coreMemberData,
     messageCount: 1,
     latestMessageAt: messageTimestamp,
+    latestActivityAt: messageTimestamp,
   }
   await actionWrapper({
     actionDescription: "Update member message stats",
@@ -196,10 +197,11 @@ export const addMemberReactionToStats = async ({
   coreMemberData: MemberDataRecordPostCoreValues
   reactionTimestamp: Date
 }): Promise<MemberDataRecord> => {
-  const insertData = {
+  const insertData: MemberDataRecordInsert = {
     ...coreMemberData,
     reactionCount: 1,
     latestReactionAt: reactionTimestamp,
+    latestActivityAt: reactionTimestamp,
   }
   return await actionWrapper({
     actionDescription: "Add member reaction to stats",
@@ -335,6 +337,23 @@ export const getMembersWithField = async ({
       orderBy: sql`next_birthday`,
       with: { roles: true },
       limit: 50,
+    })
+
+  return memberRecords.map(mapSelectedMemberData)
+}
+
+/**
+ * Gets member data for all members in the guild
+ */
+export const getAllGuildMemberData = async (
+  guildId: string,
+): Promise<MemberData[]> => {
+  const memberRecords: MemberRecordSelectWithExtras[] =
+    await db.query.membersTable.findMany({
+      extras: getSharedExtras(),
+      where: eq(membersTable.guildId, guildId),
+      orderBy: membersTable.latestActivityAt,
+      with: { roles: true },
     })
 
   return memberRecords.map(mapSelectedMemberData)

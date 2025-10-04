@@ -64,6 +64,13 @@
       "when": 1759015478118,
       "tag": "0008_add-member-emojis",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1759595254615,
+      "tag": "0009_add-inactivity-stats",
+      "breakpoints": true
     }
   ]
 }
