@@ -11,7 +11,7 @@ import { registerScheduledEventUserRemoveEvent } from "./scheduledEventUserRemov
 
 export const registerEvents = async () => {
   registerEventListener({
-    event: "ready",
+    event: "clientReady",
     listener: {
       data: { name: "readyConfirmation" },
       execute: (client) => {
