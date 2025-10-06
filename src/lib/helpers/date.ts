@@ -11,20 +11,28 @@ interface FormatDateOptions {
 export const isValidDate = (date: Date) =>
   date instanceof Date && !isNaN(date.getTime())
 
-const vaidateAndFormat = ({
-  date,
-  locale = DEFAULT_LOCALE,
-  format,
-}: FormatDateOptions) => {
+export const getValidDate = (
+  date: Date | string | number | null | undefined,
+) => {
   if (!date) return undefined
 
   const d = new Date(date)
   if (!isValidDate(d)) {
-    logger.error({ date }, "Failed to parse date for formatting")
+    logger.error({ date }, "Failed to parse date")
     return undefined
   }
+  return d
+}
 
-  return d.toLocaleDateString(locale, format)
+const validateAndFormat = ({
+  date,
+  locale = DEFAULT_LOCALE,
+  format,
+}: FormatDateOptions) => {
+  const validDate = getValidDate(date)
+  if (!validDate) return undefined
+
+  return validDate.toLocaleDateString(locale, format)
 }
 
 export const formatDate = (
@@ -34,7 +42,7 @@ export const formatDate = (
     month: "short",
   },
 ) =>
-  vaidateAndFormat({
+  validateAndFormat({
     date,
     format,
   })
