@@ -39,6 +39,8 @@ export default defineConfig(
       // While Record syntax is nice when you don't care about giving info about the key, it is nice to be
       // able to use a more descriptive type for the key when you need it (E.g. { [guildId: string]: ... })
       "@typescript-eslint/consistent-indexed-object-style": "off",
+
+      "object-shorthand": ["error", "always"],
     },
   },
 )

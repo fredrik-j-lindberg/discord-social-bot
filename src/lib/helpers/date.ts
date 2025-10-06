@@ -20,7 +20,7 @@ const vaidateAndFormat = ({
 
   const d = new Date(date)
   if (!isValidDate(d)) {
-    logger.error({ date: date }, "Failed to parse date for formatting")
+    logger.error({ date }, "Failed to parse date for formatting")
     return undefined
   }
 
