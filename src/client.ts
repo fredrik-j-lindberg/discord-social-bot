@@ -1,9 +1,6 @@
 import { Client, GatewayIntentBits, Partials } from "discord.js"
 
 import { env } from "./env"
-import { registerEvents } from "./events"
-import { initCommands } from "./events/interactionCreate/listeners/commandRouter"
-import { initModals } from "./events/interactionCreate/listeners/modalSubmitRouter"
 import { logger } from "./lib/logger"
 
 export const client = new Client({
@@ -19,10 +16,7 @@ export const client = new Client({
   partials: [Partials.Channel, Partials.Message, Partials.Reaction],
 })
 
-export const initDiscordClient = async () => {
-  await initCommands()
-  await initModals()
-  await registerEvents()
+export const loginBot = async () => {
   logger.info("Logging in to Discord...")
   try {
     await client.login(env.DISCORD_BOT_TOKEN)
