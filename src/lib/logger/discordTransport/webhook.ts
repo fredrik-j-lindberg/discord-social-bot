@@ -1,7 +1,19 @@
 import { EmbedBuilder, WebhookClient } from "discord.js"
 
-import { getValidDate } from "../helpers/date"
-import type { DiscordLog } from "../logger/discordTransport"
+import type { DiscordLog } from "./discordTransport"
+
+const isValidDate = (date: Date) =>
+  date instanceof Date && !isNaN(date.getTime())
+
+const formatTimestamp = (date: Date | string | number | null | undefined) => {
+  if (!date) return "Missing"
+
+  const d = new Date(date)
+  if (!isValidDate(d)) {
+    return "Invalid"
+  }
+  return d.toISOString()
+}
 
 const logLevelToEmbedColor = {
   trace: 0x808080,
@@ -28,7 +40,7 @@ export const sendWebhookMessage = async ({
     { name: "Message", value: log.msg },
     {
       name: "Timestamp",
-      value: getValidDate(log.time)?.toISOString() || "N/A",
+      value: formatTimestamp(log.time),
       inline: true,
     },
     {

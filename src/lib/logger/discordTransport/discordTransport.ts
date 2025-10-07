@@ -1,7 +1,7 @@
 import build from "pino-abstract-transport"
 import z from "zod"
 
-import { sendWebhookMessage } from "../discord/webhook"
+import { sendWebhookMessage } from "./webhook"
 
 const logLevels = {
   10: "trace",

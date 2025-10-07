@@ -9,7 +9,7 @@ export const getDiscordTargets = () => {
     if (!config.logs) return
 
     targets.push({
-      target: "./discordTransport",
+      target: "./discordTransport/discordTransport",
       level: config.logs.levelThreshold,
       options: {
         guildId: config.guildId,
