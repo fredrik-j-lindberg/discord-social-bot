@@ -34,6 +34,7 @@ export const inactivityMonitor = async () => {
           guildId: guildConfig.guildId,
           inactivityConfig: guildConfig.inactivityMonitoring,
         }),
+      meta: { guildId: guildConfig.guildId },
       actionDescription: "Handle inactivity summary",
       swallowError: true,
     })
@@ -140,7 +141,7 @@ const handleKickingInactiveMember = async ({
     inactivityConfig.daysAsInactiveBeforeKick,
   )
   if (memberData.inactiveSince > kickThresholdDate) {
-    logger.info(
+    logger.debug(
       {
         userId: memberData.userId,
         guildId: guild.id,

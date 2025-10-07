@@ -15,7 +15,7 @@ export default {
     await actionWrapper({
       action: () => removeRole({ roleId, guild: scheduledEvent.guild, user }),
       actionDescription: "Remove role from user",
-      meta: { roleId },
+      meta: { roleId, guildId: scheduledEvent.guildId, userId: user.id },
     })
   },
-} satisfies EventListener<Events.GuildScheduledEventUserAdd>
+} satisfies EventListener<Events.GuildScheduledEventUserRemove>

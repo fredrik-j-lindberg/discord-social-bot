@@ -86,7 +86,7 @@ export const validateScheduledEventForRoleChange = (
   assertIsDefined(
     roleId,
     "Unable to find roleId in scheduled event description",
-    DoraException.Severity.Info,
+    DoraException.Severity.Debug,
   )
 
   return { scheduledEvent, roleId }

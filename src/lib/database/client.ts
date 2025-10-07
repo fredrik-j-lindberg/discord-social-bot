@@ -16,7 +16,7 @@ export const initDatabase = async () => {
   try {
     db = drizzle(env.DATABASE_URL, { schema })
     await db.select().from(membersTable).limit(1)
-    logger.info("Successfully initialized database")
+    logger.debug("Successfully initialized database")
   } catch (error) {
     throw new DoraException(
       "Failed to initialize database",

@@ -8,22 +8,26 @@ const logError = (err: unknown, actionLogger: Logger) => {
     actionLogger.error(err, `Failed action`)
     return
   }
-  if (
-    err.severity === DoraException.Severity.Info ||
-    err.severity === DoraException.Severity.Debug
-  ) {
-    // Spreading err automatically skips stack trace and message. Change to not spread (just err) to include them.
-    actionLogger.debug({ reason: err.message, ...err }, `Skipped action`)
-    return
+
+  // Spreading err automatically skips stack trace and message. Change to not spread (just err) to include them.
+  const infoContext = { reason: err.message, ...err }
+
+  switch (err.severity) {
+    case DoraException.Severity.Info:
+      actionLogger.info(infoContext, `Skipped action`)
+      break
+    case DoraException.Severity.Debug:
+      actionLogger.debug(infoContext, `Skipped action`)
+      break
+    case DoraException.Severity.Warn:
+      actionLogger.warn(
+        { reason: err.message, err },
+        `Skipped action with warning`,
+      )
+      break
+    default:
+      actionLogger.error(err, `Failed action`)
   }
-  if (err.severity === DoraException.Severity.Warn) {
-    actionLogger.warn(
-      { reason: err.message, err },
-      `Skipped action with warning`,
-    )
-    return
-  }
-  actionLogger.error(err, `Failed action`)
 }
 
 interface ActionWrapperArgs<TActionResponse> {

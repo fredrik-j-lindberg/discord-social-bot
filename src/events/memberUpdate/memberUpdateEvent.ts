@@ -8,6 +8,7 @@ export const registerMemberUpdateEvent = () => {
     listenerFolder: `${import.meta.dirname}/listeners`,
     metadataSelector: (_oldMember, newMember) => ({
       user: newMember.user.tag,
+      guildId: newMember.guild.id,
     }),
   })
 }

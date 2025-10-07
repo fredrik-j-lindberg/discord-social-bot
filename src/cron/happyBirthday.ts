@@ -16,6 +16,7 @@ export const happyBirthday = async () => {
     await actionWrapper({
       action: () => resetBirthdayRole({ guildConfig }),
       actionDescription: "Reset birthday role",
+      meta: { guildId: guildConfig.guildId },
       swallowError: true,
     })
   }

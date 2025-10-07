@@ -8,6 +8,7 @@ export const registerInteractionCreateEvent = () => {
     listenerFolder: `${import.meta.dirname}/listeners`,
     metadataSelector: (interaction) => ({
       user: interaction.user.tag,
+      guildId: interaction.guildId,
       command: interaction.isChatInputCommand()
         ? interaction.commandName
         : null,

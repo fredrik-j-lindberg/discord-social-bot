@@ -17,7 +17,7 @@ const initDiscordFeatures = async () => {
   await initDatabase()
   await initDiscordFeatures()
   registerCronJobs()
-  logger.info("Bot successfully initialized & logged in")
+  logger.info("Bot successfully initialized")
 })().catch((err: unknown) => {
   logger.error(err, "Failed to initialize bot")
 })

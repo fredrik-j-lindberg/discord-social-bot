@@ -15,6 +15,13 @@ import {
   membersTable,
 } from "./schema"
 
+/** Can be used for logging purposes etc */
+const composeMemberMetaData = (memberData: Partial<MemberData>) => ({
+  userId: memberData.userId,
+  guildId: memberData.guildId,
+  displayName: memberData.displayName,
+})
+
 type MemberRecordSelectWithExtras = MemberDataRecord & {
   /** Computed field during select */
   nextBirthday: Date
@@ -99,7 +106,7 @@ export const getMemberData = async ({
     throw new DoraException(
       "Multiple users found with the same id and guild",
       DoraException.Type.Unknown,
-      { metadata: { userId, guildId } },
+      { metadata: composeMemberMetaData({ userId, guildId }) },
     )
   }
   const memberRecord = memberRecords[0]
@@ -115,7 +122,7 @@ export const setMemberData = async ({
 }): Promise<void> => {
   await actionWrapper({
     actionDescription: "Set member data",
-    meta: { userId: memberData.userId, displayName: memberData.displayName },
+    meta: composeMemberMetaData(memberData),
     action: async () => {
       await db.transaction(async (transaction) => {
         const insertedRecords = await transaction
@@ -169,10 +176,7 @@ export const addMemberMessageToStats = async ({
   }
   await actionWrapper({
     actionDescription: "Update member message stats",
-    meta: {
-      userId: coreMemberData.userId,
-      displayName: coreMemberData.displayName,
-    },
+    meta: composeMemberMetaData(coreMemberData),
     action: async () => {
       await db
         .insert(membersTable)
@@ -205,10 +209,7 @@ export const addMemberReactionToStats = async ({
   }
   return await actionWrapper({
     actionDescription: "Add member reaction to stats",
-    meta: {
-      userId: coreMemberData.userId,
-      username: coreMemberData.username,
-    },
+    meta: composeMemberMetaData(coreMemberData),
     action: async () => {
       return await db.transaction(async (transaction) => {
         const updatedRecords = await transaction
@@ -254,10 +255,7 @@ export const removeMemberReactionFromStats = async ({
   }
   await actionWrapper({
     actionDescription: "Remove member reaction from stats",
-    meta: {
-      userId: coreMemberData.userId,
-      username: coreMemberData.username,
-    },
+    meta: composeMemberMetaData(coreMemberData),
     action: async () => {
       await db
         .insert(membersTable)

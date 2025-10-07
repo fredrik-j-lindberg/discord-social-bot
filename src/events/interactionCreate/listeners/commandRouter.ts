@@ -14,7 +14,7 @@ import { logger } from "~/lib/logger"
 let commands: Record<string, Command> | undefined
 export const initCommands = async () => {
   commands = await getAllCommands()
-  logger.info("Commands initialized")
+  logger.debug("Commands initialized")
 }
 
 export default {
@@ -36,7 +36,7 @@ export default {
     const command = commands[interaction.commandName]
     if (!command) {
       throw new DoraException("Unknown command", DoraException.Type.NotFound, {
-        severity: DoraException.Severity.Info,
+        severity: DoraException.Severity.Warn,
         metadata: { commandName: interaction.commandName },
       })
     }

@@ -21,7 +21,7 @@ const CRON_INTERVAL = {
 
 export const registerCronJobs = () => {
   schedule.scheduleJob(CRON_INTERVAL.HOUR, async () => {
-    logger.info("Running hourly cron job")
+    logger.debug("Running hourly cron job")
     await actionWrapper({
       action: announceRelevantScheduledEventsForAllGuilds,
       actionDescription: "Announce relevant scheduled events for all guilds",
@@ -29,7 +29,7 @@ export const registerCronJobs = () => {
     })
   })
   schedule.scheduleJob(CRON_INTERVAL.MIDNIGHT, async () => {
-    logger.info("Running daily midnight cron job")
+    logger.debug("Running daily midnight cron job")
     await actionWrapper({
       action: happyBirthday,
       actionDescription: "Handle birthday cron job",
@@ -37,12 +37,12 @@ export const registerCronJobs = () => {
     })
   })
   schedule.scheduleJob(CRON_INTERVAL.MIDDAY, async () => {
-    logger.info("Running daily midday cron job")
+    logger.debug("Running daily midday cron job")
     await actionWrapper({
       action: inactivityMonitor,
       actionDescription: "Handle inactivity monitor cron job",
       swallowError: true,
     })
   })
-  logger.info("Cron jobs successfully registered")
+  logger.debug("Cron jobs successfully registered")
 }

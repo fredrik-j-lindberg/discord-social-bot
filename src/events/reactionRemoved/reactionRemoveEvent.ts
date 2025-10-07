@@ -9,6 +9,7 @@ export const registerReactionRemoveEvent = () => {
     metadataSelector: (reaction, user) => {
       return {
         user: user.username,
+        guildId: reaction.message.guildId,
         emoji: reaction.emoji.name,
         channel: reaction.message.channelId,
       }

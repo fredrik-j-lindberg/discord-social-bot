@@ -9,6 +9,7 @@ export const registerScheduledEventUserRemoveEvent = () => {
     metadataSelector: (scheduledEvent, user) => ({
       user: user.tag,
       guild: scheduledEvent.guild?.name,
+      guildId: scheduledEvent.guildId,
       scheduledEvent: scheduledEvent.name,
     }),
   })

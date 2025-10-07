@@ -9,6 +9,7 @@ export const registerMessageCreateEvent = () => {
     metadataSelector: (message) => {
       return {
         user: message.author.username,
+        guildId: message.guildId,
         contentStart: `${message.content.substring(0, 5)}...`,
         channel: message.channelId,
       }

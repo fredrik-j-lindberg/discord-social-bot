@@ -8,6 +8,7 @@ export const registerScheduledEventUserAddEvent = () => {
     listenerFolder: `${import.meta.dirname}/listeners`,
     metadataSelector: (scheduledEvent, user) => ({
       user: user.tag,
+      guildId: scheduledEvent.guildId,
       guild: scheduledEvent.guild?.name,
       scheduledEvent: scheduledEvent.name,
     }),

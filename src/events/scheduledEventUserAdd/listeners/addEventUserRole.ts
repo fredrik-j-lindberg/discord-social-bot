@@ -15,7 +15,7 @@ export default {
     await actionWrapper({
       action: () => addRole({ roleId, guild: scheduledEvent.guild, user }),
       actionDescription: "Add role to user",
-      meta: { roleId },
+      meta: { roleId, guildId: scheduledEvent.guildId, userId: user.id },
     })
   },
 } satisfies EventListener<Events.GuildScheduledEventUserAdd>

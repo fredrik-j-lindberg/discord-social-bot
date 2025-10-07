@@ -17,10 +17,10 @@ export const client = new Client({
 })
 
 export const loginBot = async () => {
-  logger.info("Logging in to Discord...")
+  logger.debug("Logging in to Discord...")
   try {
     await client.login(env.DISCORD_BOT_TOKEN)
-    logger.info("Logged in to Discord!")
+    logger.debug("Logged in to Discord!")
   } catch (e) {
     logger.error(e)
   }

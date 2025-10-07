@@ -25,6 +25,7 @@ export const announceRelevantScheduledEventsForAllGuilds = async () => {
       guild,
       action: (scheduledEvent) =>
         remindOfScheduledEvent({ guild, scheduledEvent }),
+      meta: { guildId: guild.id },
       actionDescription: "Announce scheduled event",
     })
   }
@@ -41,14 +42,14 @@ const remindOfScheduledEvent = async ({
   assertIsTruthy(
     shouldRemind,
     "No shouldRemind flag in event description or it was set to false",
-    DoraException.Severity.Info,
+    DoraException.Severity.Debug,
   )
 
   const channelId = extractChannelIdFromEventDescription(scheduledEvent)
   assertIsDefined(
     channelId,
     "No channelId found in event description",
-    DoraException.Severity.Info,
+    DoraException.Severity.Debug,
   )
 
   assertThatEventIsWithinReminderWindow({ scheduledEvent })
@@ -77,7 +78,7 @@ const assertThatEventIsWithinReminderWindow = ({
     latestReminderAtTimestamp || 0,
     previousReminderWindowTimestamp,
     "Event has already been reminded of in reminder window",
-    DoraException.Severity.Info,
+    DoraException.Severity.Debug,
     {
       eventStart: new Date(eventStartTimestamp).toISOString(),
       latestReminderAt: new Date(latestReminderAtTimestamp || 0).toISOString(),
@@ -90,7 +91,7 @@ const assertThatEventIsWithinReminderWindow = ({
     eventStartTimestamp,
     reminderWindowTimestamp,
     "Event is not within eligible time window for reminding",
-    DoraException.Severity.Info,
+    DoraException.Severity.Debug,
     {
       eventStart: new Date(eventStartTimestamp).toISOString(),
       reminderWindow: new Date(reminderWindowTimestamp).toISOString(),

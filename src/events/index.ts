@@ -15,7 +15,7 @@ export const registerEvents = async () => {
     listener: {
       data: { name: "readyConfirmation" },
       execute: (client) => {
-        logger.info(`Bot ${client.user.tag} logged in and ready!`)
+        logger.debug(`Bot ${client.user.tag} logged in and ready!`)
       },
     },
   })
@@ -24,7 +24,10 @@ export const registerEvents = async () => {
     listener: {
       data: { name: "errorLogger" },
       execute: (error) => {
-        logger.info(`Websocket triggered an error event: ${error.message}`)
+        logger.error(
+          { error },
+          `Websocket triggered an error event: ${error.message}`,
+        )
       },
     },
   })
@@ -37,5 +40,5 @@ export const registerEvents = async () => {
   await registerReactionRemoveEvent()
   await registerMemberUpdateEvent()
 
-  logger.info("Events successfully registered")
+  logger.debug("Events successfully registered")
 }
