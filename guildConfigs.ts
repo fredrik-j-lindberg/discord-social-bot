@@ -1,6 +1,7 @@
+import type { Level } from "pino"
+
 import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
-import { logger } from "~/lib/logger"
 
 export const SUPPORTED_MEMBER_FIELDS = {
   // Discord native values, recommended for all guilds
@@ -53,6 +54,13 @@ export interface GuildConfig {
     /** Optional invite link to include in kick notice, allowing the user to rejoin easily */
     inviteLink?: string
   }
+  /** Configuration for logging, leave out of guild config to disable logging */
+  logs?: {
+    /** Discord channel webhook for sending messages */
+    webhookUrl: string
+    /** Log level to send to Discord. E.g. "warn" will send warning logs and above to Discord (not info and debug) */
+    levelThreshold: Level
+  }
 }
 
 interface GuildConfigs {
@@ -89,6 +97,11 @@ const devGuildConfigs: GuildConfigs = {
       debugUserId: "106098921985556480",
       inviteLink: "https://discord.gg/QZxuMF8CE6",
     },
+    logs: {
+      webhookUrl:
+        "https://discord.com/api/webhooks/1424836052320780359/wi5zae0S_6yEW3dtYFd70wKeOOT5o1-y94nvRhRf11e3wx99ruAgnwa_a7ejPC5Czfx8", // #dora-logs
+      levelThreshold: "warn",
+    },
   },
 }
 
@@ -115,6 +128,11 @@ export const prodGuildConfigs: GuildConfigs = {
       debugUserId: "106098921985556480",
       inviteLink: "https://discord.gg/RBKyxwPpEG",
     },
+    logs: {
+      webhookUrl:
+        "https://discord.com/api/webhooks/1424860865970180256/sbK03sh-_qvA--oKEO3qw33fTDZI0f-LdJKzoTwS4BFRgoeRbYvX5oFne5J-8_2V3E_E", // #dora-logs
+      levelThreshold: "warn",
+    },
   },
   // Eithon
   "106099890320330752": {
@@ -134,10 +152,14 @@ export const prodGuildConfigs: GuildConfigs = {
       channelId: "106099890320330752", // #general
       roleId: "1276240769975324692",
     },
+    logs: {
+      webhookUrl:
+        "https://discord.com/api/webhooks/1424861409702973560/p7w5IdLGTovh5nJIhPTqms1XPsC8Di6HkBbu3tkt71cE0JLy22nTAC_u0kFERvDkeDG5", // #log-general
+      levelThreshold: "warn",
+    },
   },
 }
 
-logger.info({ devMode: env.USE_DEV_GUILD_CONFIGS }, "Loaded guild configs")
 export const guildConfigs: GuildConfigs = env.USE_DEV_GUILD_CONFIGS
   ? devGuildConfigs
   : prodGuildConfigs
