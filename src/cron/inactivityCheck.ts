@@ -81,7 +81,7 @@ const handleInactivityCheck = async ({
       guildId: guild.id,
       userId: member.id,
       username: member.user.username,
-      displayName: member.user.displayName,
+      displayName: member.displayName,
       latestActivityAt: memberData?.latestActivityAt,
       inactiveSince: memberData?.inactiveSince,
     })
