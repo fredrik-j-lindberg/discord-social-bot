@@ -1,4 +1,11 @@
-import type { Events, SlashCommandOptionsOnlyBuilder } from "discord.js"
+import type {
+  AutocompleteInteraction,
+  ContextMenuCommandBuilder,
+  Events,
+  MessageContextMenuCommandInteraction,
+  SlashCommandOptionsOnlyBuilder,
+  UserContextMenuCommandInteraction,
+} from "discord.js"
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
 import type { EventListener } from "~/lib/discord/events/registerEvent"
@@ -17,14 +24,33 @@ export const initCommands = async () => {
   logger.debug("Commands initialized")
 }
 
+const handleAutocomplete = async (
+  interaction: AutocompleteInteraction,
+  command: ChatCommand,
+) => {
+  if (!command.autocomplete) {
+    throw new DoraException(
+      "User tried to autocomplete a command which does not have autocomplete setup",
+      DoraException.Type.NotFound,
+      {
+        severity: DoraException.Severity.Error,
+        metadata: { commandName: interaction.commandName },
+      },
+    )
+  }
+
+  const choices = await command.autocomplete(interaction)
+  const focusedValue = interaction.options.getFocused()
+  const filteredChoices = choices.filter((choice) =>
+    choice.name.startsWith(focusedValue),
+  )
+
+  await interaction.respond(filteredChoices)
+}
+
 export default {
   data: { name: "command" },
   execute: async (interaction) => {
-    const isCommand = interaction.isChatInputCommand()
-    const isAutocomplete = interaction.isAutocomplete()
-
-    if (!isCommand && !isAutocomplete) return
-
     if (!commands) {
       throw new DoraException(
         "Commands are not initialized",
@@ -32,6 +58,8 @@ export default {
         { severity: DoraException.Severity.Error },
       )
     }
+
+    if (!("commandName" in interaction)) return
 
     const command = commands[interaction.commandName]
     if (!command) {
@@ -41,59 +69,81 @@ export default {
       })
     }
 
-    if (isAutocomplete) {
-      if (!command.autocomplete) {
-        throw new DoraException(
-          "User tried to autocomplete a command which does not have autocomplete setup",
-          DoraException.Type.NotFound,
-          {
-            severity: DoraException.Severity.Error,
-            metadata: { commandName: interaction.commandName },
-          },
-        )
+    if (command.type === "chat") {
+      if (interaction.isAutocomplete()) {
+        await handleAutocomplete(interaction, command)
+        return
       }
-      const choices = await command.autocomplete(interaction)
-      const focusedValue = interaction.options.getFocused()
-      const filteredChoices = choices.filter((choice) =>
-        choice.name.startsWith(focusedValue),
-      )
-      await interaction.respond(filteredChoices)
-      return
+
+      if (interaction.isChatInputCommand()) {
+        await executeCmdOrModalMappedToInteraction({
+          execute: command.execute,
+          deferReply: command.deferReply,
+          interaction,
+          context: "command",
+        })
+        return
+      }
     }
 
-    if (isCommand) {
+    if (command.type === "user") {
+      if (!interaction.isUserContextMenuCommand()) {
+        throw new DoraException(
+          "Thought user issued a user context menu command, but interaction did not match that assumption",
+        )
+      }
       await executeCmdOrModalMappedToInteraction({
         execute: command.execute,
-        deferReply: command.deferReply,
+        deferReply: true,
         interaction,
         context: "command",
       })
-      return
     }
   },
 } satisfies EventListener<Events.InteractionCreate>
 
-export interface Command {
+interface ChatCommand {
   command: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder
-  /** Context regarding the command */
-  data: {
-    name: string
-  }
+  /** The type of command. E.g. "chat" for a regular slash command, "user" and "message" for context menu commands */
+  type: "chat"
   /**
-   * Function to run when the command is autocompleted
-   * @returns The choices to return to the user
+   * The function to run when the command is autocompleted
+   * @returns the autocomplete choices to display to the user
    */
   autocomplete?: InteractionAutocomplete
-  /**
-   * Function to run when command is issued
-   * @returns The reply to the command
-   */
-  execute: InteractionExecute<ChatInputCommandInteraction>
   /**
    * Whether or not to defer the reply. Need more than 3 seconds to compose your reply? Then you need to defer
    * More context: https://discordjs.guide/slash-commands/response-methods.html#deferred-responses
    */
   deferReply: boolean
+  /**
+   * Function to run when command is issued
+   * @returns The reply to the command
+   */
+  execute: InteractionExecute<ChatInputCommandInteraction>
+}
+
+export interface UserContextMenuCommand {
+  command: ContextMenuCommandBuilder
+  type: "user"
+  execute: InteractionExecute<UserContextMenuCommandInteraction>
+}
+
+export interface MessageContextMenuCommand {
+  command: ContextMenuCommandBuilder
+  type: "message"
+  execute: InteractionExecute<MessageContextMenuCommandInteraction>
+}
+
+export type Command = (
+  | ChatCommand
+  | UserContextMenuCommand
+  | MessageContextMenuCommand
+) & {
+  /** Context regarding the command */
+  data: {
+    name: string
+  }
 }
 
 export const getAllCommands = async () => {

@@ -7,6 +7,7 @@ const command = new SlashCommandBuilder()
   .setDescription("Shows basic info about the bot")
 
 export default {
+  type: "chat",
   deferReply: false,
   command,
   data: { name: command.name },

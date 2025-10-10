@@ -32,6 +32,7 @@ const command = new SlashCommandBuilder()
   )
 
 export default {
+  type: "chat",
   deferReply: true,
   command,
   data: { name: command.name },

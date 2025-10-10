@@ -11,6 +11,7 @@ const command = new SlashCommandBuilder()
   .setDescription("Triggers form for adding member data about yourself")
 
 export default {
+  type: "chat",
   deferReply: false,
   command,
   data: { name: command.name },

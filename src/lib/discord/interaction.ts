@@ -2,13 +2,17 @@ import type {
   AutocompleteInteraction,
   BaseMessageOptions,
   CommandInteraction,
+  ContextMenuCommandInteraction,
   InteractionReplyOptions,
   ModalSubmitInteraction,
 } from "discord.js"
 
 import { DoraUserException } from "../exceptions/DoraUserException"
 
-type ExecuteSupportedInteraction = CommandInteraction | ModalSubmitInteraction
+type ExecuteSupportedInteraction =
+  | CommandInteraction
+  | ModalSubmitInteraction
+  | ContextMenuCommandInteraction
 type ExecuteResult = InteractionReplyOptions | string | undefined
 
 export type InteractionExecute<

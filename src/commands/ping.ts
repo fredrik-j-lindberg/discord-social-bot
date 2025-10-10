@@ -7,6 +7,7 @@ const command = new SlashCommandBuilder()
   .setDescription("Replies with Pong!")
 
 export default {
+  type: "chat",
   deferReply: false,
   command,
   data: { name: command.name },
