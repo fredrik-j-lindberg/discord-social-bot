@@ -1,21 +1,21 @@
-import { Collection, Guild, GuildMember, User } from "discord.js"
+import { Collection, Guild, GuildMember } from "discord.js"
 
 import { DoraException } from "../exceptions/DoraException"
 
 export const getMember = ({
   guild,
-  user,
+  userId,
 }: {
   guild: Guild
-  user: User
+  userId: string
 }): GuildMember | Promise<GuildMember> => {
   try {
-    return guild.members.fetch(user.id)
+    return guild.members.fetch(userId)
   } catch (err) {
     throw new DoraException(
       `Failed to fetch guild member`,
       DoraException.Type.Unknown,
-      { cause: err, metadata: { user: user.username, guildId: guild.id } },
+      { cause: err, metadata: { userId, guildId: guild.id } },
     )
   }
 }

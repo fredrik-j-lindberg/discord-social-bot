@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js"
+import { type Interaction, SlashCommandBuilder } from "discord.js"
 
 import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
@@ -53,108 +53,127 @@ export default {
     }))
   },
   execute: async (interaction) => {
-    assertHasDefinedProperty(
-      interaction,
-      "guild",
-      "Command issued without associated guild",
-    )
-
     const user = interaction.options.getUser(memberOptionName)
     if (!user) {
       throw new DoraUserException(
         `Required '${memberOptionName}' option is missing`,
       )
     }
-
-    const guildMember = await getMember({ guild: interaction.guild, user })
-
-    const memberData = await getMemberData({
-      userId: guildMember.id,
-      guildId: interaction.guild.id,
+    const specificMemberData =
+      interaction.options.getString(memberDataOptionName)
+    return handleWhoIs({
+      interaction,
+      userId: user.id,
+      specificMemberData,
     })
-
-    if (!memberData) {
-      return `No member data was found for ${user.displayName}`
-    }
-
-    const reactionCounts = await getMemberEmojiCounts(memberData.id, "reaction")
-
-    const specificField = interaction.options.getString(memberDataOptionName)
-    // If we don't have a specific field requested, return the default embed
-    if (!specificField) {
-      const embed = getMemberDataEmbed({
-        guildId: interaction.guild.id,
-        guildMember,
-        memberData,
-        reactionCounts,
-      })
-      return { embeds: [embed] }
-    }
-
-    const validChoices = getGuildConfigById(
-      interaction.guild.id,
-    ).optInMemberFields
-
-    if (!isOneOf(specificField, validChoices)) {
-      throw new DoraUserException(
-        `Invalid field for ${memberDataOptionName} specified ('${specificField}'). Valid fields are: ${validChoices.join(
-          ", ",
-        )}`,
-      )
-    }
-
-    // If the field should have special handling, add an if here. Otherwise it defaults to the value below
-    if (specificField === "joinedServer") {
-      return (
-        createDiscordTimestamp(guildMember.joinedTimestamp) ||
-        `No server join date was found for ${user.displayName}`
-      )
-    }
-    if (specificField === "accountCreation") {
-      return (
-        createDiscordTimestamp(guildMember.user.createdTimestamp) ||
-        `No account creation date was found for ${user.displayName}`
-      )
-    }
-    if (specificField === "birthday") {
-      return memberData.birthday
-        ? `${formatDate(memberData[specificField])}, ${createDiscordTimestamp(memberData.nextBirthday)}`
-        : `No birthday was found for ${user.displayName}. They can add it via the /pii command`
-    }
-    if (specificField === "latestMessageAt") {
-      return (
-        createDiscordTimestamp(memberData[specificField]) ||
-        `No latest message date found for ${user.displayName}`
-      )
-    }
-    if (specificField === "latestReactionAt") {
-      return (
-        createDiscordTimestamp(memberData[specificField]) ||
-        `No latest reaction date found for ${user.displayName}`
-      )
-    }
-    if (specificField === "roles") {
-      return (
-        memberData.roleIds
-          .map((roleId) => createRoleMention(roleId))
-          .join(" ") || `No roles found for ${user.displayName}`
-      )
-    }
-    if (specificField === "favoriteReactions") {
-      return (
-        reactionCounts
-          .slice(0, 10)
-          .map(
-            ({ emojiId, emojiName, count }) =>
-              `${createEmojiMention(emojiName, emojiId)} (${count})`,
-          )
-          .join(", ") || `No roles found for ${user.displayName}`
-      )
-    }
-
-    return (
-      memberData[specificField]?.toString() ||
-      `No ${specificField} found for ${user.displayName}`
-    )
   },
 } satisfies Command
+
+export const handleWhoIs = async ({
+  interaction,
+  userId,
+  specificMemberData,
+}: {
+  interaction: Interaction
+  userId: string
+  /** Send if only interested in a specific piece of member data, can be useful if for example you want to copy paste a value */
+  specificMemberData?: string | null
+}) => {
+  assertHasDefinedProperty(
+    interaction,
+    "guild",
+    "Command issued without associated guild",
+  )
+
+  const guildMember = await getMember({
+    guild: interaction.guild,
+    userId,
+  })
+
+  const memberData = await getMemberData({
+    userId: guildMember.id,
+    guildId: interaction.guild.id,
+  })
+
+  if (!memberData) {
+    return `No member data was found for ${guildMember.displayName}`
+  }
+
+  const reactionCounts = await getMemberEmojiCounts(memberData.id, "reaction")
+
+  // If we don't have a specific field requested, return the default embed
+  if (!specificMemberData) {
+    const embed = getMemberDataEmbed({
+      guildId: interaction.guild.id,
+      guildMember,
+      memberData,
+      reactionCounts,
+    })
+    return { embeds: [embed] }
+  }
+
+  const validChoices = getGuildConfigById(
+    interaction.guild.id,
+  ).optInMemberFields
+
+  if (!isOneOf(specificMemberData, validChoices)) {
+    throw new DoraUserException(
+      `Invalid field for ${memberDataOptionName} specified ('${specificMemberData}'). Valid fields are: ${validChoices.join(
+        ", ",
+      )}`,
+    )
+  }
+
+  // If the field should have special handling, add an if here. Otherwise it defaults to the value below
+  if (specificMemberData === "joinedServer") {
+    return (
+      createDiscordTimestamp(guildMember.joinedTimestamp) ||
+      `No server join date was found for ${guildMember.displayName}`
+    )
+  }
+  if (specificMemberData === "accountCreation") {
+    return (
+      createDiscordTimestamp(guildMember.user.createdTimestamp) ||
+      `No account creation date was found for ${guildMember.displayName}`
+    )
+  }
+  if (specificMemberData === "birthday") {
+    return memberData.birthday
+      ? `${formatDate(memberData[specificMemberData])}, ${createDiscordTimestamp(memberData.nextBirthday)}`
+      : `No birthday was found for ${guildMember.displayName}. They can add it via the /pii command`
+  }
+  if (specificMemberData === "latestMessageAt") {
+    return (
+      createDiscordTimestamp(memberData[specificMemberData]) ||
+      `No latest message date found for ${guildMember.displayName}`
+    )
+  }
+  if (specificMemberData === "latestReactionAt") {
+    return (
+      createDiscordTimestamp(memberData[specificMemberData]) ||
+      `No latest reaction date found for ${guildMember.displayName}`
+    )
+  }
+  if (specificMemberData === "roles") {
+    return (
+      memberData.roleIds.map((roleId) => createRoleMention(roleId)).join(" ") ||
+      `No roles found for ${guildMember.displayName}`
+    )
+  }
+  if (specificMemberData === "favoriteReactions") {
+    return (
+      reactionCounts
+        .slice(0, 10)
+        .map(
+          ({ emojiId, emojiName, count }) =>
+            `${createEmojiMention(emojiName, emojiId)} (${count})`,
+        )
+        .join(", ") || `No roles found for ${guildMember.displayName}`
+    )
+  }
+
+  return (
+    memberData[specificMemberData]?.toString() ||
+    `No ${specificMemberData} found for ${guildMember.displayName}`
+  )
+}
