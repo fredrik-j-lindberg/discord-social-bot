@@ -112,11 +112,10 @@ const getFieldsRelevantForGuilds = ({
         value:
           reactionCounts
             .slice(0, 3)
-            .map(
-              ({ emojiId, emojiName, count }) =>
-                `${createEmojiMention(emojiName, emojiId)} (${count})`,
+            .map(({ emojiId, emojiName }) =>
+              createEmojiMention(emojiName, emojiId),
             )
-            .join(", ") || "-",
+            .join(" ") || "-",
       },
     ],
     latestReactionAt: [
