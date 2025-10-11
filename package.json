@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env ./src/index.ts",
     "start": "tsx --env-file=.env ./src/index.ts",
+    "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check-types": "tsc --noEmit",
@@ -43,6 +44,7 @@
     "prettier": "3.6.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.44.0"
+    "typescript-eslint": "^8.44.0",
+    "vitest": "^3.2.4"
   }
 }

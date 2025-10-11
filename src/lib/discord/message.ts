@@ -26,3 +26,36 @@ export const createCopyableText = (text?: string | null) => {
   if (!text) return
   return `\`${text}\``
 }
+
+export interface ExtractedEmoji {
+  name: string
+  id: string | null
+}
+
+/** Extract emojis from a string */
+export const extractEmojisFromMessage = (
+  text?: string | null,
+): ExtractedEmoji[] => {
+  if (!text) return []
+
+  const emojiRegex =
+    /(?:(?<!\\)<:([^:]+):(\d+)>)|(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gmu
+
+  const matches = [...text.matchAll(emojiRegex)].map((match) => {
+    const customEmojiName = match[1]
+    const customEmojiId = match[2]
+
+    if (customEmojiName && customEmojiId) {
+      return { name: customEmojiName, id: customEmojiId }
+    }
+
+    const standardEmojiName = match[3]
+    if (standardEmojiName) {
+      return { name: standardEmojiName, id: null }
+    }
+
+    return null
+  })
+
+  return matches.filter((match): match is ExtractedEmoji => match !== null)
+}
