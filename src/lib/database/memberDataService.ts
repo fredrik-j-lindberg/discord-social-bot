@@ -166,7 +166,7 @@ export const addMemberMessageToStats = async ({
 }: {
   coreMemberData: MemberDataRecordPostCoreValues
   messageTimestamp: Date
-}): Promise<void> => {
+}): Promise<MemberDataRecord> => {
   const insertData: MemberDataRecordInsert = {
     ...coreMemberData,
     messageCount: 1,
@@ -174,20 +174,38 @@ export const addMemberMessageToStats = async ({
     latestActivityAt: messageTimestamp,
     inactiveSince: null,
   }
-  await actionWrapper({
+  return await actionWrapper({
     actionDescription: "Update member message stats",
     meta: composeMemberMetaData(coreMemberData),
     action: async () => {
-      await db
-        .insert(membersTable)
-        .values(insertData)
-        .onConflictDoUpdate({
-          target: [membersTable.userId, membersTable.guildId],
-          set: {
-            ...insertData,
-            messageCount: sql`${membersTable.messageCount} + 1`,
-          },
-        })
+      return await db.transaction(async (transaction) => {
+        const updatedRecords = await transaction
+          .insert(membersTable)
+          .values(insertData)
+          .onConflictDoUpdate({
+            target: [membersTable.userId, membersTable.guildId],
+            set: {
+              ...insertData,
+              messageCount: sql`${membersTable.messageCount} + 1`,
+            },
+          })
+          .returning()
+
+        if (updatedRecords.length > 1) {
+          throw new DoraException(
+            "Multiple members updated, expected to only be one. Rolling back transaction",
+          )
+        }
+
+        const updatedMember = updatedRecords[0]
+        if (!updatedMember) {
+          throw new DoraException(
+            "Failed to update member data. Rolling back transaction",
+          )
+        }
+
+        return updatedMember
+      })
     },
   })
 }

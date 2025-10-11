@@ -24,7 +24,7 @@ export const addMemberEmojiUsage = async ({
 }
 
 /**
- * Gets counts of reactions by name for a specific member
+ * Gets counts of emojis by name for a specific member
  */
 export const getMemberEmojiCounts = async (
   memberId: string,
