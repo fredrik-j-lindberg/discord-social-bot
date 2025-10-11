@@ -6,6 +6,7 @@ import {
   createCopyableText,
   createDiscordTimestamp,
   createEmojiMention,
+  createRoleMention,
 } from "~/lib/discord/message"
 
 import { type DoraMemberFields, getGuildConfigById } from "../../guildConfigs"
@@ -25,12 +26,16 @@ const getFieldsRelevantForGuilds = ({
     firstName: [
       {
         name: "First Name",
-        value: memberData?.firstName || "-",
+        value: createCopyableText(memberData?.firstName) || "-",
         inline: true,
       },
     ],
     birthday: [
-      { name: "Age", value: memberData?.age?.toString() || "-", inline: true },
+      {
+        name: "Age",
+        value: createCopyableText(memberData?.age?.toString()) || "-",
+        inline: true,
+      },
       {
         name: "Next Birthday",
         value: createDiscordTimestamp(memberData?.nextBirthday) || "-",
@@ -40,14 +45,14 @@ const getFieldsRelevantForGuilds = ({
     switchFriendCode: [
       {
         name: "Switch Friend Code",
-        value: memberData?.switchFriendCode || "-",
+        value: createCopyableText(memberData?.switchFriendCode) || "-",
         inline: true,
       },
     ],
     pokemonTcgpFriendCode: [
       {
         name: "Pokémon TCGP",
-        value: memberData?.pokemonTcgpFriendCode || "-",
+        value: createCopyableText(memberData?.pokemonTcgpFriendCode) || "-",
         inline: true,
       },
     ],
@@ -68,7 +73,7 @@ const getFieldsRelevantForGuilds = ({
     dietaryPreferences: [
       {
         name: "Dietary Preferences",
-        value: memberData?.dietaryPreferences || "-",
+        value: createCopyableText(memberData?.dietaryPreferences) || "-",
         inline: true,
       },
     ],
@@ -89,7 +94,7 @@ const getFieldsRelevantForGuilds = ({
     messageCount: [
       {
         name: "Message Count",
-        value: memberData?.messageCount.toString() || "-",
+        value: createCopyableText(memberData?.messageCount.toString()) || "-",
         inline: true,
       },
     ],
@@ -103,7 +108,7 @@ const getFieldsRelevantForGuilds = ({
     reactionCount: [
       {
         name: "Reaction Count",
-        value: memberData?.reactionCount.toString() || "-",
+        value: createCopyableText(memberData?.reactionCount.toString()) || "-",
         inline: true,
       },
     ],
@@ -117,6 +122,7 @@ const getFieldsRelevantForGuilds = ({
               createEmojiMention(emojiName, emojiId),
             )
             .join(" ") || "-",
+        inline: true,
       },
     ],
     latestReactionAt: [
@@ -132,7 +138,7 @@ const getFieldsRelevantForGuilds = ({
         value:
           memberData?.roleIds
             .filter((roleId) => roleId !== guildId) // Remove the irrelevant @everyone role
-            .map((roleId) => `<@&${roleId}>`)
+            .map((roleId) => createRoleMention(roleId))
             .join(" ") || "-",
         inline: true,
       },
