@@ -33,9 +33,14 @@ export interface ExtractedEmoji {
 }
 
 /** Extract emojis from a string */
-export const extractEmojisFromMessage = (
-  text?: string | null,
-): ExtractedEmoji[] => {
+export const extractEmojisFromMessage = ({
+  text,
+  deduplicate = false,
+}: {
+  text?: string | null
+  /** Whether to de-duplicate the emojis (only return unique emoji values) */
+  deduplicate?: boolean
+}): ExtractedEmoji[] => {
   if (!text) return []
 
   const emojiRegex =
@@ -57,5 +62,13 @@ export const extractEmojisFromMessage = (
     return null
   })
 
-  return matches.filter((match): match is ExtractedEmoji => match !== null)
+  const messageEmojis = matches.filter(
+    (match): match is ExtractedEmoji => match !== null,
+  )
+
+  if (!deduplicate) return messageEmojis
+
+  return [
+    ...new Map(messageEmojis.map((emoji) => [emoji.name, emoji])).values(),
+  ]
 }

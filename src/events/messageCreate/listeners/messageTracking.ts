@@ -26,7 +26,10 @@ export default {
       messageTimestamp: message.createdAt,
     })
 
-    const messageEmojis = extractEmojisFromMessage(message.content)
+    const messageEmojis = extractEmojisFromMessage({
+      text: message.content,
+      deduplicate: true,
+    })
     if (messageEmojis.length === 0) return
 
     const guildId = message.guild.id
