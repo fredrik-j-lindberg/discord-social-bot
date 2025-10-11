@@ -17,3 +17,12 @@ export const createDiscordTimestamp = (
       : timestampOrDate
   return timestamp ? `<t:${Math.round(timestamp / 1000)}:R>` : undefined
 }
+
+/**
+ * Creates a single tick code block which is copyable from the ios app (clicking on it = copy).
+ * This is very useful when displaying e.g. an embed where you want users to be able to copy one of the fields.
+ */
+export const createCopyableText = (text?: string | null) => {
+  if (!text) return
+  return `\`${text}\``
+}

@@ -3,6 +3,7 @@ import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 import type { MemberData } from "~/lib/database/memberDataService"
 import type { EmojiCount } from "~/lib/database/memberEmojisService"
 import {
+  createCopyableText,
   createDiscordTimestamp,
   createEmojiMention,
 } from "~/lib/discord/message"
@@ -53,14 +54,14 @@ const getFieldsRelevantForGuilds = ({
     email: [
       {
         name: "Email",
-        value: memberData?.email || "-",
+        value: createCopyableText(memberData?.email) || "-",
         inline: true,
       },
     ],
     phoneNumber: [
       {
         name: "Phone Number",
-        value: memberData?.phoneNumber || "-",
+        value: createCopyableText(memberData?.phoneNumber) || "-",
         inline: true,
       },
     ],
