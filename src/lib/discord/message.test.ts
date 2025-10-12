@@ -68,6 +68,12 @@ describe("extractEmojisFromMessage", () => {
     ])
   })
 
+  test("should correctly extract emojis with variation selectors", () => {
+    expect(extractEmojisFromMessage({ text: "I love you ❤️" })).toEqual([
+      { name: "❤️", id: null },
+    ])
+  })
+
   describe("de-duplication param", () => {
     test("returns unique emojis when true", () => {
       expect(

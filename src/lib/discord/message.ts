@@ -44,7 +44,7 @@ export const extractEmojisFromMessage = ({
   if (!text) return []
 
   const emojiRegex =
-    /(?:(?<!\\)<:([^:]+):(\d+)>)|(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gmu
+    /(?:(?<!\\)<:([^:]+):(\d+)>)|((\p{Emoji_Presentation}|\p{Extended_Pictographic})\uFE0F?)/gmu
 
   const matches = [...text.matchAll(emojiRegex)].map((match) => {
     const customEmojiName = match[1]
