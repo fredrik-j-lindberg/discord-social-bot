@@ -7,6 +7,7 @@ import { getMemberEmojiCounts } from "~/lib/database/memberEmojisService"
 import {
   createDiscordTimestamp,
   createEmojiMention,
+  createList,
   createRoleMention,
 } from "~/lib/discord/message"
 import { getMember } from "~/lib/discord/user"
@@ -99,7 +100,11 @@ export const handleWhoIs = async ({
     return `No member data was found for ${guildMember.displayName}`
   }
 
-  const emojiCounts = await getMemberEmojiCounts(memberData.id)
+  const emojiCounts = await getMemberEmojiCounts({
+    memberId: memberData.id,
+    sortBy: "mostUsed",
+    limit: 15,
+  })
 
   // If we don't have a specific field requested, return the default embed
   if (!specificMemberData) {
@@ -155,21 +160,23 @@ export const handleWhoIs = async ({
     )
   }
   if (specificMemberData === "roles") {
-    return (
-      memberData.roleIds.map((roleId) => createRoleMention(roleId)).join(" ") ||
-      `No roles found for ${guildMember.displayName}`
-    )
+    return createList({
+      items: memberData.roleIds
+        .filter((roleId) => roleId !== guildMember.guild.id) // Remove the irrelevant @everyone role
+        .map((roleId) => createRoleMention(roleId)),
+      header: `Roles for ${guildMember.displayName}`,
+      fallback: `No roles found for ${guildMember.displayName}`,
+    })
   }
   if (specificMemberData === "favoriteEmojis") {
-    return (
-      emojiCounts
-        .slice(0, 10)
-        .map(
-          ({ emojiId, emojiName, count }) =>
-            `${createEmojiMention(emojiName, emojiId)} (${count})`,
-        )
-        .join(", ") || `No favorite emojis found for ${guildMember.displayName}`
-    )
+    return createList({
+      items: emojiCounts.map(
+        ({ emojiId, emojiName, count }) =>
+          `${createEmojiMention(emojiName, emojiId)} (${count})`,
+      ),
+      header: `Favorite emojis for ${guildMember.displayName}`,
+      fallback: `No favorite emojis found for ${guildMember.displayName}`,
+    })
   }
 
   return (

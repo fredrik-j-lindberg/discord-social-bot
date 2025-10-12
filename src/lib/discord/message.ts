@@ -72,3 +72,28 @@ export const extractEmojisFromMessage = ({
     ...new Map(messageEmojis.map((emoji) => [emoji.name, emoji])).values(),
   ]
 }
+
+export const createList = ({
+  items,
+  header,
+  fallback = "No items found",
+  mode = "compact",
+  limit,
+}: {
+  items?: string[]
+  header?: string
+  fallback?: string
+  mode?: "compact" | "long"
+  limit?: number
+}) => {
+  if (!items?.length) return fallback
+
+  const relevantItems = limit ? items.slice(0, limit) : items
+  const itemsText =
+    mode === "compact"
+      ? relevantItems.join(", ")
+      : relevantItems.map((item) => `- ${item}`).join("\n")
+
+  if (!header) return itemsText
+  return `*${header}*\n${itemsText}`
+}

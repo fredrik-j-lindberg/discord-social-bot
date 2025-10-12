@@ -11,7 +11,6 @@ export interface EmojiCount {
   emojiId?: string | null
   emojiName?: string
   count: number
-  context: MemberEmojiRecord["context"]
 }
 
 /** Helper for creating user emoji records */
@@ -26,16 +25,22 @@ export const addMemberEmojiUsage = async ({
 /**
  * Gets counts of emojis by name for a specific member
  */
-export const getMemberEmojiCounts = async (
-  memberId: string,
-  context: MemberEmojiRecord["context"] | "all" = "all",
-): Promise<EmojiCount[]> => {
+export const getMemberEmojiCounts = async ({
+  memberId,
+  context = "all",
+  sortBy,
+  limit,
+}: {
+  memberId: string
+  context?: MemberEmojiRecord["context"] | "all"
+  sortBy: "leastUsed" | "mostUsed"
+  limit: number
+}): Promise<EmojiCount[]> => {
   return db
     .select({
       emojiId: memberEmojisTable.emojiId,
       emojiName: memberEmojisTable.emojiName,
       count: count(),
-      context: memberEmojisTable.context,
     })
     .from(memberEmojisTable)
     .where(
@@ -44,8 +49,9 @@ export const getMemberEmojiCounts = async (
         context !== "all" ? eq(memberEmojisTable.context, context) : undefined,
       ),
     )
-    .groupBy((table) => [table.emojiName, table.emojiId, table.context])
-    .orderBy(desc(sql`count`))
+    .groupBy((table) => [table.emojiName, table.emojiId])
+    .orderBy(sortBy === "mostUsed" ? desc(sql`count`) : asc(sql`count`))
+    .limit(limit)
 }
 
 /**
@@ -76,7 +82,6 @@ export const getEmojiCounts = async (
     )
     .groupBy((table) => [table.emojiId, table.emojiName])
     .orderBy(asc(sql`count`))
-    .limit(100)
 
   const map = new Map(emojiRecords.map((record) => [record.emojiId, record]))
   return emojis

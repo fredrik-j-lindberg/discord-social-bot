@@ -15,6 +15,7 @@ export default {
      * This also makes sure we avoid an infinite loop of a bot responding to itself
      */
     if (message.author.bot) return
+
     assertHasDefinedProperty(
       message,
       "guild",

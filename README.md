@@ -26,8 +26,13 @@ _Commands_
 
 _Notes_
 
-- Some native discord stats are included in the stats, such as account creation date and server join date
-- Bot keeps track of some activity stats, such as reaction and message count
+- Some native discord stats are included in the stats, such as:
+  - account creation date
+  - server join date
+- Bot keeps track of some activity stats, such as:
+  - favorite emojis
+  - message count
+  - reaction count
 - Member data fields generally require opt in on a guild level. This is configured in the guild config.
 - Member data is guild-scoped, so e.g. if you are in two separate guilds who both have the bot, the member data does not automatically sync between guilds. This is to make it possible for you to share data in guild X you do not necessarily want exposed in guild Y
 
@@ -207,5 +212,3 @@ There are also some helpful scripts for this:
 - Use autocomplete handling in /memberdata (similar to /whois) to make the options guild-specific
 - Refactor /memberdata register list subcommands semi-dynamically. Setup individual listeners with a proper name, cmd and action.
 - Align action wrapper usage around database methods (e.g. the new services)
-- Format favorite reaction numbers (e.g. 1k instead of 10 000)
-- Document the stats (message and emoji/reaction tracking)

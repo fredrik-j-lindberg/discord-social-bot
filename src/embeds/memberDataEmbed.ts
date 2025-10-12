@@ -117,7 +117,7 @@ const getFieldsRelevantForGuilds = ({
         name: "Favorite Emojis",
         value:
           emojiCounts
-            .slice(0, 3)
+            .slice(0, 5)
             .map(({ emojiId, emojiName }) =>
               createEmojiMention(emojiName, emojiId),
             )

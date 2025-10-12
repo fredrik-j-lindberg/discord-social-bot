@@ -3,7 +3,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getEmojiCounts } from "~/lib/database/memberEmojisService"
 import { getGuildEmojis } from "~/lib/discord/guilds"
-import { createEmojiMention } from "~/lib/discord/message"
+import { createEmojiMention, createList } from "~/lib/discord/message"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
@@ -116,13 +116,14 @@ const handleEmojiPopularityChoice = async ({
   const relevantRange =
     mode === "popular"
       ? [0, limit]
-      : [emojiCounts.length - limit, emojiCounts.length]
+      : [Math.max(emojiCounts.length - limit, 0), emojiCounts.length]
   const relevantCounts = emojiCounts.slice(...relevantRange)
 
-  const list = relevantCounts
-    .map((emojiCount) => {
-      return `- ${createEmojiMention(emojiCount.emojiName, emojiCount.emojiId)}: ${emojiCount.count || "-"}`
-    })
-    .join("\n")
-  return `*${mode === "popular" ? "Popular" : "Unpopular"} emojis*\n${list}`
+  return createList({
+    items: relevantCounts.map(
+      (emojiCount) =>
+        `${createEmojiMention(emojiCount.emojiName, emojiCount.emojiId)} (${emojiCount.count})`,
+    ),
+    header: `${mode === "popular" ? "Popular" : "Unpopular"} emojis`,
+  })
 }
