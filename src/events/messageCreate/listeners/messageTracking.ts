@@ -10,6 +10,11 @@ import { assertHasDefinedProperty } from "~/lib/validation"
 export default {
   data: { name: "messageTracking" },
   execute: async (message) => {
+    /**
+     * The listener should only listen for user triggered messages.
+     * This also makes sure we avoid an infinite loop of a bot responding to itself
+     */
+    if (message.author.bot) return
     assertHasDefinedProperty(
       message,
       "guild",
