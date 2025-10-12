@@ -15,12 +15,12 @@ const getFieldsRelevantForGuilds = ({
   guildId,
   guildMember,
   memberData,
-  reactionCounts,
+  emojiCounts,
 }: {
   guildId: string
   guildMember: GuildMember
   memberData?: MemberData
-  reactionCounts: EmojiCount[]
+  emojiCounts: EmojiCount[]
 }): APIEmbedField[] => {
   const optInEmbedFields: Record<DoraMemberFields, APIEmbedField[]> = {
     firstName: [
@@ -112,11 +112,11 @@ const getFieldsRelevantForGuilds = ({
         inline: true,
       },
     ],
-    favoriteReactions: [
+    favoriteEmojis: [
       {
-        name: "Favorite Reactions",
+        name: "Favorite Emojis",
         value:
-          reactionCounts
+          emojiCounts
             .slice(0, 3)
             .map(({ emojiId, emojiName }) =>
               createEmojiMention(emojiName, emojiId),
@@ -160,12 +160,12 @@ export const getMemberDataEmbed = ({
   guildId,
   guildMember,
   memberData,
-  reactionCounts,
+  emojiCounts,
 }: {
   guildId: string
   guildMember: GuildMember
   memberData?: MemberData
-  reactionCounts: EmojiCount[]
+  emojiCounts: EmojiCount[]
 }) => {
   return new EmbedBuilder()
     .setColor(0x0099ff)
@@ -176,7 +176,7 @@ export const getMemberDataEmbed = ({
         guildId,
         memberData,
         guildMember,
-        reactionCounts,
+        emojiCounts,
       }),
     )
     .setFooter({

@@ -99,7 +99,7 @@ export const handleWhoIs = async ({
     return `No member data was found for ${guildMember.displayName}`
   }
 
-  const reactionCounts = await getMemberEmojiCounts(memberData.id, "reaction")
+  const emojiCounts = await getMemberEmojiCounts(memberData.id)
 
   // If we don't have a specific field requested, return the default embed
   if (!specificMemberData) {
@@ -107,7 +107,7 @@ export const handleWhoIs = async ({
       guildId: interaction.guild.id,
       guildMember,
       memberData,
-      reactionCounts,
+      emojiCounts,
     })
     return { embeds: [embed] }
   }
@@ -160,15 +160,15 @@ export const handleWhoIs = async ({
       `No roles found for ${guildMember.displayName}`
     )
   }
-  if (specificMemberData === "favoriteReactions") {
+  if (specificMemberData === "favoriteEmojis") {
     return (
-      reactionCounts
+      emojiCounts
         .slice(0, 10)
         .map(
           ({ emojiId, emojiName, count }) =>
             `${createEmojiMention(emojiName, emojiId)} (${count})`,
         )
-        .join(", ") || `No roles found for ${guildMember.displayName}`
+        .join(", ") || `No favorite emojis found for ${guildMember.displayName}`
     )
   }
 

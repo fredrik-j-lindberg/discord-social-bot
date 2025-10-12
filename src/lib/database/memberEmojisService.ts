@@ -28,7 +28,7 @@ export const addMemberEmojiUsage = async ({
  */
 export const getMemberEmojiCounts = async (
   memberId: string,
-  context: MemberEmojiRecord["context"],
+  context: MemberEmojiRecord["context"] | "all" = "all",
 ): Promise<EmojiCount[]> => {
   return db
     .select({
@@ -41,7 +41,7 @@ export const getMemberEmojiCounts = async (
     .where(
       and(
         eq(memberEmojisTable.memberId, memberId),
-        eq(memberEmojisTable.context, context),
+        context !== "all" ? eq(memberEmojisTable.context, context) : undefined,
       ),
     )
     .groupBy((table) => [table.emojiName, table.emojiId, table.context])
