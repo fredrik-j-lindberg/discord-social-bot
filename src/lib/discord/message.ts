@@ -1,3 +1,5 @@
+import { EmbedBuilder } from "discord.js"
+
 /** Converts a role id into a Discord's native mention */
 export const createRoleMention = (roleId: string) => `<@&${roleId}>`
 
@@ -96,4 +98,47 @@ export const createList = ({
 
   if (!header) return itemsText
   return `*${header}*\n${itemsText}`
+}
+
+export const createPaginatedList = ({
+  items,
+  header,
+  fallback = "No items found",
+  itemsPerPage = 10,
+  listType = "bullet",
+}: {
+  items?: string[]
+  header: string
+  fallback?: string
+  limit?: number
+  itemsPerPage?: number
+  listType?: "bullet" | "number"
+}): EmbedBuilder[] => {
+  if (!items?.length) {
+    return [new EmbedBuilder().setTitle(header).setDescription(fallback)]
+  }
+
+  const totalPages = Math.ceil(items.length / itemsPerPage)
+  const pages: EmbedBuilder[] = []
+
+  for (let i = 0; i < totalPages; i++) {
+    const startIndex = i * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const itemChunk = items.slice(startIndex, endIndex)
+
+    const description =
+      listType === "number"
+        ? itemChunk
+            .map((item, index) => `${startIndex + index + 1}. ${item}`)
+            .join("\n")
+        : itemChunk.map((item) => `- ${item}`).join("\n")
+
+    const embed = new EmbedBuilder()
+      .setTitle(header)
+      .setDescription(description)
+
+    pages.push(embed)
+  }
+
+  return pages
 }

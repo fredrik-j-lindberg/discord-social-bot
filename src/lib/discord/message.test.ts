@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 
-import { extractEmojisFromMessage } from "./message"
+import { createPaginatedList, extractEmojisFromMessage } from "./message"
 
 describe("extractEmojisFromMessage", () => {
   test("should return an empty array for null or empty input", () => {
@@ -106,5 +106,121 @@ describe("extractEmojisFromMessage", () => {
         { name: "🌍", id: null },
       ])
     })
+  })
+})
+
+describe("createPaginatedList", () => {
+  const header = "My List"
+
+  test("should return a single embed with fallback message if no items are provided", () => {
+    const pages = createPaginatedList({ header, items: [] })
+    expect(pages).toHaveLength(1)
+    expect(pages[0]?.toJSON()).toEqual({
+      title: header,
+      description: "No items found",
+    })
+  })
+
+  test("should return a single embed with custom fallback message", () => {
+    const fallback = "Nothing here!"
+    const pages = createPaginatedList({ header, items: [], fallback })
+    expect(pages).toHaveLength(1)
+    expect(pages[0]?.toJSON()).toEqual({
+      title: header,
+      description: fallback,
+    })
+  })
+
+  test("should return a single page for items less than itemsPerPage", () => {
+    const items = ["a", "b", "c"]
+    const pages = createPaginatedList({ header, items })
+    expect(pages).toHaveLength(1)
+    expect(pages[0]?.toJSON()).toEqual({
+      title: header,
+      description: "- a\n- b\n- c",
+    })
+  })
+
+  test("should return a single page for items equal to itemsPerPage", () => {
+    const items = Array.from({ length: 10 }, (_, i) => `item ${i + 1}`)
+    const pages = createPaginatedList({ header, items })
+    expect(pages).toHaveLength(1)
+    expect(pages[0]?.toJSON()).toEqual({
+      title: header,
+      description: items.map((item) => `- ${item}`).join("\n"),
+    })
+  })
+
+  test("should return multiple pages for items more than itemsPerPage", () => {
+    const items = Array.from({ length: 15 }, (_, i) => `item ${i + 1}`)
+    const pages = createPaginatedList({ header, items })
+    expect(pages).toHaveLength(2)
+    expect(pages[0]?.toJSON()).toEqual({
+      title: header,
+      description: items
+        .slice(0, 10)
+        .map((item) => `- ${item}`)
+        .join("\n"),
+    })
+    expect(pages[1]?.toJSON()).toEqual({
+      title: header,
+      description: items
+        .slice(10, 15)
+        .map((item) => `- ${item}`)
+        .join("\n"),
+    })
+  })
+
+  test("should handle custom itemsPerPage", () => {
+    const items = Array.from({ length: 7 }, (_, i) => `item ${i + 1}`)
+    const itemsPerPage = 3
+    const pages = createPaginatedList({ header, items, itemsPerPage })
+    expect(pages).toHaveLength(3)
+    expect(pages[0]?.toJSON()).toEqual({
+      title: header,
+      description: "- item 1\n- item 2\n- item 3",
+    })
+    expect(pages[1]?.toJSON()).toEqual({
+      title: header,
+      description: "- item 4\n- item 5\n- item 6",
+    })
+    expect(pages[2]?.toJSON()).toEqual({
+      title: header,
+      description: "- item 7",
+    })
+  })
+
+  test("should create correct number of pages for a large number of items", () => {
+    const items = Array.from({ length: 100 }, (_, i) => `item ${i + 1}`)
+    const pages = createPaginatedList({ header, items })
+    expect(pages).toHaveLength(10)
+  })
+
+  test("should create a numbered list", () => {
+    const items = ["a", "b", "c"]
+    const pages = createPaginatedList({
+      header,
+      items,
+      listType: "number",
+    })
+    expect(pages).toHaveLength(1)
+    expect(pages[0]?.toJSON()).toEqual({
+      title: header,
+      description: "1. a\n2. b\n3. c",
+    })
+  })
+
+  test("should create a multi-page numbered list with correct numbering", () => {
+    const items = Array.from({ length: 5 }, (_, i) => `item ${i + 1}`)
+    const pages = createPaginatedList({
+      header,
+      items,
+      itemsPerPage: 2,
+      listType: "number",
+    })
+    expect(pages).toHaveLength(3)
+    expect(pages[0]?.toJSON().description).toBe("1. item 1\n2. item 2")
+    expect(pages[1]?.toJSON().description).toBe("3. item 3\n4. item 4")
+    expect(pages[2]?.toJSON().description).toBe("5. item 5")
   })
 })
