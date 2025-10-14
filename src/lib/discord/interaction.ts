@@ -3,17 +3,23 @@ import type {
   BaseMessageOptions,
   CommandInteraction,
   ContextMenuCommandInteraction,
+  EmbedBuilder,
   InteractionReplyOptions,
   ModalSubmitInteraction,
 } from "discord.js"
 
 import { DoraUserException } from "../exceptions/DoraUserException"
+import { paginate } from "./pagination"
 
-type ExecuteSupportedInteraction =
+export type ExecuteSupportedInteraction =
   | CommandInteraction
   | ModalSubmitInteraction
   | ContextMenuCommandInteraction
-type ExecuteResult = InteractionReplyOptions | string | undefined
+type ExecuteResult =
+  | InteractionReplyOptions
+  | EmbedBuilder[]
+  | string
+  | undefined
 
 export type InteractionExecute<
   TInteraction extends ExecuteSupportedInteraction,
@@ -63,13 +69,19 @@ export const executeCmdOrModalMappedToInteraction = async <
   }
   try {
     const result = await execute(interaction)
-    if (result) {
-      await reply({
-        interaction,
-        deferReply,
-        replyOptions: result,
-      })
+    if (!result) {
+      return
     }
+    if (Array.isArray(result)) {
+      await paginate(interaction, result)
+      return
+    }
+
+    await reply({
+      interaction,
+      deferReply,
+      replyOptions: result,
+    })
   } catch (err) {
     let userFacingErrorMsg = `Failed to process ${context} :(`
     if (err instanceof DoraUserException) {

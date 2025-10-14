@@ -105,7 +105,7 @@ If you want to add listeners for a new event, copy a `/events/<eventName>` folde
 
 The `./src/commands` folder houses all of the bot commands. All files under this folder are automatically imported by the [commandRouter](./src/events/interactionCreate/listeners/commandRouter.ts) interactionCreate listener.
 
-The command router will handle some basic error handling for your command, as well as facilitates replying capabilities. Anything returned by the execute function of a command module will be used as the reply to the user
+The command router will handle some basic error handling for your command, as well as facilitates replying capabilities. Anything returned by the execute function of a command module will be used as the reply to the user. Return an array of EmbedBuilder's to use the pagination feature (one embed for each page).
 
 #### Adding new commands
 
