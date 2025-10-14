@@ -1,19 +1,22 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
+import {
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  SlashCommandBuilder,
+} from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getEmojiCounts } from "~/lib/database/memberEmojisService"
 import { getGuildEmojis } from "~/lib/discord/guilds"
-import { createEmojiMention, createList } from "~/lib/discord/message"
+import { createEmojiMention, createPaginatedList } from "~/lib/discord/message"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
 const dataOption = {
-  name: "memberdata",
-  description: "List member data for field",
+  name: "data",
+  description: "List server data for a given field",
   choices: {
-    popularEmojis: { name: "Popular emojis", value: "popularEmojis" },
-    unpopularEmojis: { name: "Unpopular emojis", value: "unpopularEmojis" },
+    emojis: { name: "Guild emoji stats", value: "emojis" },
   } as const,
 }
 
@@ -78,21 +81,17 @@ const handleDataChoice = async ({
 }: {
   interaction: CommandInteractionWithGuild
   dataChoice: DataOption
-  role?: { id: string } | null
 }) => {
   const guildId = interaction.guild.id
 
   switch (dataChoice) {
-    case "popularEmojis":
+    // TODO: Remove this ignore when more choices are added
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    case "emojis": {
       return await handleEmojiPopularityChoice({
         guildId,
-        mode: "popular",
       })
-    case "unpopularEmojis":
-      return await handleEmojiPopularityChoice({
-        guildId,
-        mode: "unpopular",
-      })
+    }
     default:
       dataChoice satisfies never
       throw new DoraException(`Unhandled choice: ${dataChoice as string}`)
@@ -101,29 +100,22 @@ const handleDataChoice = async ({
 
 const handleEmojiPopularityChoice = async ({
   guildId,
-  mode,
 }: {
   guildId: string
-  mode: "popular" | "unpopular"
-}): Promise<string> => {
+}): Promise<EmbedBuilder[]> => {
   const emojis = await getGuildEmojis(guildId)
 
   const emojiCounts = await getEmojiCounts(
     emojis.map((emoji) => ({ id: emoji.id, name: emoji.name })),
   )
 
-  const limit = 15
-  const relevantRange =
-    mode === "popular"
-      ? [0, limit]
-      : [Math.max(emojiCounts.length - limit, 0), emojiCounts.length]
-  const relevantCounts = emojiCounts.slice(...relevantRange)
-
-  return createList({
-    items: relevantCounts.map(
-      (emojiCount) =>
-        `${createEmojiMention(emojiCount.emojiName, emojiCount.emojiId)} (${emojiCount.count})`,
-    ),
-    header: `${mode === "popular" ? "Popular" : "Unpopular"} emojis`,
+  return createPaginatedList({
+    items: emojiCounts.map((emojiCount) => {
+      const emoji = createEmojiMention(emojiCount.emojiName, emojiCount.emojiId)
+      return `${emoji}   ${emojiCount.count}`
+    }),
+    header: "Emoji Usage",
+    itemsPerPage: 10,
+    listType: "number",
   })
 }
