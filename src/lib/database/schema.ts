@@ -11,7 +11,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 
-const timestamps = {
+const commonTimestamps = {
   recordUpdatedAt: timestamp()
     .defaultNow()
     .$onUpdate(() => new Date())
@@ -45,7 +45,7 @@ export const membersTable = pgTable(
     pokemonTcgpFriendCode: varchar({ length: 255 }),
     dietaryPreferences: varchar({ length: 255 }),
 
-    ...timestamps,
+    ...commonTimestamps,
   },
   (table) => [primaryKey({ columns: [table.guildId, table.userId] })],
 )
@@ -77,7 +77,7 @@ export const memberRolesTable = pgTable(
       .references(() => membersTable.id, { onDelete: "cascade" }),
     roleId: varchar({ length: 255 }).notNull(),
 
-    ...timestamps,
+    ...commonTimestamps,
   },
   (table) => [primaryKey({ columns: [table.memberId, table.roleId] })],
 )
@@ -102,7 +102,9 @@ export const memberEmojisTable = pgTable("member_emojis", {
   /** The id of the emoji, nullable since native unicode emojis do not have an id */
   emojiId: varchar({ length: 255 }),
   emojiName: varchar({ length: 255 }).notNull(),
+  isAnimated: boolean().notNull().default(false),
   guildId: varchar({ length: 255 }).notNull(),
+  /** The timestamp when the emoji was used */
   timestamp: timestamp({ mode: "date" }).notNull(),
   /** The user id of the message that received the reaction, or the message that contained the emoji */
   messageAuthorUserId: varchar({ length: 255 }).notNull(),
@@ -112,6 +114,8 @@ export const memberEmojisTable = pgTable("member_emojis", {
   isGuildEmoji: boolean().notNull(),
   /** In which context the emoji was used. E.g. reaction or in a message */
   context: emojisUsageEnum().notNull(),
+
+  ...commonTimestamps,
 })
 
 export const memberEmojisRelations = relations(

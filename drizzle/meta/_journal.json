@@ -71,6 +71,13 @@
       "when": 1759595254615,
       "tag": "0009_add-inactivity-stats",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1760740050491,
+      "tag": "0010_add-is-animated-emoji-support",
+      "breakpoints": true
     }
   ]
 }
