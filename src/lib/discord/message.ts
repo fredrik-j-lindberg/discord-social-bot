@@ -4,10 +4,12 @@ import { EmbedBuilder } from "discord.js"
 export const createRoleMention = (roleId: string) => `<@&${roleId}>`
 
 /** Converts a role id into a Discord's native mention */
-export const createEmojiMention = (
-  emojiName?: string | null,
-  emojiId?: string | null,
-) => (emojiId ? `<:${emojiName ?? ""}:${emojiId}>` : emojiName)
+export const createEmojiMention = ({
+  id,
+  name,
+  isAnimated,
+}: Partial<MessageEmoji>) =>
+  id ? `<${isAnimated ? "a" : ""}:${name ?? ""}:${id}>` : name
 
 /** Converts a date or a timestamp into Discord's native timestamp string format */
 export const createDiscordTimestamp = (
@@ -29,9 +31,10 @@ export const createCopyableText = (text?: string | null) => {
   return `\`${text}\``
 }
 
-export interface ExtractedEmoji {
+export interface MessageEmoji {
   name: string
   id: string | null
+  isAnimated: boolean
 }
 
 /** Extract emojis from a string */
@@ -42,30 +45,31 @@ export const extractEmojisFromMessage = ({
   text?: string | null
   /** Whether to de-duplicate the emojis (only return unique emoji values) */
   deduplicate?: boolean
-}): ExtractedEmoji[] => {
+}): MessageEmoji[] => {
   if (!text) return []
 
   const emojiRegex =
-    /(?:(?<!\\)<:([^:]+):(\d+)>)|((\p{Emoji_Presentation}|\p{Extended_Pictographic})\uFE0F?)/gmu
+    /(?:(?<!\\)<(a)?:([^:]+):(\d+)>)|((\p{Emoji_Presentation}|\p{Extended_Pictographic})\uFE0F?)/gmu
 
   const matches = [...text.matchAll(emojiRegex)].map((match) => {
-    const customEmojiName = match[1]
-    const customEmojiId = match[2]
+    const isAnimated = match[1] === "a"
+    const customEmojiName = match[2]
+    const customEmojiId = match[3]
 
     if (customEmojiName && customEmojiId) {
-      return { name: customEmojiName, id: customEmojiId }
+      return { name: customEmojiName, id: customEmojiId, isAnimated }
     }
 
-    const standardEmojiName = match[3]
+    const standardEmojiName = match[4]
     if (standardEmojiName) {
-      return { name: standardEmojiName, id: null }
+      return { name: standardEmojiName, id: null, isAnimated: false }
     }
 
     return null
   })
 
   const messageEmojis = matches.filter(
-    (match): match is ExtractedEmoji => match !== null,
+    (match): match is MessageEmoji => match !== null,
   )
 
   if (!deduplicate) return messageEmojis

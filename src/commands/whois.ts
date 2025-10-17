@@ -171,8 +171,8 @@ export const handleWhoIs = async ({
   if (specificMemberData === "favoriteEmojis") {
     return createList({
       items: emojiCounts.map(
-        ({ emojiId, emojiName, count }) =>
-          `${createEmojiMention(emojiName, emojiId)} (${count})`,
+        ({ emojiId, emojiName, isAnimated, count }) =>
+          `${createEmojiMention({ id: emojiId, name: emojiName, isAnimated })} (${count})`,
       ),
       header: `Favorite emojis for ${guildMember.displayName}`,
       fallback: `No favorite emojis found for ${guildMember.displayName}`,

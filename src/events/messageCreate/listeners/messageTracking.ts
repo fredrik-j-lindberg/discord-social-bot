@@ -58,6 +58,7 @@ export default {
           emojiId: messageEmoji.id,
           timestamp: message.createdAt,
           isGuildEmoji,
+          isAnimated: messageEmoji.isAnimated,
         },
       })
     }

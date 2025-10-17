@@ -118,8 +118,12 @@ const getFieldsRelevantForGuilds = ({
         value:
           emojiCounts
             .slice(0, 5)
-            .map(({ emojiId, emojiName }) =>
-              createEmojiMention(emojiName, emojiId),
+            .map(({ emojiId, emojiName, isAnimated }) =>
+              createEmojiMention({
+                id: emojiId,
+                name: emojiName,
+                isAnimated,
+              }),
             )
             .join(" ") || "-",
         inline: true,

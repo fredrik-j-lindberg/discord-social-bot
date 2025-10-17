@@ -62,6 +62,7 @@ export default {
         messageAuthorUserId: message.author.id,
         timestamp: reactionTimestamp,
         context: "reaction",
+        isAnimated: reaction.emoji.animated ?? false,
       },
     })
   },

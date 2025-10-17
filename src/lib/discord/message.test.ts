@@ -15,21 +15,38 @@ describe("extractEmojisFromMessage", () => {
 
   test("should extract a single standard emoji", () => {
     expect(extractEmojisFromMessage({ text: "Hello 👋" })).toEqual([
-      { name: "👋", id: null },
+      { name: "👋", id: null, isAnimated: false },
     ])
   })
 
   test("should extract multiple standard emojis", () => {
     expect(extractEmojisFromMessage({ text: "Hello 👋 world 🌍" })).toEqual([
-      { name: "👋", id: null },
-      { name: "🌍", id: null },
+      { name: "👋", id: null, isAnimated: false },
+      { name: "🌍", id: null, isAnimated: false },
     ])
   })
 
   test("should extract the name of a single custom emoji", () => {
     expect(extractEmojisFromMessage({ text: "Hello <:custom:12345>" })).toEqual(
-      [{ name: "custom", id: "12345" }],
+      [{ name: "custom", id: "12345", isAnimated: false }],
     )
+  })
+
+  test("should extract the name of a single animated emoji", () => {
+    expect(
+      extractEmojisFromMessage({ text: "Hello <a:animated:54321>" }),
+    ).toEqual([{ name: "animated", id: "54321", isAnimated: true }])
+  })
+
+  test("should extract a mix of animated and non-animated custom emojis", () => {
+    expect(
+      extractEmojisFromMessage({
+        text: "Hello <:custom:12345> and <a:animated:54321>",
+      }),
+    ).toEqual([
+      { name: "custom", id: "12345", isAnimated: false },
+      { name: "animated", id: "54321", isAnimated: true },
+    ])
   })
 
   test("should extract the name of multiple custom emojis", () => {
@@ -38,8 +55,8 @@ describe("extractEmojisFromMessage", () => {
         text: "Hello <:custom:12345> and <:another:54321>",
       }),
     ).toEqual([
-      { name: "custom", id: "12345" },
-      { name: "another", id: "54321" },
+      { name: "custom", id: "12345", isAnimated: false },
+      { name: "another", id: "54321", isAnimated: false },
     ])
   })
 
@@ -47,30 +64,30 @@ describe("extractEmojisFromMessage", () => {
     expect(
       extractEmojisFromMessage({ text: "Hello 👋 <:custom:12345> world 🌍" }),
     ).toEqual([
-      { name: "👋", id: null },
-      { name: "custom", id: "12345" },
-      { name: "🌍", id: null },
+      { name: "👋", id: null, isAnimated: false },
+      { name: "custom", id: "12345", isAnimated: false },
+      { name: "🌍", id: null, isAnimated: false },
     ])
   })
 
   test("should handle emojis at the start and end of the string", () => {
     expect(extractEmojisFromMessage({ text: "👋 Hello world 🌍" })).toEqual([
-      { name: "👋", id: null },
-      { name: "🌍", id: null },
+      { name: "👋", id: null, isAnimated: false },
+      { name: "🌍", id: null, isAnimated: false },
     ])
   })
 
   test("should handle emojis with no surrounding text", () => {
     expect(extractEmojisFromMessage({ text: "👋<:custom:12345>🌍" })).toEqual([
-      { name: "👋", id: null },
-      { name: "custom", id: "12345" },
-      { name: "🌍", id: null },
+      { name: "👋", id: null, isAnimated: false },
+      { name: "custom", id: "12345", isAnimated: false },
+      { name: "🌍", id: null, isAnimated: false },
     ])
   })
 
   test("should correctly extract emojis with variation selectors", () => {
     expect(extractEmojisFromMessage({ text: "I love you ❤️" })).toEqual([
-      { name: "❤️", id: null },
+      { name: "❤️", id: null, isAnimated: false },
     ])
   })
 
@@ -82,10 +99,10 @@ describe("extractEmojisFromMessage", () => {
           deduplicate: true,
         }),
       ).toEqual([
-        { name: "👋", id: null },
-        { name: "one", id: "1" },
-        { name: "two", id: "2" },
-        { name: "🌍", id: null },
+        { name: "👋", id: null, isAnimated: false },
+        { name: "one", id: "1", isAnimated: false },
+        { name: "two", id: "2", isAnimated: false },
+        { name: "🌍", id: null, isAnimated: false },
       ])
     })
 
@@ -96,14 +113,14 @@ describe("extractEmojisFromMessage", () => {
           deduplicate: false,
         }),
       ).toEqual([
-        { name: "👋", id: null },
-        { name: "one", id: "1" },
-        { name: "👋", id: null },
-        { name: "two", id: "2" },
-        { name: "one", id: "1" },
-        { name: "🌍", id: null },
-        { name: "two", id: "2" },
-        { name: "🌍", id: null },
+        { name: "👋", id: null, isAnimated: false },
+        { name: "one", id: "1", isAnimated: false },
+        { name: "👋", id: null, isAnimated: false },
+        { name: "two", id: "2", isAnimated: false },
+        { name: "one", id: "1", isAnimated: false },
+        { name: "🌍", id: null, isAnimated: false },
+        { name: "two", id: "2", isAnimated: false },
+        { name: "🌍", id: null, isAnimated: false },
       ])
     })
   })

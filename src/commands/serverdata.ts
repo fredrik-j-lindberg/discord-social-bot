@@ -111,7 +111,11 @@ const handleEmojiPopularityChoice = async ({
 
   return createPaginatedList({
     items: emojiCounts.map((emojiCount) => {
-      const emoji = createEmojiMention(emojiCount.emojiName, emojiCount.emojiId)
+      const emoji = createEmojiMention({
+        id: emojiCount.emojiId,
+        name: emojiCount.emojiName,
+        isAnimated: emojiCount.isAnimated,
+      })
       return `${emoji}   ${emojiCount.count}`
     }),
     header: "Emoji Usage",

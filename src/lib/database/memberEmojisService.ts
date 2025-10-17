@@ -10,6 +10,7 @@ import {
 export interface EmojiCount {
   emojiId?: string | null
   emojiName?: string
+  isAnimated?: boolean
   count: number
 }
 
@@ -40,6 +41,7 @@ export const getMemberEmojiCounts = async ({
     .select({
       emojiId: memberEmojisTable.emojiId,
       emojiName: memberEmojisTable.emojiName,
+      isAnimated: memberEmojisTable.isAnimated,
       count: count(),
     })
     .from(memberEmojisTable)
@@ -49,7 +51,7 @@ export const getMemberEmojiCounts = async ({
         context !== "all" ? eq(memberEmojisTable.context, context) : undefined,
       ),
     )
-    .groupBy((table) => [table.emojiName, table.emojiId])
+    .groupBy((table) => [table.emojiId, table.emojiName, table.isAnimated])
     .orderBy(sortBy === "mostUsed" ? desc(sql`count`) : asc(sql`count`))
     .limit(limit)
 }
@@ -60,9 +62,7 @@ export const getMemberEmojiCounts = async ({
 export const getEmojiCounts = async (
   /** The emojis you want the count for */
   emojis: { name: string; id: string }[],
-): Promise<
-  (Omit<EmojiCount, "context" | "emojiName"> & { emojiName: string | null })[]
-> => {
+): Promise<Omit<EmojiCount, "context">[]> => {
   if (emojis.length === 0) {
     return []
   }
@@ -71,6 +71,7 @@ export const getEmojiCounts = async (
     .select({
       emojiId: memberEmojisTable.emojiId,
       emojiName: memberEmojisTable.emojiName,
+      isAnimated: memberEmojisTable.isAnimated,
       count: count(),
     })
     .from(memberEmojisTable)
@@ -80,7 +81,7 @@ export const getEmojiCounts = async (
         emojis.map((emoji) => emoji.id),
       ),
     )
-    .groupBy((table) => [table.emojiId, table.emojiName])
+    .groupBy((table) => [table.emojiId, table.emojiName, table.isAnimated])
     .orderBy(asc(sql`count`))
 
   const map = new Map(emojiRecords.map((record) => [record.emojiId, record]))
@@ -88,6 +89,7 @@ export const getEmojiCounts = async (
     .map((emoji) => ({
       emojiId: emoji.id,
       emojiName: emoji.name,
+      isAnimated: map.get(emoji.id)?.isAnimated ?? false,
       count: map.get(emoji.id)?.count ?? 0,
     }))
     .sort((a, b) => b.count - a.count)
