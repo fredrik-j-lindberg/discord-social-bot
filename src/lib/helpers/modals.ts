@@ -1,5 +1,5 @@
 import {
-  ActionRowBuilder,
+  LabelBuilder,
   ModalBuilder,
   ModalSubmitInteraction,
   TextInputBuilder,
@@ -10,6 +10,7 @@ import z, { ZodType } from "zod/v4"
 export interface ModalFieldConfig {
   fieldName: string
   label: string
+  description?: string
   style: TextInputStyle
   getPrefilledValue: (
     /** The metadata relevant to prefill the data. For example for the member data (/pii) modal this might the database values for the member */
@@ -43,14 +44,13 @@ export const generateModalSchema = <
 >(
   fieldConfigsMap: TFieldConfigsMap,
 ) => {
-  const test = Object.values(fieldConfigsMap).map((fieldConfig) => [
-    fieldConfig.fieldName,
-    fieldConfig.validation,
-  ])
+  const modalSchemaEntries = Object.values(fieldConfigsMap).map(
+    (fieldConfig) => [fieldConfig.fieldName, fieldConfig.validation],
+  )
 
   return z
     .object({
-      ...(Object.fromEntries(test) as unknown as {
+      ...(Object.fromEntries(modalSchemaEntries) as unknown as {
         [key in keyof TFieldConfigsMap]: TFieldConfigsMap[key]["validation"]
       }),
     })
@@ -113,25 +113,28 @@ export const createModal = <TFieldConfigs extends ModalFieldConfig[]>({
   if (fieldsToGenerateConfigs.length > 5) {
     throw new Error(
       // Discord modals have a limit of 5 fields per modal
-      `Tried to generate too many modal fields. Max allowed per modal is 5 fields but tried to generate '${fieldsToGenerate.join(", ")}'`,
+      `Tried to generate too many modal fields. Max allowed per modal is 5 fields but tried to generate '${fieldsToGenerateConfigs.map((fieldConfig) => fieldConfig.fieldName).join(", ")}'`,
     )
   }
 
-  const components = fieldsToGenerateConfigs.map((fieldConfig) =>
-    new TextInputBuilder()
-      .setCustomId(fieldConfig.fieldName)
+  const components = fieldsToGenerateConfigs.map((fieldConfig) => {
+    const label = new LabelBuilder()
       .setLabel(fieldConfig.label)
-      .setValue(fieldConfig.getPrefilledValue(modalMetaData) || "")
-      .setStyle(fieldConfig.style)
-      .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
-      .setPlaceholder(fieldConfig.placeholder || "")
-      .setRequired(fieldConfig.isRequired),
-  )
-
-  const rows = components.map((component) => {
-    return new ActionRowBuilder<TextInputBuilder>().addComponents(component)
+      .setTextInputComponent(
+        new TextInputBuilder()
+          .setCustomId(fieldConfig.fieldName)
+          .setValue(fieldConfig.getPrefilledValue(modalMetaData) || "")
+          .setStyle(fieldConfig.style)
+          .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
+          .setPlaceholder(fieldConfig.placeholder || "")
+          .setRequired(fieldConfig.isRequired),
+      )
+    if (fieldConfig.description) {
+      label.setDescription(fieldConfig.description)
+    }
+    return label
   })
 
-  modal.addComponents(rows)
+  modal.addLabelComponents(components)
   return modal
 }

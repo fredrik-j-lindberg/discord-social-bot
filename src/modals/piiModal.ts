@@ -38,6 +38,8 @@ const piiFieldConfigsMap = {
   [SUPPORTED_MEMBER_FIELDS.birthday]: {
     fieldName: SUPPORTED_MEMBER_FIELDS.birthday,
     label: "Birthday (DD/MM/YYYY)",
+    description:
+      "Feel free to set a random year if you prefer not to share your age",
     getPrefilledValue: (memberData) =>
       formatDate(memberData?.birthday, { dateStyle: "short" }),
     style: TextInputStyle.Short,
