@@ -22,7 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@t3-oss/env-core": "^0.13.8",
-    "discord.js": "^14.22.1",
+    "discord.js": "^14.23.2",
     "drizzle-orm": "^0.44.5",
     "node-schedule": "^2.1.1",
     "pg": "^8.16.3",
