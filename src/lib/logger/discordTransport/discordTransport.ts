@@ -30,6 +30,14 @@ const logSchema = z.looseObject({
   time: z.number().optional(),
   guildId: z.string().optional(),
   msg: z.string(),
+  error: z
+    .looseObject({
+      message: z.string().optional(),
+      name: z.string().optional(),
+      stack: z.string().optional(),
+      cause: z.any().optional(),
+    })
+    .optional(),
 })
 
 export type DiscordLog = z.infer<typeof logSchema>

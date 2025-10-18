@@ -24,6 +24,15 @@ const logLevelToEmbedColor = {
   fatal: 0xff0000,
 } as const
 
+const maxDiscordFieldLength = 1000
+const truncateString = (
+  str: string,
+  maxLength: number = maxDiscordFieldLength,
+) => {
+  if (str.length <= maxLength) return str
+  return str.substring(0, maxLength - 3) + "..."
+}
+
 export const sendWebhookMessage = async ({
   webhookUrl,
   log,
@@ -36,20 +45,46 @@ export const sendWebhookMessage = async ({
   })
 
   const color = logLevelToEmbedColor[log.level]
+  const { level, msg: logMessage, error, time, ...restLog } = log
+  const { message: errorMessage, stack: errorStack, ...restError } = error || {}
+
   const embed = new EmbedBuilder().setColor(color).addFields([
-    { name: "Message", value: log.msg },
+    { name: "Message", value: logMessage },
     {
       name: "Timestamp",
-      value: formatTimestamp(log.time),
+      value: formatTimestamp(time),
       inline: true,
     },
     {
       name: "Level",
-      value: log.level,
+      value: level,
       inline: true,
     },
-    { name: "Raw", value: JSON.stringify(log) },
   ])
+
+  if (error) {
+    embed.addFields([
+      {
+        name: "Error Message",
+        value: errorMessage || "N/A",
+      },
+      {
+        name: "Error Stack",
+        value: `\`\`\`${truncateString(errorStack || "N/A")}\`\`\``,
+      },
+    ])
+  }
+
+  const unprocessedProperties = {
+    ...restLog,
+    error: error ? restError : undefined,
+  }
+
+  const stringifiedLog = JSON.stringify(unprocessedProperties)
+  embed.addFields({
+    name: "Unprocessed Log Properties",
+    value: `\`\`\`json\n${truncateString(stringifiedLog)}\`\`\``,
+  })
 
   await webhookClient.send({
     embeds: [embed],

@@ -9,4 +9,13 @@ const getTransport = (targets: TransportTargetOptions[]) => {
   return pino.transport({ targets }) as DestinationStream
 }
 
-export const logger = pino({ level: "debug" }, getTransport(staticTargets))
+export const logger = pino(
+  {
+    level: "debug",
+    serializers: {
+      error: pino.stdSerializers.errWithCause,
+      err: pino.stdSerializers.err,
+    },
+  },
+  getTransport(staticTargets),
+)

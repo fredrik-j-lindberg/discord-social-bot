@@ -5,7 +5,7 @@ import { logger } from "./logger"
 
 const logError = (err: unknown, actionLogger: Logger) => {
   if (!(err instanceof DoraException)) {
-    actionLogger.error(err, `Failed action`)
+    actionLogger.error({ error: err }, `Failed action`)
     return
   }
 
@@ -21,12 +21,12 @@ const logError = (err: unknown, actionLogger: Logger) => {
       break
     case DoraException.Severity.Warn:
       actionLogger.warn(
-        { reason: err.message, err },
+        { reason: err.message, error: err },
         `Skipped action with warning`,
       )
       break
     default:
-      actionLogger.error(err, `Failed action`)
+      actionLogger.error({ error: err }, `Failed action`)
   }
 }
 

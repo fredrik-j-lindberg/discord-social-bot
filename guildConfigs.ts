@@ -100,7 +100,7 @@ const devGuildConfigs: GuildConfigs = {
     logs: {
       webhookUrl:
         "https://discord.com/api/webhooks/1424836052320780359/wi5zae0S_6yEW3dtYFd70wKeOOT5o1-y94nvRhRf11e3wx99ruAgnwa_a7ejPC5Czfx8", // #dora-logs
-      levelThreshold: "warn",
+      levelThreshold: "info",
     },
   },
 }
@@ -131,7 +131,7 @@ export const prodGuildConfigs: GuildConfigs = {
     logs: {
       webhookUrl:
         "https://discord.com/api/webhooks/1424860865970180256/sbK03sh-_qvA--oKEO3qw33fTDZI0f-LdJKzoTwS4BFRgoeRbYvX5oFne5J-8_2V3E_E", // #dora-logs
-      levelThreshold: "warn",
+      levelThreshold: "info",
     },
   },
   // Eithon
@@ -155,7 +155,7 @@ export const prodGuildConfigs: GuildConfigs = {
     logs: {
       webhookUrl:
         "https://discord.com/api/webhooks/1424861409702973560/p7w5IdLGTovh5nJIhPTqms1XPsC8Di6HkBbu3tkt71cE0JLy22nTAC_u0kFERvDkeDG5", // #log-general
-      levelThreshold: "warn",
+      levelThreshold: "info",
     },
   },
 }
