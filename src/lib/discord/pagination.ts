@@ -4,12 +4,23 @@ import {
   type ButtonInteraction,
   ButtonStyle,
   ComponentType,
-  type EmbedBuilder,
+  ContainerBuilder,
+  type InteractionReplyOptions,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js"
 
 import { DoraException } from "../exceptions/DoraException"
 import { logger } from "../logger"
 import type { ExecuteSupportedInteraction } from "./interaction"
+
+const PaginationButtonCustomIds = {
+  firstPage: "first_page",
+  prevPage: "prev_page",
+  pageInfo: "page_info",
+  nextPage: "next_page",
+  lastPage: "last_page",
+}
 
 const getEmbedButtons = ({
   currentPage,
@@ -25,14 +36,14 @@ const getEmbedButtons = ({
   const onFirstPage = currentPage === 0
   row.addComponents(
     new ButtonBuilder()
-      .setCustomId("first_page")
+      .setCustomId(PaginationButtonCustomIds.firstPage)
       .setLabel("⏮️")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(disableButtons || onFirstPage),
   )
   row.addComponents(
     new ButtonBuilder()
-      .setCustomId("prev_page")
+      .setCustomId(PaginationButtonCustomIds.prevPage)
       .setLabel("◀️")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(disableButtons || onFirstPage),
@@ -40,7 +51,7 @@ const getEmbedButtons = ({
 
   row.addComponents(
     new ButtonBuilder()
-      .setCustomId("page_info")
+      .setCustomId(PaginationButtonCustomIds.pageInfo)
       .setLabel(`${currentPage + 1}/${totalPages}`)
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(true),
@@ -49,14 +60,14 @@ const getEmbedButtons = ({
   const onLastPage = currentPage === totalPages - 1
   row.addComponents(
     new ButtonBuilder()
-      .setCustomId("next_page")
+      .setCustomId(PaginationButtonCustomIds.nextPage)
       .setLabel("▶️")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(disableButtons || onLastPage),
   )
   row.addComponents(
     new ButtonBuilder()
-      .setCustomId("last_page")
+      .setCustomId(PaginationButtonCustomIds.lastPage)
       .setLabel("⏭️")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(disableButtons || onLastPage),
@@ -66,37 +77,45 @@ const getEmbedButtons = ({
 }
 
 const composePage = ({
-  pagesEmbeds,
+  pageContainers,
   currentPage,
   totalPages,
   noLongerInteractive = false,
 }: {
-  pagesEmbeds: EmbedBuilder[]
+  pageContainers: ContainerBuilder[]
   currentPage: number
   totalPages: number
   noLongerInteractive?: boolean
-}) => {
-  const embed = pagesEmbeds[currentPage]
-  if (!embed) {
+}): InteractionReplyOptions & { flags: MessageFlags.IsComponentsV2 } => {
+  const container = pageContainers[currentPage]
+  if (!container) {
     throw new DoraException("No embed found for the current page.")
   }
 
   if (noLongerInteractive) {
-    const existingFooter = embed.toJSON().footer?.text ?? ""
-    embed.setFooter({
-      text: `${existingFooter ? `${existingFooter}\n` : ""}This embed is no longer interactive.`,
-    })
+    const nonInteractiveComponent = new TextDisplayBuilder().setContent(
+      "_This embed is no longer interactive_",
+    )
+    container.addTextDisplayComponents(nonInteractiveComponent)
+  }
+
+  if (totalPages <= 1) {
+    return {
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+    }
   }
 
   return {
-    embeds: [embed],
     components: [
+      container,
       getEmbedButtons({
         currentPage,
         totalPages,
         disableButtons: noLongerInteractive,
       }),
     ],
+    flags: MessageFlags.IsComponentsV2 as const,
   }
 }
 
@@ -105,13 +124,13 @@ const handleButtonInteraction = async ({
   interactionUserId,
   currentPage,
   totalPages,
-  pagesEmbeds,
+  pageContainers,
 }: {
   buttonInteraction: ButtonInteraction
   interactionUserId: string
   currentPage: number
   totalPages: number
-  pagesEmbeds: EmbedBuilder[]
+  pageContainers: ContainerBuilder[]
 }) => {
   if (buttonInteraction.user.id !== interactionUserId) {
     await buttonInteraction.reply({
@@ -125,57 +144,60 @@ const handleButtonInteraction = async ({
   await buttonInteraction.deferUpdate()
 
   switch (buttonInteraction.customId) {
-    case "first_page":
+    case PaginationButtonCustomIds.firstPage:
       currentPage = 0
       break
-    case "next_page":
+    case PaginationButtonCustomIds.nextPage:
       currentPage++
       break
-    case "prev_page":
+    case PaginationButtonCustomIds.prevPage:
       currentPage--
       break
-    case "last_page":
+    case PaginationButtonCustomIds.lastPage:
       currentPage = totalPages - 1
       break
     default:
       break
   }
 
-  const newPageEmbed = pagesEmbeds[currentPage]
-  if (!newPageEmbed) {
+  const newPageContainer = pageContainers[currentPage]
+  if (!newPageContainer) {
     throw new DoraException("No embed found for the current page.")
   }
 
-  await buttonInteraction.editReply({
-    embeds: [newPageEmbed],
-    components: [getEmbedButtons({ currentPage, totalPages })],
+  const newPage = composePage({
+    pageContainers,
+    currentPage,
+    totalPages,
   })
+  await buttonInteraction.editReply(newPage)
 
   return currentPage
 }
 
 export const paginate = async (
   interaction: ExecuteSupportedInteraction,
-  pagesEmbeds: EmbedBuilder[],
+  pageContainers: ContainerBuilder[],
   time = 60_000,
 ) => {
-  if (pagesEmbeds.length === 0) {
+  if (pageContainers.length === 0) {
     throw new DoraException("No pages to display for pagination.")
   }
-  if (pagesEmbeds.length === 1) {
-    const embed = pagesEmbeds[0]
-    if (!embed) {
+  if (pageContainers.length === 1) {
+    const container = pageContainers[0]
+    if (!container) {
       throw new DoraException("No embed found for the only page.")
     }
-    await interaction.editReply({ embeds: [embed] })
-    return
   }
 
-  const totalPages = pagesEmbeds.length
+  const totalPages = pageContainers.length
   let currentPage = 0
 
-  const initialPage = composePage({ pagesEmbeds, currentPage, totalPages })
+  const initialPage = composePage({ pageContainers, currentPage, totalPages })
   const response = await interaction.editReply(initialPage)
+  if (totalPages <= 1) {
+    return // No need for pagination handling since we have only one page
+  }
 
   const collector = response.createMessageComponentCollector({
     componentType: ComponentType.Button,
@@ -188,7 +210,7 @@ export const paginate = async (
       buttonInteraction,
       currentPage,
       interactionUserId: interaction.user.id,
-      pagesEmbeds,
+      pageContainers,
       totalPages,
     })
       .then((newPage) => {
@@ -201,7 +223,7 @@ export const paginate = async (
 
   collector.on("end", () => {
     const finalStatePage = composePage({
-      pagesEmbeds,
+      pageContainers,
       currentPage,
       totalPages,
       noLongerInteractive: true, // Disable buttons to avoid user confusion when they stop working

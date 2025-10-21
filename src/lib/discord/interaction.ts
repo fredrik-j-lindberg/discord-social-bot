@@ -1,11 +1,11 @@
-import type {
-  AutocompleteInteraction,
-  BaseMessageOptions,
-  CommandInteraction,
-  ContextMenuCommandInteraction,
-  EmbedBuilder,
-  InteractionReplyOptions,
-  ModalSubmitInteraction,
+import {
+  type AutocompleteInteraction,
+  type CommandInteraction,
+  ContainerBuilder,
+  type ContextMenuCommandInteraction,
+  type InteractionReplyOptions,
+  MessageFlags,
+  type ModalSubmitInteraction,
 } from "discord.js"
 
 import { DoraUserException } from "../exceptions/DoraUserException"
@@ -16,14 +16,18 @@ export type ExecuteSupportedInteraction =
   | ModalSubmitInteraction
   | ContextMenuCommandInteraction
 type ExecuteResult =
-  | InteractionReplyOptions
-  | EmbedBuilder[]
+  | (InteractionReplyOptions & {
+      flags?: MessageFlags.IsComponentsV2
+    })
+  | ContainerBuilder
+  | ContainerBuilder[]
   | string
   | undefined
 
 export type InteractionExecute<
   TInteraction extends ExecuteSupportedInteraction,
 > = (interaction: TInteraction) => Promise<ExecuteResult> | ExecuteResult
+export type InteractionExecuteResult = ExecuteResult
 
 interface AutocompleteChoice {
   name: string
@@ -40,7 +44,9 @@ const reply = async ({
 }: {
   interaction: ExecuteSupportedInteraction
   deferReply: boolean
-  replyOptions: BaseMessageOptions | string
+  replyOptions:
+    | (InteractionReplyOptions & { flags?: MessageFlags.IsComponentsV2 })
+    | string
 }) => {
   if (deferReply) {
     await interaction.editReply(replyOptions)
@@ -74,6 +80,18 @@ export const executeCmdOrModalMappedToInteraction = async <
     }
     if (Array.isArray(result)) {
       await paginate(interaction, result)
+      return
+    }
+
+    if (result instanceof ContainerBuilder) {
+      await reply({
+        interaction,
+        deferReply,
+        replyOptions: {
+          components: [result],
+          flags: MessageFlags.IsComponentsV2,
+        },
+      })
       return
     }
 

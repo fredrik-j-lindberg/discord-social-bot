@@ -4,6 +4,7 @@ import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getMemberData } from "~/lib/database/memberDataService"
 import { getMemberEmojiCounts } from "~/lib/database/memberEmojisService"
+import type { InteractionExecuteResult } from "~/lib/discord/interaction"
 import {
   createDiscordTimestamp,
   createEmojiMention,
@@ -79,7 +80,7 @@ export const handleWhoIs = async ({
   userId: string
   /** Send if only interested in a specific piece of member data, can be useful if for example you want to copy paste a value */
   specificMemberData?: string | null
-}) => {
+}): Promise<InteractionExecuteResult> => {
   assertHasDefinedProperty(
     interaction,
     "guild",

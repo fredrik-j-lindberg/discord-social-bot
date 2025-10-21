@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js"
+import { ContainerBuilder, TextDisplayBuilder } from "discord.js"
 
 /** Converts a role id into a Discord's native mention */
 export const createRoleMention = (roleId: string) => `<@&${roleId}>`
@@ -117,13 +117,22 @@ export const createPaginatedList = ({
   limit?: number
   itemsPerPage?: number
   listType?: "bullet" | "number"
-}): EmbedBuilder[] => {
+}): ContainerBuilder[] => {
+  const headerTextComponent = new TextDisplayBuilder().setContent(
+    `### ${header}`,
+  )
   if (!items?.length) {
-    return [new EmbedBuilder().setTitle(header).setDescription(fallback)]
+    const fallbackTextComponent = new TextDisplayBuilder().setContent(fallback)
+    return [
+      new ContainerBuilder().addTextDisplayComponents(
+        headerTextComponent,
+        fallbackTextComponent,
+      ),
+    ]
   }
 
   const totalPages = Math.ceil(items.length / itemsPerPage)
-  const pages: EmbedBuilder[] = []
+  const pages: ContainerBuilder[] = []
 
   for (let i = 0; i < totalPages; i++) {
     const startIndex = i * itemsPerPage
@@ -137,11 +146,15 @@ export const createPaginatedList = ({
             .join("\n")
         : itemChunk.map((item) => `- ${item}`).join("\n")
 
-    const embed = new EmbedBuilder()
-      .setTitle(header)
-      .setDescription(description)
+    const descriptionTextComponent = new TextDisplayBuilder().setContent(
+      description,
+    )
+    const container = new ContainerBuilder().addTextDisplayComponents(
+      headerTextComponent,
+      descriptionTextComponent,
+    )
 
-    pages.push(embed)
+    pages.push(container)
   }
 
   return pages

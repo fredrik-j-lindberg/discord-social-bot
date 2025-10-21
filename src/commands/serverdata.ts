@@ -1,12 +1,12 @@
 import {
   type ChatInputCommandInteraction,
-  EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getEmojiCounts } from "~/lib/database/memberEmojisService"
 import { getGuildEmojis } from "~/lib/discord/guilds"
+import type { InteractionExecuteResult } from "~/lib/discord/interaction"
 import { createEmojiMention, createPaginatedList } from "~/lib/discord/message"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
@@ -81,7 +81,7 @@ const handleDataChoice = async ({
 }: {
   interaction: CommandInteractionWithGuild
   dataChoice: DataOption
-}) => {
+}): Promise<InteractionExecuteResult> => {
   const guildId = interaction.guild.id
 
   switch (dataChoice) {
@@ -102,7 +102,7 @@ const handleEmojiPopularityChoice = async ({
   guildId,
 }: {
   guildId: string
-}): Promise<EmbedBuilder[]> => {
+}): Promise<InteractionExecuteResult> => {
   const emojis = await getGuildEmojis(guildId)
 
   const emojiCounts = await getEmojiCounts(
