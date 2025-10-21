@@ -193,6 +193,8 @@ There are also some helpful scripts for this:
   - Consider if we should have a way to exempt users from the inactivity check
   - Consider adding an "inactive" role to users who have received the warning
 
+- Smhi integration?
+- Instead of below, perhaps an integration with Cloudflare R2 to simply host images for us
 - Add image scraping capabilities (scraping a google photos album).
   Update: [POC branch here](https://github.com/fredrik-j-lindberg/discord-social-bot/tree/poc/web-scraper) - Failed to find a reliable dates in shared google photos album url. The date found in the html proved to be the photo data rather than the upload date. A relative time stamp was found in the "comment section" of the album, so that is a potential next test. But then we would need to be able to parse the relative text and figure out whether it warrants an announcement or not.
 - Add mcp capabilities (being able to ask the bot for a specific piece of member info etc)
@@ -209,6 +211,6 @@ There are also some helpful scripts for this:
 
 ### Misc
 
-- Use autocomplete handling in /memberdata (similar to /whois) to make the options guild-specific
 - Refactor /memberdata register list subcommands semi-dynamically. Setup individual listeners with a proper name, cmd and action.
 - Align action wrapper usage around database methods (e.g. the new services)
+- Cache the /pii data for a short while (e.g. 10 minutes)? This would allow you to not lose all the data when failing the validation
