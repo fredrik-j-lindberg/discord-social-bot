@@ -6,6 +6,7 @@ import {
   setMemberData,
 } from "~/lib/database/memberDataService"
 import { getGuild } from "~/lib/discord/guilds"
+import { addRole } from "~/lib/discord/roles"
 import {
   sendDebugInactivitySummaryToUser,
   sendInactivityNotice,
@@ -98,6 +99,15 @@ const handleInactivityCheck = async ({
   }
 
   for (const memberData of inactiveMembers.values()) {
+    const user = members.get(memberData.userId)?.user
+    if (!user) {
+      throw new DoraException(
+        "Inactive member not found, are they part of the guild?",
+        DoraException.Type.NotFound,
+        { metadata: { debugUserId, guildId: guild.id } },
+      )
+    }
+
     if (memberData.inactiveSince) {
       await handleKickingInactiveMember({
         memberData: { ...memberData, inactiveSince: memberData.inactiveSince },
@@ -112,6 +122,7 @@ const handleInactivityCheck = async ({
       memberData,
       guild,
       inactivityConfig,
+      user,
       debugUser: debugMember.user,
       inactiveThresholdDate,
     })
@@ -177,15 +188,25 @@ const handleKickingInactiveMember = async ({
 const handleSetMemberAsInactive = async ({
   memberData,
   guild,
+  user,
   debugUser,
   inactivityConfig,
 }: {
   memberData: InactivityMemberData
   guild: Awaited<ReturnType<typeof getGuild>>
+  user: User
   debugUser: User
   inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
   inactiveThresholdDate: Date
 }) => {
+  if (inactivityConfig.inactiveRoleId) {
+    await addRole({
+      guild,
+      user,
+      roleId: inactivityConfig.inactiveRoleId,
+    })
+  }
+
   // Set inactive status
   await setMemberData({
     memberData: {

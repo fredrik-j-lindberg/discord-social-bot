@@ -5,7 +5,10 @@ import { addMemberEmojiUsage } from "~/lib/database/memberEmojisService"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 import { getGuild } from "~/lib/discord/guilds"
 import { extractEmojisFromMessage } from "~/lib/discord/message"
+import { removeRole } from "~/lib/discord/roles"
 import { assertHasDefinedProperty } from "~/lib/validation"
+
+import { guildConfigs } from "../../../../guildConfigs"
 
 export default {
   data: { name: "messageTracking" },
@@ -32,17 +35,27 @@ export default {
       messageTimestamp: message.createdAt,
     })
 
+    const guildId = message.guild.id
+    const oauthGuild = await getGuild(guildId)
+    const guild = await oauthGuild.fetch()
+
+    const guildConfig = guildConfigs[guildId]
+    const inactiveRoleId = guildConfig?.inactivityMonitoring?.inactiveRoleId
+    if (inactiveRoleId) {
+      await removeRole({
+        guild,
+        user: message.author,
+        roleId: inactiveRoleId,
+      })
+    }
+
     const messageEmojis = extractEmojisFromMessage({
       text: message.content,
       deduplicate: true,
     })
     if (messageEmojis.length === 0) return
 
-    const guildId = message.guild.id
-    const oauthGuild = await getGuild(guildId)
-    const guild = await oauthGuild.fetch()
     const guildEmojis = await guild.emojis.fetch()
-
     for (const messageEmoji of messageEmojis) {
       const isGuildEmoji = guildEmojis.some(
         (guildEmoji) => guildEmoji.id === messageEmoji.id,

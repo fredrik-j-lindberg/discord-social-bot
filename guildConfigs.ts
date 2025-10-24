@@ -53,6 +53,8 @@ export interface GuildConfig {
     debugUserId: string
     /** Optional invite link to include in kick notice, allowing the user to rejoin easily */
     inviteLink?: string
+    /** Optional role to assign to inactive users */
+    inactiveRoleId?: string
   }
   /** Configuration for logging, leave out of guild config to disable logging */
   logs?: {
@@ -96,6 +98,7 @@ const devGuildConfigs: GuildConfigs = {
       daysAsInactiveBeforeKick: 30,
       debugUserId: "106098921985556480",
       inviteLink: "https://discord.gg/QZxuMF8CE6",
+      inactiveRoleId: "1430600447332319232",
     },
     logs: {
       webhookUrl:
@@ -127,6 +130,7 @@ export const prodGuildConfigs: GuildConfigs = {
       daysAsInactiveBeforeKick: 30,
       debugUserId: "106098921985556480",
       inviteLink: "https://discord.gg/RBKyxwPpEG",
+      inactiveRoleId: "1430587862298005656",
     },
     logs: {
       webhookUrl:
