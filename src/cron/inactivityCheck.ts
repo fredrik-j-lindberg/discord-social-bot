@@ -113,7 +113,7 @@ const handleInactivityCheck = async ({
         memberData: { ...memberData, inactiveSince: memberData.inactiveSince },
         guild,
         inactivityConfig,
-        debugUser: debugMember.user,
+        user,
       })
       continue
     }
@@ -123,7 +123,6 @@ const handleInactivityCheck = async ({
       guild,
       inactivityConfig,
       user,
-      debugUser: debugMember.user,
       inactiveThresholdDate,
     })
   }
@@ -139,12 +138,12 @@ const handleInactivityCheck = async ({
 const handleKickingInactiveMember = async ({
   memberData,
   guild,
-  debugUser,
+  user,
   inactivityConfig,
 }: {
   memberData: { inactiveSince: Date } & InactivityMemberData
   guild: Awaited<ReturnType<typeof getGuild>>
-  debugUser: User
+  user: User
   inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
 }) => {
   const kickThresholdDate = subtractDaysFromDate(
@@ -180,22 +179,28 @@ const handleKickingInactiveMember = async ({
   await sendKickNotice({
     member: memberData,
     guildName: guild.name,
-    debugUser,
+    user,
     inactivityConfig,
   })
+
+  logger.info(
+    {
+      userId: memberData.userId,
+      guildId: guild.id,
+    },
+    `Kicked inactive member ${memberData.displayName} from guild as their latest activity was ${memberData.latestActivityAt?.toISOString() || "N/A"}`,
+  )
 }
 
 const handleSetMemberAsInactive = async ({
   memberData,
   guild,
   user,
-  debugUser,
   inactivityConfig,
 }: {
   memberData: InactivityMemberData
   guild: Awaited<ReturnType<typeof getGuild>>
   user: User
-  debugUser: User
   inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
   inactiveThresholdDate: Date
 }) => {
@@ -220,7 +225,15 @@ const handleSetMemberAsInactive = async ({
   await sendInactivityNotice({
     inactiveMember: memberData,
     guildName: guild.name,
-    debugUser,
+    user,
     inactivityConfig,
   })
+
+  logger.info(
+    {
+      userId: memberData.userId,
+      guildId: guild.id,
+    },
+    `Set member ${memberData.displayName} as inactive in guild as their latest activity was ${memberData.latestActivityAt?.toISOString() || "N/A"} and the guild inactivity threshold is ${inactivityConfig.daysUntilInactive} days`,
+  )
 }
