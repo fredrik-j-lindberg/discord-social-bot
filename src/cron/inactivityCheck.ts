@@ -27,7 +27,17 @@ export interface InactivityMemberData {
   inactiveSince?: Date | null
 }
 
+/** Since we started collecting stats recently, let's wait with the inactivity monitor until we have enough data */
+const inactivityActivityEnableDate = new Date("2025-12-01")
+
 export const inactivityMonitor = async () => {
+  // TODO: Remove this check when we pass the threshold date. Just in place to avoid kicking people prematurely
+  if (new Date() < inactivityActivityEnableDate) {
+    logger.debug(
+      `The threshold date ${inactivityActivityEnableDate.toISOString()} has not passed. Inactivity monitor will run.`,
+    )
+    return
+  }
   for (const guildConfig of Object.values(guildConfigs)) {
     await actionWrapper({
       action: () =>
