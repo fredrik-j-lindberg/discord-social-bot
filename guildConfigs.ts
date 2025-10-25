@@ -50,7 +50,7 @@ export interface GuildConfig {
     /** Once the user is marked as inactive, this is the number of days until they are kicked */
     daysAsInactiveBeforeKick: number
     /** Debug user, for testing purposes, this user id will get all the inactivity notifications */
-    debugUserId: string
+    debugUserId?: string
     /** Optional invite link to include in kick notice, allowing the user to rejoin easily */
     inviteLink?: string
     /** Optional role to assign to inactive users */

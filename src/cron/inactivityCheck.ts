@@ -101,14 +101,6 @@ const handleInactivityCheck = async ({
 
   const debugMember = members.find((member) => member.id === debugUserId)
 
-  if (!debugMember) {
-    throw new DoraException(
-      "Debug member not found for inactivity summary, are they part of the guild?",
-      DoraException.Type.NotFound,
-      { metadata: { debugUserId, guildId: guild.id } },
-    )
-  }
-
   for (const memberData of inactiveMembers.values()) {
     const member = members.get(memberData.userId)
     if (!member) {
@@ -138,12 +130,14 @@ const handleInactivityCheck = async ({
     })
   }
 
-  await sendDebugInactivitySummaryToUser({
-    inactiveMembers: Array.from(inactiveMembers.values()),
-    debugUser: debugMember.user,
-    guildName: guild.name,
-    inactivityConfig,
-  })
+  if (debugMember) {
+    await sendDebugInactivitySummaryToUser({
+      inactiveMembers: Array.from(inactiveMembers.values()),
+      debugUser: debugMember.user,
+      guildName: guild.name,
+      inactivityConfig,
+    })
+  }
 }
 
 const handleKickingInactiveMember = async ({
