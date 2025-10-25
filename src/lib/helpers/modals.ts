@@ -1,4 +1,5 @@
 import {
+  FileUploadBuilder,
   LabelBuilder,
   ModalBuilder,
   ModalSubmitInteraction,
@@ -136,5 +137,29 @@ export const createModal = <TFieldConfigs extends ModalFieldConfig[]>({
   })
 
   modal.addLabelComponents(components)
+  return modal
+}
+
+export const createFileUploadModal = ({
+  modalId,
+  title,
+  fileUploadCustomId = "fileUpload",
+}: {
+  modalId: string
+  title: string
+  fileUploadCustomId?: string
+}) => {
+  const modal = new ModalBuilder().setCustomId(modalId).setTitle(title)
+
+  const labelComponent = new LabelBuilder()
+    .setLabel("Upload file")
+    .setFileUploadComponent(
+      new FileUploadBuilder()
+        .setCustomId(fileUploadCustomId)
+        .setRequired(true)
+        .setMaxValues(10),
+    )
+
+  modal.addLabelComponents(labelComponent)
   return modal
 }
