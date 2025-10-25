@@ -25,12 +25,18 @@ export default {
       "Message without guild, can't be added to stats",
     )
 
+    assertHasDefinedProperty(
+      message,
+      "member",
+      "Message sent without member info, can't be added to stats",
+    )
+
     const updatedMember = await addMemberMessageToStats({
       coreMemberData: {
         guildId: message.guild.id,
         userId: message.author.id,
         username: message.author.username,
-        displayName: message.member?.displayName,
+        displayName: message.member.displayName,
       },
       messageTimestamp: message.createdAt,
     })
@@ -44,7 +50,7 @@ export default {
     if (inactiveRoleId) {
       await removeRole({
         guild,
-        user: message.author,
+        member: message.member,
         roleId: inactiveRoleId,
       })
     }

@@ -102,7 +102,7 @@ const handleBirthdayRole = async ({
     "No birthday role configured",
     DoraException.Severity.Warn,
   )
-  await addRole({ user: member.user, guild, roleId })
+  await addRole({ member, guild, roleId })
 }
 
 const handleBirthdayWish = async ({

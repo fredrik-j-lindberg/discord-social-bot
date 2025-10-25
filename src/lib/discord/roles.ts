@@ -1,4 +1,4 @@
-import { Guild, User } from "discord.js"
+import { Guild, GuildMember } from "discord.js"
 
 import { DoraException } from "../exceptions/DoraException"
 
@@ -23,25 +23,25 @@ export const getRole = async ({
 export const addRole = async ({
   roleId,
   guild,
-  user,
+  member,
 }: {
   roleId: string
   guild: Guild
-  user: User
+  member: GuildMember
 }) => {
   const role = await getRole({ guild, roleId })
   if (!role) {
     throw new DoraException(
-      `Unable to find role '${roleId}' in guild '${guild.name}' to add to user '${user.tag}'`,
+      `Unable to find role '${roleId}' in guild '${guild.name}' to add to user '${member.user.tag}'`,
       DoraException.Type.NotFound,
     )
   }
 
   try {
-    await guild.members.addRole({ role, user })
+    await guild.members.addRole({ role, user: member })
   } catch (err) {
     throw new DoraException(
-      `Failed to add role '${role.name}' in guild '${guild.name}' to user '${user.tag}'`,
+      `Failed to add role '${role.name}' in guild '${guild.name}' to user '${member.user.tag}'`,
       DoraException.Type.Unknown,
       { cause: err },
     )
@@ -53,25 +53,25 @@ export const addRole = async ({
 export const removeRole = async ({
   roleId,
   guild,
-  user,
+  member,
 }: {
   roleId: string
   guild: Guild
-  user: User
+  member: GuildMember
 }) => {
   const role = await getRole({ guild, roleId })
   if (!role) {
     throw new DoraException(
-      `Unable to find role '${roleId}' in guild '${guild.name}' to remove from user '${user.tag}'`,
+      `Unable to find role '${roleId}' in guild '${guild.name}' to remove from user '${member.user.tag}'`,
       DoraException.Type.NotFound,
     )
   }
 
   try {
-    await guild.members.removeRole({ role, user })
+    await guild.members.removeRole({ role, user: member })
   } catch (err) {
     throw new DoraException(
-      `Failed to remove role '${role.name}' in guild '${guild.name}' from user '${user.tag}'`,
+      `Failed to remove role '${role.name}' in guild '${guild.name}' from user '${member.user.tag}'`,
       DoraException.Type.Unknown,
       { cause: err },
     )

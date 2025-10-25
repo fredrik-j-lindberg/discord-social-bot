@@ -26,6 +26,12 @@ export default {
     )
 
     assertHasDefinedProperty(
+      message,
+      "member",
+      "Reaction to a message without member info, can't be added to stats",
+    )
+
+    assertHasDefinedProperty(
       user,
       "username",
       "Reaction added for a user without username, can't be added to stats",
@@ -57,7 +63,7 @@ export default {
     if (inactiveRoleId) {
       await removeRole({
         guild,
-        user: message.author,
+        member: message.member,
         roleId: inactiveRoleId,
       })
     }

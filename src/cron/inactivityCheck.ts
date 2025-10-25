@@ -1,4 +1,4 @@
-import type { User } from "discord.js"
+import type { GuildMember } from "discord.js"
 
 import { actionWrapper } from "~/lib/actionWrapper"
 import {
@@ -38,6 +38,7 @@ export const inactivityMonitor = async () => {
     )
     return
   }
+
   for (const guildConfig of Object.values(guildConfigs)) {
     await actionWrapper({
       action: () =>
@@ -109,8 +110,8 @@ const handleInactivityCheck = async ({
   }
 
   for (const memberData of inactiveMembers.values()) {
-    const user = members.get(memberData.userId)?.user
-    if (!user) {
+    const member = members.get(memberData.userId)
+    if (!member) {
       throw new DoraException(
         "Inactive member not found, are they part of the guild?",
         DoraException.Type.NotFound,
@@ -123,7 +124,7 @@ const handleInactivityCheck = async ({
         memberData: { ...memberData, inactiveSince: memberData.inactiveSince },
         guild,
         inactivityConfig,
-        user,
+        member,
       })
       continue
     }
@@ -132,7 +133,7 @@ const handleInactivityCheck = async ({
       memberData,
       guild,
       inactivityConfig,
-      user,
+      member,
       inactiveThresholdDate,
     })
   }
@@ -148,12 +149,12 @@ const handleInactivityCheck = async ({
 const handleKickingInactiveMember = async ({
   memberData,
   guild,
-  user,
+  member,
   inactivityConfig,
 }: {
   memberData: { inactiveSince: Date } & InactivityMemberData
   guild: Awaited<ReturnType<typeof getGuild>>
-  user: User
+  member: GuildMember
   inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
 }) => {
   const kickThresholdDate = subtractDaysFromDate(
@@ -187,9 +188,9 @@ const handleKickingInactiveMember = async ({
   // })
 
   await sendKickNotice({
-    member: memberData,
+    memberData,
     guildName: guild.name,
-    user,
+    member,
     inactivityConfig,
   })
 
@@ -205,19 +206,19 @@ const handleKickingInactiveMember = async ({
 const handleSetMemberAsInactive = async ({
   memberData,
   guild,
-  user,
+  member,
   inactivityConfig,
 }: {
   memberData: InactivityMemberData
   guild: Awaited<ReturnType<typeof getGuild>>
-  user: User
+  member: GuildMember
   inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
   inactiveThresholdDate: Date
 }) => {
   if (inactivityConfig.inactiveRoleId) {
     await addRole({
       guild,
-      user,
+      member,
       roleId: inactivityConfig.inactiveRoleId,
     })
   }
@@ -235,7 +236,7 @@ const handleSetMemberAsInactive = async ({
   await sendInactivityNotice({
     inactiveMember: memberData,
     guildName: guild.name,
-    user,
+    member,
     inactivityConfig,
   })
 

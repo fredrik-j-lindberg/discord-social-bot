@@ -1,5 +1,6 @@
 import {
   type GuildBasedChannel,
+  GuildMember,
   GuildScheduledEvent,
   type MessageCreateOptions,
   MessageFlags,
@@ -112,12 +113,12 @@ export const sendDebugInactivitySummaryToUser = async ({
 
 export const sendInactivityNotice = async ({
   inactiveMember,
-  user,
+  member,
   guildName,
   inactivityConfig,
 }: {
   inactiveMember: InactivityMemberData
-  user: User
+  member: GuildMember
   guildName: string
   inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
 }) => {
@@ -127,33 +128,33 @@ export const sendInactivityNotice = async ({
   const intro = `Hello **${inactiveMember.displayName}** :wave: You are now marked as inactive in the **${guildName}** server as you ${lastSeenText}`
   const info = `_${getInactivityInfoText({ inactivityConfig })}_`
 
-  await user.send({
+  await member.send({
     content: `${intro}\n\n${info}`,
   })
 }
 
 export const sendKickNotice = async ({
-  member,
+  memberData,
   guildName,
-  user,
+  member,
   inactivityConfig: { inviteLink },
 }: {
   guildName: string
-  member: InactivityMemberData
-  user: User
+  memberData: InactivityMemberData
+  member: GuildMember
   inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
 }) => {
-  const intro = `Hello **${member.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
+  const intro = `Hello **${memberData.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
 
   if (!inviteLink) {
-    await user.send({
+    await member.send({
       content: intro,
     })
     return
   }
 
   const rejoinInfo = `_You can re-join the server at any time using the invite link:_ ${inviteLink}`
-  await user.send({
+  await member.send({
     content: `${intro}\n\n${rejoinInfo}`,
   })
 }
