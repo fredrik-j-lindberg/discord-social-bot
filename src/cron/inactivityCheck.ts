@@ -232,7 +232,7 @@ const handleSetMemberAsInactive = async ({
     },
   })
   await sendInactivityNotice({
-    inactiveMember: memberData,
+    memberData,
     guildName: guild.name,
     member,
     inactivityConfig,

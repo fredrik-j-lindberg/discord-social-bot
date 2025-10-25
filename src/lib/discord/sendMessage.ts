@@ -112,20 +112,20 @@ export const sendDebugInactivitySummaryToUser = async ({
 }
 
 export const sendInactivityNotice = async ({
-  inactiveMember,
+  memberData,
   member,
   guildName,
   inactivityConfig,
 }: {
-  inactiveMember: InactivityMemberData
+  memberData: InactivityMemberData
   member: GuildMember
   guildName: string
   inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
 }) => {
-  const lastSeenText = inactiveMember.latestActivityAt
-    ? `were last seen ${createDiscordTimestamp(inactiveMember.latestActivityAt)}`
+  const lastSeenText = memberData.latestActivityAt
+    ? `were last seen ${createDiscordTimestamp(memberData.latestActivityAt)}`
     : "have no recorded activity"
-  const intro = `Hello **${inactiveMember.displayName}** :wave: You are now marked as inactive in the **${guildName}** server as you ${lastSeenText}`
+  const intro = `Hello **${memberData.displayName}** :wave: You are now marked as inactive in the **${guildName}** server as you ${lastSeenText}`
   const info = `_${getInactivityInfoText({ inactivityConfig })}_`
 
   await member.send({
