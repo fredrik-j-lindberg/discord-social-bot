@@ -175,23 +175,27 @@ const handleKickingInactiveMember = async ({
     return
   }
 
-  // TODO: Re-add this when the actual kick is implemented
-  // Reset their inactivity status
-  // await setMemberData({
-  //   memberData: {
-  //     guildId: guild.id,
-  //     userId: memberData.userId,
-  //     username: memberData.username,
-  //     displayName: memberData.displayName,
-  //     inactiveSince: null,
-  //   },
-  // })
-
   await sendKickNotice({
     memberData,
     guildName: guild.name,
     member,
     inactivityConfig,
+  })
+
+  await member.kick(
+    `Automatically kicked due to inactivity. Last seen ${memberData.latestActivityAt?.toISOString() || "N/A"}`,
+  )
+
+  // TODO: Re-add this when the actual kick is implemented
+  // Reset their inactivity status
+  await setMemberData({
+    memberData: {
+      guildId: guild.id,
+      userId: memberData.userId,
+      username: memberData.username,
+      displayName: memberData.displayName,
+      inactiveSince: null,
+    },
   })
 
   logger.info(
