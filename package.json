@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check-types": "tsc --noEmit",
-    "verify": "pnpm lint && pnpm check-types",
+    "verify": "pnpm lint && pnpm check-types && pnpm test",
     "refreshCommands": "tsx --env-file=.env ./scripts/refreshCommands.ts",
     "db:schema-generate": "drizzle-kit generate",
     "db:schema-migrate": "drizzle-kit migrate",
