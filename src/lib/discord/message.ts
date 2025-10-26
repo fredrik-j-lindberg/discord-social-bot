@@ -3,6 +3,8 @@ import { ContainerBuilder, TextDisplayBuilder } from "discord.js"
 /** Converts a role id into a Discord's native mention */
 export const createRoleMention = (roleId: string) => `<@&${roleId}>`
 
+export const createUserMention = (userId: string) => `<@${userId}>`
+
 /** Converts a role id into a Discord's native mention */
 export const createEmojiMention = ({
   id,

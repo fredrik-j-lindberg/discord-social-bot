@@ -12,7 +12,7 @@ import type { InactivityMemberData } from "~/cron/inactivityCheck"
 import type { GuildConfig } from "../../../guildConfigs"
 import { addDaysToDate } from "../helpers/date"
 import { assertChannelIsTextBased, assertIsDefined } from "../validation"
-import { createDiscordTimestamp } from "./message"
+import { createDiscordTimestamp, createUserMention } from "./message"
 
 const sendMsg = async (
   channel: GuildBasedChannel | null,
@@ -33,7 +33,7 @@ export const sendBirthdayWish = async ({
   channel: GuildBasedChannel | null
 }) => {
   await sendMsg(channel, {
-    content: `Happy birthday, <@${userId}>! 🎉`,
+    content: `Happy birthday, ${createUserMention(userId)}! 🎉`,
     flags: MessageFlags.SuppressNotifications,
   })
 }
