@@ -21,6 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.917.0",
     "@t3-oss/env-core": "^0.13.8",
     "discord.js": "^14.24.0",
     "dotenv": "^17.2.3",
