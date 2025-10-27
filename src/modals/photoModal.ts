@@ -13,10 +13,11 @@ import { getMemberData } from "~/lib/database/memberDataService"
 import { storeFiles } from "~/lib/database/memberFileService"
 import { getTags } from "~/lib/database/tagService"
 import { createUserMention } from "~/lib/discord/message"
-import { composeTagMenu, tagSelectMenuId } from "~/lib/helpers/modals"
+import { composeSelectMenu } from "~/lib/helpers/modals"
 import { uploadMultipleAttachmentsToR2 } from "~/lib/r2/uploadService"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
+const tagSelectMenuId = "tag-select-menu-id"
 const fileUploadComponentId = "fileUpload"
 
 const getModalTagValues = (interaction: ModalSubmitInteraction): string[] => {
@@ -36,7 +37,14 @@ export default {
     const modalComponents = []
 
     const tags = await getTags({ guildId, type: "media" })
-    const tagMenuLabel = composeTagMenu(tags)
+    const tagMenuLabel = composeSelectMenu({
+      customId: tagSelectMenuId,
+      options: tags.map((tag) => ({
+        name: tag.name,
+        value: tag.id,
+        description: tag.description,
+      })),
+    })
     if (tagMenuLabel) modalComponents.push(tagMenuLabel)
 
     const uploadFileLabel = new LabelBuilder().setLabel("Upload file")

@@ -7,8 +7,6 @@ import {
 } from "discord.js"
 import z, { ZodType } from "zod/v4"
 
-import type { Tag } from "../database/tagService"
-
 export interface ModalFieldConfig {
   fieldName: string
   label: string
@@ -90,25 +88,47 @@ export const extractAndValidateModalValues = <
   return validationSchema.safeParse(valuesToValidate)
 }
 
-export const tagSelectMenuId = "tag-select-menu-id"
-
-export const composeTagMenu = (tags: Tag[]) => {
-  if (!tags.length) {
+export interface SelectMenuOption {
+  value: string
+  name: string
+  description?: string | null
+}
+export const composeSelectMenu = ({
+  customId,
+  label = "Select options",
+  description,
+  placeholder,
+  options,
+  isRequired = false,
+}: {
+  customId: string
+  label?: string
+  description?: string
+  placeholder?: string
+  options: SelectMenuOption[]
+  isRequired?: boolean
+}) => {
+  if (!options.length) {
     return
   }
-  return new LabelBuilder()
-    .setLabel("Select tags")
+  const labelBuilder = new LabelBuilder()
+    .setLabel(label || "Select options")
     .setStringSelectMenuComponent(
       new StringSelectMenuBuilder()
-        .setCustomId(tagSelectMenuId)
-        .setPlaceholder("Select tags to associate with the items")
+        .setCustomId(customId)
+        .setPlaceholder(placeholder || "Select option...")
         .addOptions(
-          tags.map((tag) =>
+          options.map((option) =>
             new StringSelectMenuOptionBuilder()
-              .setLabel(tag.name)
-              .setValue(tag.id)
-              .setDescription(tag.description || ""),
+              .setLabel(option.name)
+              .setValue(option.value)
+              .setDescription(option.description || ""),
           ),
-        ),
+        )
+        .setRequired(isRequired),
     )
+  if (description) {
+    labelBuilder.setDescription(description)
+  }
+  return labelBuilder
 }
