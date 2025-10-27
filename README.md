@@ -214,3 +214,5 @@ There are also some helpful scripts for this:
 - Refactor /memberdata register list subcommands semi-dynamically. Setup individual listeners with a proper name, cmd and action.
 - Align action wrapper usage around database methods (e.g. the new services)
 - Cache the /pii data for a short while (e.g. 10 minutes)? This would allow you to not lose all the data when failing the validation
+- Fetch wrapper
+- Write docs for inactivity handling and file uploads
