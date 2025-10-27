@@ -6,7 +6,7 @@ import { type MemberRoleRecord, memberRolesTable } from "./schema"
 interface MemberRoleMutationProps {
   /** This should be the id of the member data table */
   memberId: string
-  /** The roles to relevant for the mutation */
+  /** The roles relevant for the mutation */
   roleIds: string[]
   /** The db transaction used to update the member, in order to rollback if any individual operation fails */
   transaction: Transaction
