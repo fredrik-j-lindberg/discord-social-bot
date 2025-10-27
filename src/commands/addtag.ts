@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
-import { createTags } from "~/lib/database/tagService"
 import { assertHasDefinedProperty } from "~/lib/validation"
+import tagModal from "~/modals/tagModal"
 
 const command = new SlashCommandBuilder()
   .setName("addtag")
@@ -12,7 +12,7 @@ const command = new SlashCommandBuilder()
 
 export default {
   type: "chat",
-  deferReply: true,
+  deferReply: false,
   command,
   data: { name: command.name },
   execute: async (interaction) => {
@@ -21,15 +21,8 @@ export default {
       "guild",
       "Command issued without associated guild",
     )
-    const tag = {
-      guildId: interaction.guild.id,
-      name: "exampleTag",
-      type: "media",
-      description: "An example tag",
-    }
-    await createTags({
-      tags: [tag],
-    })
-    return `Tag ${tag.name} created successfully in guild`
+    const modal = tagModal.createModal()
+    await interaction.showModal(modal)
+    return undefined
   },
 } satisfies Command

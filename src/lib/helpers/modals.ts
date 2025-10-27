@@ -100,6 +100,7 @@ export const composeSelectMenu = ({
   placeholder,
   options,
   isRequired = false,
+  multiSelect = false,
 }: {
   customId: string
   label?: string
@@ -107,6 +108,7 @@ export const composeSelectMenu = ({
   placeholder?: string
   options: SelectMenuOption[]
   isRequired?: boolean
+  multiSelect?: boolean
 }) => {
   if (!options.length) {
     return
@@ -125,6 +127,7 @@ export const composeSelectMenu = ({
               .setDescription(option.description || ""),
           ),
         )
+        .setMaxValues(multiSelect ? options.length : 1)
         .setRequired(isRequired),
     )
   if (description) {
