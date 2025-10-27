@@ -130,3 +130,70 @@ export const memberEmojisRelations = relations(
 
 export type MemberEmojiRecord = typeof memberEmojisTable.$inferSelect
 export type MemberEmojiRecordInsert = typeof memberEmojisTable.$inferInsert
+
+export const memberFilesTable = pgTable("member_files", {
+  id: uuid().defaultRandom().notNull().unique().primaryKey(),
+  name: varchar({ length: 1024 }).notNull(),
+  /** The content type / mime type of the file. E.g. image/png */
+  contentType: varchar({ length: 255 }),
+  url: varchar({ length: 2048 }).notNull(),
+  sizeInBytes: integer().notNull(),
+  /** Member who uploaded the file */
+  memberId: uuid().notNull(),
+  guildId: varchar({ length: 255 }).notNull(),
+
+  ...commonTimestamps,
+})
+
+export const memberFilesRelations = relations(memberFilesTable, ({ many }) => ({
+  tags: many(itemTagsTable),
+}))
+
+export type MemberFileRecord = typeof memberFilesTable.$inferSelect
+export type MemberFileRecordInsert = typeof memberFilesTable.$inferInsert
+
+/** The table containing all tags, meant to be used for categorizing various items */
+export const tagsTable = pgTable(
+  "tags",
+  {
+    id: uuid().defaultRandom().notNull().unique(),
+    guildId: varchar({ length: 255 }).notNull(),
+    name: varchar({ length: 255 }).notNull(),
+    /** The type of the tag. E.g. "media" if it is meant to be used for media */
+    type: varchar({ length: 255 }).notNull(),
+    description: varchar({ length: 4000 }),
+
+    ...commonTimestamps,
+  },
+  (table) => [primaryKey({ columns: [table.guildId, table.name, table.type] })],
+)
+
+export const tagRelations = relations(tagsTable, ({ many }) => ({
+  items: many(itemTagsTable),
+}))
+
+export type TagRecord = typeof tagsTable.$inferSelect
+export type TagRecordInsert = typeof tagsTable.$inferInsert
+
+/** The table linking items (files) to tags */
+export const itemTagsTable = pgTable("item_tags", {
+  id: uuid().defaultRandom().notNull().unique().primaryKey(),
+  /** The id of the item (content etc) linked to the tag */
+  itemId: uuid().notNull(),
+  tagId: uuid()
+    .notNull()
+    .references(() => tagsTable.id, { onDelete: "cascade" }),
+
+  ...commonTimestamps,
+})
+
+export const itemTagRelations = relations(itemTagsTable, ({ one }) => ({
+  tag: one(tagsTable, {
+    fields: [itemTagsTable.tagId],
+    references: [tagsTable.id],
+  }),
+  item: one(memberFilesTable, {
+    fields: [itemTagsTable.itemId],
+    references: [memberFilesTable.id],
+  }),
+}))
