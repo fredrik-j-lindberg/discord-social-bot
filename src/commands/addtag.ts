@@ -1,16 +1,18 @@
 import { SlashCommandBuilder } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
+import { createTags } from "~/lib/database/tagService"
 import { assertHasDefinedProperty } from "~/lib/validation"
-import photoModal from "~/modals/photoModal"
 
 const command = new SlashCommandBuilder()
-  .setName("addphoto")
-  .setDescription("Adds a photo to the channel")
+  .setName("addtag")
+  .setDescription(
+    "Adds a tag to the bot database that can be used for categorizing items such as photos",
+  )
 
 export default {
   type: "chat",
-  deferReply: false,
+  deferReply: true,
   command,
   data: { name: command.name },
   execute: async (interaction) => {
@@ -19,11 +21,15 @@ export default {
       "guild",
       "Command issued without associated guild",
     )
-
-    const modal = await photoModal.createModal({
+    const tag = {
       guildId: interaction.guild.id,
+      name: "exampleTag",
+      type: "media",
+      description: "An example tag",
+    }
+    await createTags({
+      tags: [tag],
     })
-    await interaction.showModal(modal)
-    return undefined // Modal submission will handle response
+    return `Tag ${tag.name} created successfully in guild`
   },
 } satisfies Command

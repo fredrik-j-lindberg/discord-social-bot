@@ -1,5 +1,13 @@
-import { ModalSubmitInteraction, TextInputStyle } from "discord.js"
+import {
+  LabelBuilder,
+  ModalSubmitInteraction,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  TextInputStyle,
+} from "discord.js"
 import z, { ZodType } from "zod/v4"
+
+import type { Tag } from "../database/tagService"
 
 export interface ModalFieldConfig {
   fieldName: string
@@ -80,4 +88,27 @@ export const extractAndValidateModalValues = <
   }
 
   return validationSchema.safeParse(valuesToValidate)
+}
+
+export const tagSelectMenuId = "tag-select-menu-id"
+
+export const composeTagMenu = (tags: Tag[]) => {
+  if (!tags.length) {
+    return
+  }
+  return new LabelBuilder()
+    .setLabel("Select tags")
+    .setStringSelectMenuComponent(
+      new StringSelectMenuBuilder()
+        .setCustomId(tagSelectMenuId)
+        .setPlaceholder("Select tags to associate with the items")
+        .addOptions(
+          tags.map((tag) =>
+            new StringSelectMenuOptionBuilder()
+              .setLabel(tag.name)
+              .setValue(tag.id)
+              .setDescription(tag.description || ""),
+          ),
+        ),
+    )
 }

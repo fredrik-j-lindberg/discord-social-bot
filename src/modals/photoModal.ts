@@ -4,23 +4,40 @@ import {
   LabelBuilder,
   MediaGalleryBuilder,
   ModalBuilder,
+  ModalSubmitInteraction,
   TextDisplayBuilder,
 } from "discord.js"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
+import { getMemberData } from "~/lib/database/memberDataService"
+import { storeFiles } from "~/lib/database/memberFileService"
+import { getTags } from "~/lib/database/tagService"
 import { createUserMention } from "~/lib/discord/message"
+import { composeTagMenu, tagSelectMenuId } from "~/lib/helpers/modals"
 import { uploadMultipleAttachmentsToR2 } from "~/lib/r2/uploadService"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 const fileUploadComponentId = "fileUpload"
 
+const getModalTagValues = (interaction: ModalSubmitInteraction): string[] => {
+  try {
+    return interaction.fields.getStringSelectValues(tagSelectMenuId) as string[] // TODO: Look into handling this without the coercion
+  } catch {
+    return [] // Since this is optional, return empty array if it fails
+  }
+}
+
 export default {
   data: { name: "photoUploadModal" },
-  createModal() {
+  async createModal({ guildId }: { guildId: string }) {
     const modal = new ModalBuilder()
       .setCustomId(this.data.name)
       .setTitle("Photo Upload")
     const modalComponents = []
+
+    const tags = await getTags({ guildId, type: "media" })
+    const tagMenuLabel = composeTagMenu(tags)
+    if (tagMenuLabel) modalComponents.push(tagMenuLabel)
 
     const uploadFileLabel = new LabelBuilder().setLabel("Upload file")
     uploadFileLabel.setFileUploadComponent(
@@ -52,6 +69,27 @@ export default {
       Array.from(uploadedFiles.values()),
       { prefix: interaction.guild.id },
     )
+
+    const selectedTagIds = getModalTagValues(interaction)
+
+    const memberData = await getMemberData({
+      userId: interaction.user.id,
+      guildId: interaction.guild.id,
+    })
+    if (!memberData) {
+      return `No member data found for user ${interaction.user.username}. Unable to store files.`
+    }
+    await storeFiles({
+      memberId: memberData.id,
+      guildId: interaction.guild.id,
+      files: uploadResults.map((result) => ({
+        name: result.originalName,
+        contentType: result.contentType,
+        url: result.url,
+        sizeInBytes: result.size,
+        tagIds: selectedTagIds,
+      })),
+    })
 
     return new ContainerBuilder()
       .addTextDisplayComponents(
