@@ -1,4 +1,9 @@
-import { TextInputStyle } from "discord.js"
+import {
+  LabelBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} from "discord.js"
 import { z } from "zod/v4"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
@@ -8,7 +13,6 @@ import {
 } from "~/lib/database/memberDataService"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import {
-  createModal,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalFieldConfig,
@@ -134,13 +138,45 @@ interface CreateModalProps {
 export default {
   data: { name: "memberDataModal" },
   createModal({ guildId, memberData }: CreateModalProps) {
-    return createModal({
-      modalId: this.data.name,
-      title: "Member data form. Optional!",
-      fieldConfigs: piiFieldConfigs,
-      fieldsToGenerate: getGuildConfigById(guildId).optInMemberFields,
-      modalMetaData: memberData,
+    const modal = new ModalBuilder()
+      .setCustomId(this.data.name)
+      .setTitle("Member data form. Optional!")
+
+    const relevantFields = getGuildConfigById(guildId).optInMemberFields
+    const fieldsToGenerateConfigs: ModalFieldConfig[] = piiFieldConfigs.filter(
+      (fieldConfig) =>
+        relevantFields.some(
+          (fieldToExtract) => fieldConfig.fieldName === fieldToExtract,
+        ),
+    )
+
+    if (fieldsToGenerateConfigs.length > 5) {
+      throw new Error(
+        // Discord modals have a limit of 5 fields per modal
+        `Tried to generate too many modal fields. Max allowed per modal is 5 fields but tried to generate '${fieldsToGenerateConfigs.map((fieldConfig) => fieldConfig.fieldName).join(", ")}'`,
+      )
+    }
+
+    const components = fieldsToGenerateConfigs.map((fieldConfig) => {
+      const label = new LabelBuilder()
+        .setLabel(fieldConfig.label)
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId(fieldConfig.fieldName)
+            .setValue(fieldConfig.getPrefilledValue(memberData) || "")
+            .setStyle(fieldConfig.style)
+            .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
+            .setPlaceholder(fieldConfig.placeholder || "")
+            .setRequired(fieldConfig.isRequired),
+        )
+      if (fieldConfig.description) {
+        label.setDescription(fieldConfig.description)
+      }
+      return label
     })
+
+    modal.addLabelComponents(components)
+    return modal
   },
   deferReply: true,
   handleSubmit: async (interaction) => {

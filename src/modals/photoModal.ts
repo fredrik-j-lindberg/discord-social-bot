@@ -1,12 +1,14 @@
 import {
   ContainerBuilder,
+  FileUploadBuilder,
+  LabelBuilder,
   MediaGalleryBuilder,
+  ModalBuilder,
   TextDisplayBuilder,
 } from "discord.js"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import { createUserMention } from "~/lib/discord/message"
-import { createFileUploadModal } from "~/lib/helpers/modals"
 import { uploadMultipleAttachmentsToR2 } from "~/lib/r2/uploadService"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
@@ -15,11 +17,22 @@ const fileUploadComponentId = "fileUpload"
 export default {
   data: { name: "photoUploadModal" },
   createModal() {
-    return createFileUploadModal({
-      modalId: this.data.name,
-      title: "Photo Upload",
-      fileUploadCustomId: fileUploadComponentId,
-    })
+    const modal = new ModalBuilder()
+      .setCustomId(this.data.name)
+      .setTitle("Photo Upload")
+    const modalComponents = []
+
+    const uploadFileLabel = new LabelBuilder().setLabel("Upload file")
+    uploadFileLabel.setFileUploadComponent(
+      new FileUploadBuilder()
+        .setCustomId(fileUploadComponentId)
+        .setRequired(true)
+        .setMaxValues(10),
+    )
+    modalComponents.push(uploadFileLabel)
+
+    modal.addLabelComponents(...modalComponents)
+    return modal
   },
   deferReply: true,
   handleSubmit: async (interaction) => {

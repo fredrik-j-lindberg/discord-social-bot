@@ -1,11 +1,4 @@
-import {
-  FileUploadBuilder,
-  LabelBuilder,
-  ModalBuilder,
-  ModalSubmitInteraction,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js"
+import { ModalSubmitInteraction, TextInputStyle } from "discord.js"
 import z, { ZodType } from "zod/v4"
 
 export interface ModalFieldConfig {
@@ -87,79 +80,4 @@ export const extractAndValidateModalValues = <
   }
 
   return validationSchema.safeParse(valuesToValidate)
-}
-
-// https://discordjs.guide/interactions/modals.html#building-and-responding-with-modals
-export const createModal = <TFieldConfigs extends ModalFieldConfig[]>({
-  modalId,
-  title,
-  fieldConfigs,
-  fieldsToGenerate,
-  modalMetaData,
-}: {
-  modalId: string
-  title: string
-  fieldConfigs: TFieldConfigs
-  fieldsToGenerate: string[]
-  modalMetaData?: Parameters<TFieldConfigs[number]["getPrefilledValue"]>[0]
-}) => {
-  const modal = new ModalBuilder().setCustomId(modalId).setTitle(title)
-
-  const fieldsToGenerateConfigs = fieldConfigs.filter((fieldConfig) =>
-    fieldsToGenerate.some(
-      (fieldToExtract) => fieldConfig.fieldName === fieldToExtract,
-    ),
-  )
-
-  if (fieldsToGenerateConfigs.length > 5) {
-    throw new Error(
-      // Discord modals have a limit of 5 fields per modal
-      `Tried to generate too many modal fields. Max allowed per modal is 5 fields but tried to generate '${fieldsToGenerateConfigs.map((fieldConfig) => fieldConfig.fieldName).join(", ")}'`,
-    )
-  }
-
-  const components = fieldsToGenerateConfigs.map((fieldConfig) => {
-    const label = new LabelBuilder()
-      .setLabel(fieldConfig.label)
-      .setTextInputComponent(
-        new TextInputBuilder()
-          .setCustomId(fieldConfig.fieldName)
-          .setValue(fieldConfig.getPrefilledValue(modalMetaData) || "")
-          .setStyle(fieldConfig.style)
-          .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
-          .setPlaceholder(fieldConfig.placeholder || "")
-          .setRequired(fieldConfig.isRequired),
-      )
-    if (fieldConfig.description) {
-      label.setDescription(fieldConfig.description)
-    }
-    return label
-  })
-
-  modal.addLabelComponents(components)
-  return modal
-}
-
-export const createFileUploadModal = ({
-  modalId,
-  title,
-  fileUploadCustomId = "fileUpload",
-}: {
-  modalId: string
-  title: string
-  fileUploadCustomId?: string
-}) => {
-  const modal = new ModalBuilder().setCustomId(modalId).setTitle(title)
-
-  const labelComponent = new LabelBuilder()
-    .setLabel("Upload file")
-    .setFileUploadComponent(
-      new FileUploadBuilder()
-        .setCustomId(fileUploadCustomId)
-        .setRequired(true)
-        .setMaxValues(10),
-    )
-
-  modal.addLabelComponents(labelComponent)
-  return modal
 }
