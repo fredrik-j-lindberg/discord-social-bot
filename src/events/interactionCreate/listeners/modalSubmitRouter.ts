@@ -19,12 +19,14 @@ export default {
 } satisfies EventListener<Events.InteractionCreate>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface ModalData<TModelInput = any> {
+export interface ModalData<TModalInput = any> {
   data: {
     /** The router uses the name determine which modal to show */
     name: string
   }
-  createModal: ((input: TModelInput) => ModalBuilder) | (() => ModalBuilder)
+  createModal: (
+    input: TModalInput | undefined,
+  ) => Promise<ModalBuilder> | ModalBuilder
   /**
    * Function to run when modal is submitted
    * @returns The reply to the user submitting the modal
