@@ -1,4 +1,4 @@
-import { and, count, desc, eq, max } from "drizzle-orm"
+import { and, count, desc, eq, max, sql } from "drizzle-orm"
 
 import { db } from "./client"
 import {
@@ -18,7 +18,15 @@ export const createTags = async ({ tags }: CreateTagProps): Promise<void> => {
     return
   }
 
-  await db.insert(tagsTable).values(tags)
+  await db
+    .insert(tagsTable)
+    .values(tags)
+    .onConflictDoUpdate({
+      target: [tagsTable.guildId, tagsTable.type, tagsTable.name],
+      // This will need to be updated we add more columns
+      // Related feature request to not have to do this manually: https://github.com/drizzle-team/drizzle-orm/issues/1728
+      set: { description: sql.raw(`excluded.${tagsTable.description.name}`) },
+    })
 }
 
 export interface Tag {
