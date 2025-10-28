@@ -4,6 +4,7 @@ import type {
   Events,
   MessageContextMenuCommandInteraction,
   SlashCommandOptionsOnlyBuilder,
+  SlashCommandSubcommandsOnlyBuilder,
   UserContextMenuCommandInteraction,
 } from "discord.js"
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
@@ -103,7 +104,10 @@ export default {
 } satisfies EventListener<Events.InteractionCreate>
 
 interface ChatCommand {
-  command: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder
+  command:
+    | SlashCommandBuilder
+    | SlashCommandOptionsOnlyBuilder
+    | SlashCommandSubcommandsOnlyBuilder
   /** The type of command. E.g. "chat" for a regular slash command, "user" and "message" for context menu commands */
   type: "chat"
   /**

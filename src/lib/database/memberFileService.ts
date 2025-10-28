@@ -1,3 +1,5 @@
+import { and, desc, eq, inArray } from "drizzle-orm"
+
 import { db } from "./client"
 import {
   itemTagsTable,
@@ -60,5 +62,35 @@ export const storeFiles = async ({
     await transaction.insert(itemTagsTable).values(tags)
 
     return fileRecords
+  })
+}
+
+export const getMemberFiles = async ({
+  memberId,
+  guildId,
+  tagId,
+}: {
+  memberId?: string
+  guildId: string
+  tagId?: string
+}) => {
+  return await db.query.memberFilesTable.findMany({
+    with: {
+      tags: true,
+    },
+    where: and(
+      eq(memberFilesTable.guildId, guildId),
+      memberId ? eq(memberFilesTable.memberId, memberId) : undefined,
+      tagId
+        ? inArray(
+            memberFilesTable.id,
+            db
+              .select({ id: itemTagsTable.itemId })
+              .from(itemTagsTable)
+              .where(eq(itemTagsTable.tagId, tagId)),
+          )
+        : undefined,
+    ),
+    orderBy: (file) => desc(file.recordCreatedAt),
   })
 }
