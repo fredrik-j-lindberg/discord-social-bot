@@ -1,18 +1,18 @@
 import {
-  ContainerBuilder,
   FileUploadBuilder,
   LabelBuilder,
-  MediaGalleryBuilder,
   ModalBuilder,
   ModalSubmitInteraction,
-  TextDisplayBuilder,
 } from "discord.js"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import { getMemberData } from "~/lib/database/memberDataService"
 import { storeFiles } from "~/lib/database/memberFileService"
 import { getTags } from "~/lib/database/tagService"
-import { createUserMention } from "~/lib/discord/message"
+import {
+  createMediaGalleryContainer,
+  createUserMention,
+} from "~/lib/discord/message"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { composeSelectMenu } from "~/lib/helpers/modals"
 import { uploadMultipleAttachmentsToR2 } from "~/lib/r2/uploadService"
@@ -124,22 +124,9 @@ export default {
       })),
     })
 
-    return new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `Photo(s) uploaded by ${createUserMention(interaction.user.id)}!`,
-        ),
-      )
-      .addMediaGalleryComponents(
-        new MediaGalleryBuilder().addItems(
-          uploadResults.map((result) => {
-            return {
-              media: {
-                url: result.url,
-              },
-            }
-          }),
-        ),
-      )
+    return createMediaGalleryContainer({
+      mediaItems: uploadResults,
+      header: `Photo(s) uploaded by ${createUserMention(interaction.user.id)}`,
+    })
   },
 } satisfies ModalData

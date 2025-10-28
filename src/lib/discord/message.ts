@@ -1,4 +1,8 @@
-import { ContainerBuilder, TextDisplayBuilder } from "discord.js"
+import {
+  ContainerBuilder,
+  MediaGalleryBuilder,
+  TextDisplayBuilder,
+} from "discord.js"
 
 /** Converts a role id into a Discord's native mention */
 export const createRoleMention = (roleId: string) => `<@&${roleId}>`
@@ -160,4 +164,36 @@ export const createPaginatedList = ({
   }
 
   return pages
+}
+
+export const createMediaGalleryContainer = ({
+  mediaItems,
+  header,
+}: {
+  mediaItems: { url: string }[]
+  header: string
+}): ContainerBuilder => {
+  const container = new ContainerBuilder().addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(header),
+  )
+
+  if (mediaItems.length === 0) {
+    return container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent("No media items found"),
+    )
+  }
+
+  // TODO: Add some pagination system for this
+  const relevantMediaItems = mediaItems.slice(0, 10) // Discord's limit for media gallery is 10 items
+  return container.addMediaGalleryComponents(
+    new MediaGalleryBuilder().addItems(
+      relevantMediaItems.map((item) => {
+        return {
+          media: {
+            url: item.url,
+          },
+        }
+      }),
+    ),
+  )
 }
