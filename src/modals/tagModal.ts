@@ -79,6 +79,7 @@ export default {
     const tagName = interaction.fields
       .getTextInputValue(inputIds.tagName)
       .trim()
+      .toLowerCase()
     const tagDescription =
       interaction.fields.getTextInputValue(inputIds.tagDescription).trim() ||
       null
