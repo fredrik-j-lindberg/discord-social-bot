@@ -13,6 +13,7 @@ import { getMemberData } from "~/lib/database/memberDataService"
 import { storeFiles } from "~/lib/database/memberFileService"
 import { getTags } from "~/lib/database/tagService"
 import { createUserMention } from "~/lib/discord/message"
+import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { composeSelectMenu } from "~/lib/helpers/modals"
 import { uploadMultipleAttachmentsToR2 } from "~/lib/r2/uploadService"
 import { assertHasDefinedProperty } from "~/lib/validation"
@@ -27,6 +28,17 @@ const getModalTagValues = (interaction: ModalSubmitInteraction): string[] => {
     return [] // Since this is optional, return empty array if it fails
   }
 }
+
+const ACCEPTED_MIME_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]
 
 export default {
   data: { name: "photoUploadModal" },
@@ -66,17 +78,30 @@ export default {
       "guild",
       "Modal submitted without associated guild",
     )
-    const uploadedFiles = interaction.fields.getUploadedFiles(
+    const uploadedFilesCollection = interaction.fields.getUploadedFiles(
       fileUploadComponentId,
     )
-    if (!uploadedFiles || uploadedFiles.size === 0) {
+    if (!uploadedFilesCollection || uploadedFilesCollection.size === 0) {
       return "No files were uploaded. Please try again."
     }
 
-    const uploadResults = await uploadMultipleAttachmentsToR2(
-      Array.from(uploadedFiles.values()),
-      { prefix: interaction.guild.id },
-    )
+    const uploadedFiles = Array.from(uploadedFilesCollection.values())
+    uploadedFiles.forEach(({ name, contentType }) => {
+      if (!contentType) {
+        throw new DoraUserException(
+          `Uploaded file '${name}' is missing content type`,
+        )
+      }
+      if (!ACCEPTED_MIME_TYPES.includes(contentType)) {
+        throw new DoraUserException(
+          `Uploaded file '${name}' has unsupported content type '${contentType}'. Valid content types are ${ACCEPTED_MIME_TYPES.join(", ")}`,
+        )
+      }
+    })
+
+    const uploadResults = await uploadMultipleAttachmentsToR2(uploadedFiles, {
+      prefix: interaction.guild.id,
+    })
 
     const selectedTagIds = getModalTagValues(interaction)
 
