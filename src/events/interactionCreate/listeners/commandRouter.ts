@@ -19,6 +19,8 @@ import { DoraException } from "~/lib/exceptions/DoraException"
 import { importFolderModules } from "~/lib/helpers/folder"
 import { logger } from "~/lib/logger"
 
+export const ephemeralOptionName = "silent"
+
 let commands: Record<string, Command> | undefined
 export const initCommands = async () => {
   commands = await getAllCommands()
@@ -77,9 +79,12 @@ export default {
       }
 
       if (interaction.isChatInputCommand()) {
+        const ephemeral = interaction.options.getBoolean(ephemeralOptionName)
+
         await executeCmdOrModalMappedToInteraction({
           execute: command.execute,
           deferReply: command.deferReply,
+          ephemeral,
           interaction,
           context: "command",
         })

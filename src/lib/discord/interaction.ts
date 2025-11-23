@@ -51,10 +51,12 @@ const mergeBitFields = <T extends MessageFlags>(
 const reply = async ({
   interaction,
   deferReply,
+  ephemeral,
   replyOptions,
 }: {
   interaction: ExecuteSupportedInteraction
   deferReply: boolean
+  ephemeral?: boolean | null
   replyOptions: DoraReply
 }) => {
   if (Array.isArray(replyOptions)) {
@@ -85,15 +87,17 @@ const reply = async ({
     return
   }
 
+  const ephemeralFlag = ephemeral ? MessageFlags.Ephemeral : undefined
   await interaction.reply({
     ...sharedOptions,
-    flags: mergeBitFields(componentsV2Flag),
+    flags: mergeBitFields(componentsV2Flag, ephemeralFlag),
   })
 }
 
 interface ExecuteOptions<TInteraction extends ExecuteSupportedInteraction> {
   execute: InteractionExecute<TInteraction>
   deferReply: boolean
+  ephemeral?: boolean | null
   interaction: TInteraction
   context: "command" | "modal"
 }
@@ -103,12 +107,16 @@ export const executeCmdOrModalMappedToInteraction = async <
 >({
   execute,
   deferReply,
+  ephemeral,
   interaction,
   context,
 }: ExecuteOptions<TInteraction>) => {
   if (deferReply) {
-    await interaction.deferReply()
+    await interaction.deferReply({
+      flags: ephemeral ? MessageFlags.Ephemeral : undefined,
+    })
   }
+
   try {
     const replyOptions = await execute(interaction)
     if (!replyOptions) {
@@ -118,6 +126,7 @@ export const executeCmdOrModalMappedToInteraction = async <
     await reply({
       interaction,
       deferReply,
+      ephemeral,
       replyOptions,
     })
   } catch (err) {
@@ -128,6 +137,7 @@ export const executeCmdOrModalMappedToInteraction = async <
     await reply({
       interaction,
       deferReply,
+      ephemeral,
       replyOptions: { content: userFacingErrorMsg },
     })
     throw err

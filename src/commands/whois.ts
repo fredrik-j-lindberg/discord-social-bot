@@ -1,7 +1,10 @@
 import { type Interaction, SlashCommandBuilder } from "discord.js"
 
 import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
-import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
+import {
+  type Command,
+  ephemeralOptionName,
+} from "~/events/interactionCreate/listeners/commandRouter"
 import { getMemberData } from "~/lib/database/memberDataService"
 import { getMemberEmojiCounts } from "~/lib/database/memberEmojisService"
 import type { DoraReply } from "~/lib/discord/interaction"
@@ -28,6 +31,12 @@ const command = new SlashCommandBuilder()
       .setName(memberOptionName)
       .setDescription("The member to get info about")
       .setRequired(true),
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName(ephemeralOptionName)
+      .setDescription("Whether to reply silently (only visible to you)")
+      .setRequired(false),
   )
   .addStringOption((option) =>
     option
