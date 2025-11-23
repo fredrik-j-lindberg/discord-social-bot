@@ -115,7 +115,7 @@ const composePage = ({
         disableButtons: noLongerInteractive,
       }),
     ],
-    flags: MessageFlags.IsComponentsV2 as const,
+    flags: MessageFlags.IsComponentsV2,
   }
 }
 

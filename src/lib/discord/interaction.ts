@@ -3,31 +3,34 @@ import {
   type CommandInteraction,
   ContainerBuilder,
   type ContextMenuCommandInteraction,
-  type InteractionReplyOptions,
+  EmbedBuilder,
   MessageFlags,
   type ModalSubmitInteraction,
+  TextDisplayBuilder,
 } from "discord.js"
 
 import { DoraUserException } from "../exceptions/DoraUserException"
 import { paginate } from "./pagination"
 
+interface ReplyOptions {
+  content?: string
+  embeds?: EmbedBuilder[]
+}
+type CustomizedReplyOptions = ContainerBuilder | ContainerBuilder[]
+export type DoraReply =
+  | string
+  | ReplyOptions
+  | CustomizedReplyOptions
+  | undefined
+
 export type ExecuteSupportedInteraction =
   | CommandInteraction
   | ModalSubmitInteraction
   | ContextMenuCommandInteraction
-type ExecuteResult =
-  | (InteractionReplyOptions & {
-      flags?: MessageFlags.IsComponentsV2
-    })
-  | ContainerBuilder
-  | ContainerBuilder[]
-  | string
-  | undefined
 
 export type InteractionExecute<
   TInteraction extends ExecuteSupportedInteraction,
-> = (interaction: TInteraction) => Promise<ExecuteResult> | ExecuteResult
-export type InteractionExecuteResult = ExecuteResult
+> = (interaction: TInteraction) => Promise<DoraReply> | DoraReply
 
 interface AutocompleteChoice {
   name: string
@@ -37,6 +40,14 @@ export type InteractionAutocomplete = (
   interaction: AutocompleteInteraction,
 ) => Promise<AutocompleteChoice[]> | AutocompleteChoice[]
 
+const mergeBitFields = <T extends MessageFlags>(
+  ...fields: (T | undefined)[]
+): T | undefined => {
+  const definedFields = fields.filter((f): f is T => f !== undefined)
+  if (definedFields.length === 0) return undefined
+  return definedFields.reduce((acc, field) => (acc | field) as T)
+}
+
 const reply = async ({
   interaction,
   deferReply,
@@ -44,15 +55,40 @@ const reply = async ({
 }: {
   interaction: ExecuteSupportedInteraction
   deferReply: boolean
-  replyOptions:
-    | (InteractionReplyOptions & { flags?: MessageFlags.IsComponentsV2 })
-    | string
+  replyOptions: DoraReply
 }) => {
-  if (deferReply) {
-    await interaction.editReply(replyOptions)
+  if (Array.isArray(replyOptions)) {
+    await paginate(interaction, replyOptions)
     return
   }
-  await interaction.reply(replyOptions)
+
+  if (replyOptions instanceof ContainerBuilder) {
+    await paginate(interaction, [replyOptions])
+    return
+  }
+
+  if (typeof replyOptions === "string") replyOptions = { content: replyOptions }
+
+  const { content, embeds } = replyOptions ?? {}
+  const componentsV2Flag = !embeds ? MessageFlags.IsComponentsV2 : undefined
+
+  const sharedOptions = {
+    components: content
+      ? [new TextDisplayBuilder().setContent(content)]
+      : undefined,
+    embeds,
+    flags: componentsV2Flag,
+  } as const
+
+  if (deferReply) {
+    await interaction.editReply(sharedOptions)
+    return
+  }
+
+  await interaction.reply({
+    ...sharedOptions,
+    flags: mergeBitFields(componentsV2Flag),
+  })
 }
 
 interface ExecuteOptions<TInteraction extends ExecuteSupportedInteraction> {
@@ -74,31 +110,15 @@ export const executeCmdOrModalMappedToInteraction = async <
     await interaction.deferReply()
   }
   try {
-    const result = await execute(interaction)
-    if (!result) {
-      return
-    }
-    if (Array.isArray(result)) {
-      await paginate(interaction, result)
-      return
-    }
-
-    if (result instanceof ContainerBuilder) {
-      await reply({
-        interaction,
-        deferReply,
-        replyOptions: {
-          components: [result],
-          flags: MessageFlags.IsComponentsV2,
-        },
-      })
+    const replyOptions = await execute(interaction)
+    if (!replyOptions) {
       return
     }
 
     await reply({
       interaction,
       deferReply,
-      replyOptions: result,
+      replyOptions,
     })
   } catch (err) {
     let userFacingErrorMsg = `Failed to process ${context} :(`
