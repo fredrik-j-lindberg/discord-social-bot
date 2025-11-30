@@ -1,9 +1,4 @@
-import {
-  LabelBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js"
+import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
@@ -14,6 +9,7 @@ import {
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import {
+  composeTextInput,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalFieldConfig,
@@ -170,21 +166,7 @@ export default {
 
     const components = fieldsToGenerateConfigs.map((fieldConfig) => {
       if (fieldConfig.fieldType === "text") {
-        const label = new LabelBuilder()
-          .setLabel(fieldConfig.label)
-          .setTextInputComponent(
-            new TextInputBuilder()
-              .setCustomId(fieldConfig.fieldName)
-              .setValue(fieldConfig.getPrefilledValue(memberData) || "")
-              .setStyle(fieldConfig.style)
-              .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
-              .setPlaceholder(fieldConfig.placeholder || "")
-              .setRequired(fieldConfig.isRequired),
-          )
-        if (fieldConfig.description) {
-          label.setDescription(fieldConfig.description)
-        }
-        return label
+        return composeTextInput(fieldConfig, memberData)
       }
       throw new DoraException(
         `Unsupported field type in PII modal: ${JSON.stringify(fieldConfig)}`,

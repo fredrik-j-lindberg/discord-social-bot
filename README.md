@@ -218,4 +218,3 @@ There are also some helpful scripts for this:
 - Write docs for inactivity handling and file uploads
 - Look through inline TODO comments in code
 - Look at guild config permission and context filtering, apply the same for other commands where relevant
-- Improve modal handling. Can we align and simplify the modal generation so it is just config based?

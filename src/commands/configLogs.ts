@@ -36,7 +36,7 @@ export default {
     // Route to appropriate modal based on setting
     switch (setting) {
       case "logs": {
-        const modal = guildConfigLogsModal.createModal(currentConfig)
+        const modal = await guildConfigLogsModal.createModal(currentConfig)
         await interaction.showModal(modal)
         return undefined // No immediate reply since we're showing a modal
       }

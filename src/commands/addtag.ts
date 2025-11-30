@@ -21,7 +21,7 @@ export default {
       "guild",
       "Command issued without associated guild",
     )
-    const modal = tagModal.createModal()
+    const modal = await tagModal.createModal()
     await interaction.showModal(modal)
     return undefined
   },

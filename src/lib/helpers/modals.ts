@@ -1,37 +1,23 @@
 import {
+  FileUploadBuilder,
   LabelBuilder,
   ModalSubmitInteraction,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  TextInputBuilder,
   TextInputStyle,
 } from "discord.js"
 import z, { ZodType } from "zod/v4"
 
-interface ModalFieldTextConfig {
-  /** Determines which kind of field this config is for. Defaults to text */
-  fieldType: "text"
-  style: TextInputStyle
-}
+import { logger } from "../logger"
 
-interface ModalFieldSelectConfig {
-  fieldType: "select"
-  style?: never
-}
-
-export type ModalFieldConfig = (
-  | ModalFieldTextConfig
-  | ModalFieldSelectConfig
-) & {
+interface ModalFieldBaseConfig {
   fieldName: string
   label: string
+  /** Note that discord limits descriptions to 100 characters */
   description?: string
-  getPrefilledValue: (
-    /** The metadata relevant to prefill the data. For example for the member data (/pii) modal this might the database values for the member */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    modalMetadata: any,
-  ) => string | null | undefined
   placeholder?: string
-  validation: ZodType
+  validation?: ZodType
   isRequired: boolean
   /**
    * Discord native limitation on the modal field length, to give the user an indication of how long of a string they can enter
@@ -39,6 +25,49 @@ export type ModalFieldConfig = (
    */
   maxLength?: number
 }
+
+export interface ModalFieldTextConfig extends ModalFieldBaseConfig {
+  /** Determines which kind of field this config is for. Defaults to text */
+  fieldType: "text"
+  getPrefilledValue?: (
+    /** The metadata relevant to prefill the data. For example for the member data (/pii) modal this might the database values for the member */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    modalMetadata?: any,
+  ) => string | null | undefined
+  style: TextInputStyle
+}
+
+export interface SelectMenuOption {
+  value: string
+  name: string
+  description?: string | null
+  isDefault: boolean
+}
+export interface ModalFieldSelectConfig extends ModalFieldBaseConfig {
+  fieldType: "select"
+  getOptions: (
+    /** The metadata relevant to prefill the data. For example for the tag modal this might be the guild id */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    modalMetadata?: any,
+  ) => Promise<SelectMenuOption[]> | SelectMenuOption[]
+  /** Not applicable for select fields */
+  style?: never
+}
+
+export interface ModalFieldFileUploadConfig extends ModalFieldBaseConfig {
+  fieldType: "fileUpload"
+  /** Maximum number of files that can be uploaded (Discord limits this to 10) */
+  maxValues?: number
+  /** Array of accepted MIME types for file validation (e.g., ['image/jpeg', 'video/mp4']) */
+  acceptedMimeTypes?: string[]
+  /** Not applicable for file upload fields */
+  style?: never
+}
+
+export type ModalFieldConfig =
+  | ModalFieldTextConfig
+  | ModalFieldSelectConfig
+  | ModalFieldFileUploadConfig
 
 export interface ModalFieldConfigsMap {
   [key: string]: ModalFieldConfig
@@ -94,11 +123,11 @@ export const extractAndValidateModalValues = <
   const valuesToValidate: { [key in string]?: string | null } = {}
   for (const fieldConfig of fieldsToExtractConfigs) {
     if (fieldConfig.fieldType === "select") {
-      // For select menus, getStringSelectValues returns an array
-      // We take the first value since single-select menus only have one value
       const values = interaction.fields.getStringSelectValues(
         fieldConfig.fieldName,
       )
+      // TODO: support multiple values
+      // We take the first value since single-select menus only have one value
       valuesToValidate[fieldConfig.fieldName] = values[0] ?? null
     } else {
       // Default to text input
@@ -110,50 +139,81 @@ export const extractAndValidateModalValues = <
   return validationSchema.safeParse(valuesToValidate)
 }
 
-export interface SelectMenuOption {
-  value: string
-  name: string
-  description?: string | null
+const createFieldLabelBuilder = (fieldConfig: ModalFieldConfig) => {
+  const labelBuilder = new LabelBuilder().setLabel(fieldConfig.label)
+  if (fieldConfig.description) {
+    if (fieldConfig.description.length > 100) {
+      logger.warn(
+        `Modal field description for field '${fieldConfig.fieldName}' exceeds Discord's limit of 100 characters. Description will be truncated.`,
+      )
+    }
+    labelBuilder.setDescription(fieldConfig.description.slice(0, 100))
+  }
+  return labelBuilder
 }
-export const composeSelectMenu = ({
-  customId,
-  label = "Select options",
-  description,
-  placeholder,
-  options,
-  isRequired = false,
-  multiSelect = false,
-}: {
-  customId: string
-  label?: string
-  description?: string
-  placeholder?: string
-  options: SelectMenuOption[]
-  isRequired?: boolean
-  multiSelect?: boolean
-}) => {
+
+export const composeSelectMenu = async (
+  fieldConfig: ModalFieldSelectConfig,
+  modalMetadata?: unknown,
+) => {
+  const options = await fieldConfig.getOptions(modalMetadata)
   if (!options.length) {
     return
   }
-  const labelBuilder = new LabelBuilder()
-    .setLabel(label || "Select options")
-    .setStringSelectMenuComponent(
-      new StringSelectMenuBuilder()
-        .setCustomId(customId)
-        .setPlaceholder(placeholder || "Select option...")
-        .addOptions(
-          options.map((option) =>
-            new StringSelectMenuOptionBuilder()
-              .setLabel(option.name)
-              .setValue(option.value)
-              .setDescription(option.description || ""),
-          ),
-        )
-        .setMaxValues(multiSelect ? options.length : 1)
-        .setRequired(isRequired),
-    )
-  if (description) {
-    labelBuilder.setDescription(description)
+  return createFieldLabelBuilder(fieldConfig).setStringSelectMenuComponent(
+    new StringSelectMenuBuilder()
+      .setCustomId(fieldConfig.fieldName)
+      .addOptions(
+        options.map((option) => {
+          const optionBuilder = new StringSelectMenuOptionBuilder()
+            .setLabel(option.name)
+            .setValue(option.value)
+            .setDefault(option.isDefault)
+
+          if (option.description) {
+            optionBuilder.setDescription(option.description)
+          }
+
+          return optionBuilder
+        }),
+      )
+      // TODO: Support multiple values
+      .setMaxValues(1)
+      .setRequired(fieldConfig.isRequired),
+  )
+}
+
+export const composeTextInput = (
+  fieldConfig: ModalFieldTextConfig,
+  modelMetadata?: unknown,
+) => {
+  const textInputBuilder = new TextInputBuilder()
+    .setCustomId(fieldConfig.fieldName)
+    .setStyle(fieldConfig.style)
+    .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
+    .setPlaceholder(fieldConfig.placeholder || "")
+    .setRequired(fieldConfig.isRequired)
+
+  const prefilledValue = fieldConfig.getPrefilledValue?.(modelMetadata)
+  if (prefilledValue) {
+    textInputBuilder.setValue(prefilledValue)
   }
-  return labelBuilder
+
+  return createFieldLabelBuilder(fieldConfig).setTextInputComponent(
+    textInputBuilder,
+  )
+}
+
+export const composeFileUpload = (fieldConfig: ModalFieldFileUploadConfig) => {
+  const fileUploadBuilder = new FileUploadBuilder()
+    .setCustomId(fieldConfig.fieldName)
+    .setRequired(fieldConfig.isRequired)
+
+  if (fieldConfig.maxValues) {
+    fileUploadBuilder.setMaxValues(fieldConfig.maxValues)
+  }
+
+  return createFieldLabelBuilder(fieldConfig).setFileUploadComponent(
+    fileUploadBuilder,
+  )
 }

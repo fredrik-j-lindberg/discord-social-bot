@@ -1,11 +1,4 @@
-import {
-  LabelBuilder,
-  ModalBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js"
+import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
@@ -16,6 +9,8 @@ import {
   upsertGuildConfig,
 } from "~/lib/database/guildConfigService"
 import {
+  composeSelectMenu,
+  composeTextInput,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalFieldConfig,
@@ -30,7 +25,7 @@ const guildConfigLogsFieldConfigsMap = {
     fieldName: "webhookUrl",
     label: "Discord Webhook URL",
     description:
-      "Webhook URL to send the logs to. This can be found in a channel's settings under Integrations > Webhooks",
+      "Webhook URL to send the logs to (Channel settings -> Integrations -> Webhooks)",
     style: TextInputStyle.Short,
     validation: z.url(),
     placeholder: "https://discord.com/api/webhooks/...",
@@ -43,7 +38,14 @@ const guildConfigLogsFieldConfigsMap = {
     label: "Level Threshold",
     validation: z.enum(LOG_LEVELS),
     isRequired: true,
-    getPrefilledValue: (config?: GuildConfig) => config?.logs?.levelThreshold,
+    getOptions: (config?: GuildConfig) =>
+      LOG_LEVELS.map((level) => ({
+        value: level,
+        name: level.toUpperCase(),
+        isDefault: config?.logs?.levelThreshold
+          ? level === config.logs.levelThreshold
+          : level === "info",
+      })),
   },
 } satisfies Record<string, ModalFieldConfig>
 
@@ -57,52 +59,24 @@ export default {
   data: {
     name: "guildConfigLogsModal",
   },
-  createModal: (currentConfig) => {
+  async createModal(currentConfig) {
     const modal = new ModalBuilder()
       .setCustomId("guildConfigLogsModal")
       .setTitle("Update Guild Log Configuration")
 
-    const webhookUrlLabel = new LabelBuilder()
-      .setLabel(guildConfigLogsFieldConfigsMap.webhookUrl.label)
-      .setTextInputComponent(
-        new TextInputBuilder()
-          .setCustomId(guildConfigLogsFieldConfigsMap.webhookUrl.fieldName)
-          .setValue(
-            guildConfigLogsFieldConfigsMap.webhookUrl.getPrefilledValue(
-              currentConfig,
-            ) ?? "",
-          )
-          .setStyle(guildConfigLogsFieldConfigsMap.webhookUrl.style)
-          .setPlaceholder(guildConfigLogsFieldConfigsMap.webhookUrl.placeholder)
-          .setRequired(false),
-      )
+    const webhookUrlLabel = composeTextInput(
+      guildConfigLogsFieldConfigsMap.webhookUrl,
+      currentConfig,
+    )
+    modal.addLabelComponents(webhookUrlLabel)
 
-    const currentLevelThreshold =
-      guildConfigLogsFieldConfigsMap.levelThreshold.getPrefilledValue(
-        currentConfig,
-      )
-
-    const levelThresholdLabel = new LabelBuilder()
-      .setLabel(guildConfigLogsFieldConfigsMap.levelThreshold.label)
-      .setStringSelectMenuComponent(
-        new StringSelectMenuBuilder()
-          .setCustomId(guildConfigLogsFieldConfigsMap.levelThreshold.fieldName)
-          .addOptions(
-            LOG_LEVELS.map((level) =>
-              new StringSelectMenuOptionBuilder()
-                .setLabel(level.toUpperCase())
-                .setValue(level)
-                .setDefault(
-                  currentLevelThreshold
-                    ? level === currentLevelThreshold
-                    : level === "info",
-                ),
-            ),
-          )
-          .setRequired(false),
-      )
-
-    modal.addLabelComponents(webhookUrlLabel, levelThresholdLabel)
+    const levelThresholdLabel = await composeSelectMenu(
+      guildConfigLogsFieldConfigsMap.levelThreshold,
+      currentConfig,
+    )
+    if (levelThresholdLabel) {
+      modal.addLabelComponents(levelThresholdLabel)
+    }
 
     return modal
   },

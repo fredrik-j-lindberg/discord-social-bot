@@ -1,64 +1,64 @@
-import {
-  LabelBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js"
+import { ModalBuilder, TextInputStyle } from "discord.js"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import { createTags } from "~/lib/database/tagService"
-import { composeSelectMenu, type SelectMenuOption } from "~/lib/helpers/modals"
+import {
+  composeSelectMenu,
+  composeTextInput,
+  type ModalFieldConfig,
+  type SelectMenuOption,
+} from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-const inputIds = {
-  tagType: "tagType",
-  tagName: "tagName",
-  tagDescription: "tagDescription",
-}
-
 const tagTypeOptions: SelectMenuOption[] = [
-  { value: "media", name: "Media", description: "Media files" },
+  {
+    value: "media",
+    name: "Media",
+    description: "Media files",
+    isDefault: true,
+  },
 ] as const
+
+const modalFields = {
+  tagType: {
+    fieldType: "select" as const,
+    fieldName: "tagType",
+    label: "Tag Type",
+    isRequired: true,
+    getOptions: () => tagTypeOptions,
+  },
+  tagName: {
+    fieldType: "text" as const,
+    fieldName: "tagName",
+    label: "Tag name",
+    style: TextInputStyle.Short,
+    isRequired: true,
+  },
+  tagDescription: {
+    fieldType: "text" as const,
+    fieldName: "tagDescription",
+    label: "Tag description",
+    style: TextInputStyle.Paragraph,
+    isRequired: false,
+  },
+} as const satisfies Record<string, ModalFieldConfig>
 
 export default {
   data: { name: "tagModal" },
-  createModal() {
+  async createModal() {
     const modal = new ModalBuilder()
       .setCustomId(this.data.name)
       .setTitle("Add a tag")
-    const modalComponents = []
 
-    const tagTypeLabel = composeSelectMenu({
-      customId: inputIds.tagType,
-      label: "Select tag type",
-      // 100 chars max
-      description:
-        'Choose the context for your tag. E.g. "Media" tags can be used for photos.',
-      options: tagTypeOptions,
-      isRequired: true,
-    })
-    if (tagTypeLabel) modalComponents.push(tagTypeLabel)
+    const tagTypeLabel = await composeSelectMenu(modalFields.tagType)
+    if (tagTypeLabel) modal.addLabelComponents(tagTypeLabel)
 
-    const tagNameLabel = new LabelBuilder()
-      .setLabel("Tag name")
-      .setTextInputComponent(
-        new TextInputBuilder()
-          .setCustomId(inputIds.tagName)
-          .setStyle(TextInputStyle.Short),
-      )
-    modalComponents.push(tagNameLabel)
+    const tagNameLabel = composeTextInput(modalFields.tagName)
+    modal.addLabelComponents(tagNameLabel)
 
-    const tagDescriptionLabel = new LabelBuilder()
-      .setLabel("Tag description")
-      .setTextInputComponent(
-        new TextInputBuilder()
-          .setStyle(TextInputStyle.Paragraph)
-          .setRequired(false)
-          .setCustomId(inputIds.tagDescription),
-      )
-    modalComponents.push(tagDescriptionLabel)
+    const tagDescriptionLabel = composeTextInput(modalFields.tagDescription)
+    modal.addLabelComponents(tagDescriptionLabel)
 
-    modal.addLabelComponents(...modalComponents)
     return modal
   },
   deferReply: true,
@@ -70,19 +70,20 @@ export default {
     )
 
     const tagType = interaction.fields.getStringSelectValues(
-      inputIds.tagType,
+      modalFields.tagType.fieldName,
     )[0]
 
     if (!tagType) {
       throw new Error("Tag type is required")
     }
     const tagName = interaction.fields
-      .getTextInputValue(inputIds.tagName)
+      .getTextInputValue(modalFields.tagName.fieldName)
       .trim()
       .toLowerCase()
     const tagDescription =
-      interaction.fields.getTextInputValue(inputIds.tagDescription).trim() ||
-      null
+      interaction.fields
+        .getTextInputValue(modalFields.tagDescription.fieldName)
+        .trim() || null
 
     await createTags({
       tags: [
