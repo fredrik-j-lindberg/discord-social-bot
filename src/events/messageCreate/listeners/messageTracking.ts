@@ -1,5 +1,6 @@
 import type { Events } from "discord.js"
 
+import { getGuildConfig } from "~/lib/database/guildConfigService"
 import { addMemberMessageToStats } from "~/lib/database/memberDataService"
 import { addMemberEmojiUsage } from "~/lib/database/memberEmojisService"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
@@ -7,8 +8,6 @@ import { getGuild } from "~/lib/discord/guilds"
 import { extractEmojisFromMessage } from "~/lib/discord/message"
 import { removeRole } from "~/lib/discord/roles"
 import { assertHasDefinedProperty } from "~/lib/validation"
-
-import { staticGuildConfigs } from "../../../../guildConfigs"
 
 export default {
   data: { name: "messageTracking" },
@@ -45,8 +44,8 @@ export default {
     const oauthGuild = await getGuild(guildId)
     const guild = await oauthGuild.fetch()
 
-    const guildConfig = staticGuildConfigs[guildId]
-    const inactiveRoleId = guildConfig?.inactivityMonitoring?.inactiveRoleId
+    const guildConfig = await getGuildConfig(guildId)
+    const inactiveRoleId = guildConfig?.inactivity?.inactiveRoleId
     if (inactiveRoleId) {
       await removeRole({
         guild,

@@ -2,6 +2,10 @@ import type { GuildMember } from "discord.js"
 
 import { actionWrapper } from "~/lib/actionWrapper"
 import {
+  getAllGuildConfigs,
+  type GuildConfig,
+} from "~/lib/database/guildConfigService"
+import {
   getAllGuildMemberData,
   setMemberData,
 } from "~/lib/database/memberDataService"
@@ -15,8 +19,6 @@ import {
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { subtractDaysFromDate } from "~/lib/helpers/date"
 import { logger } from "~/lib/logger"
-
-import { type GuildConfig, staticGuildConfigs } from "../../guildConfigs"
 
 export interface InactivityMemberData {
   guildId: string
@@ -39,12 +41,14 @@ export const inactivityMonitor = async () => {
     return
   }
 
-  for (const guildConfig of Object.values(staticGuildConfigs)) {
+  const guildConfigs = await getAllGuildConfigs()
+
+  for (const guildConfig of guildConfigs) {
     await actionWrapper({
       action: () =>
         handleInactivityCheck({
           guildId: guildConfig.guildId,
-          inactivityConfig: guildConfig.inactivityMonitoring,
+          inactivityConfig: guildConfig.inactivity,
         }),
       meta: { guildId: guildConfig.guildId },
       actionDescription: "Handle inactivity summary",
@@ -58,7 +62,7 @@ const handleInactivityCheck = async ({
   inactivityConfig,
 }: {
   guildId: string
-  inactivityConfig?: GuildConfig["inactivityMonitoring"]
+  inactivityConfig?: GuildConfig["inactivity"]
 }) => {
   if (!inactivityConfig) {
     return
@@ -152,7 +156,7 @@ const handleKickingInactiveMember = async ({
   memberData: { inactiveSince: Date } & InactivityMemberData
   guild: Awaited<ReturnType<typeof getGuild>>
   member: GuildMember
-  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
 }) => {
   const kickThresholdDate = subtractDaysFromDate(
     new Date(),
@@ -211,7 +215,7 @@ const handleSetMemberAsInactive = async ({
   memberData: InactivityMemberData
   guild: Awaited<ReturnType<typeof getGuild>>
   member: GuildMember
-  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
   inactiveThresholdDate: Date
 }) => {
   if (inactivityConfig.inactiveRoleId) {

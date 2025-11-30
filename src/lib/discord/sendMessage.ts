@@ -8,8 +8,8 @@ import {
 } from "discord.js"
 
 import type { InactivityMemberData } from "~/cron/inactivityCheck"
+import type { GuildConfig } from "~/lib/database/guildConfigService"
 
-import type { GuildConfig } from "../../../guildConfigs"
 import { addDaysToDate } from "../helpers/date"
 import { assertChannelIsTextBased, assertIsDefined } from "../validation"
 import { createDiscordTimestamp, createUserMention } from "./message"
@@ -70,7 +70,7 @@ const removeEmojis = (input: string) => {
 const getInactivityInfoText = ({
   inactivityConfig,
 }: {
-  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
 }) => {
   const { daysUntilInactive, daysAsInactiveBeforeKick } = inactivityConfig
   return `Anyone with no activity for **${daysUntilInactive}** days is considered inactive, once marked as inactive you will be removed from the server after **${daysAsInactiveBeforeKick}** days. All that is needed to lose the inactive status is to send a message in the server!`
@@ -85,7 +85,7 @@ export const sendDebugInactivitySummaryToUser = async ({
   inactiveMembers: InactivityMemberData[]
   debugUser: User
   guildName: string
-  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
 }) => {
   if (inactiveMembers.length === 0) {
     return
@@ -120,7 +120,7 @@ export const sendInactivityNotice = async ({
   memberData: InactivityMemberData
   member: GuildMember
   guildName: string
-  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
 }) => {
   const lastSeenText = memberData.latestActivityAt
     ? `were last seen ${createDiscordTimestamp(memberData.latestActivityAt)}`
@@ -142,7 +142,7 @@ export const sendKickNotice = async ({
   guildName: string
   memberData: InactivityMemberData
   member: GuildMember
-  inactivityConfig: NonNullable<GuildConfig["inactivityMonitoring"]>
+  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
 }) => {
   const intro = `Hello **${memberData.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
 

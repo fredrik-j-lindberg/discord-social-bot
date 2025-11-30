@@ -38,20 +38,6 @@ export interface GuildConfig {
     /** Role to add to members on their birthday */
     roleId?: string
   }
-  /**
-   * If this setting is set, the bot will monitor user inactivity
-   * and ultimately kick inactive users. Check readme for more details
-   */
-  inactivityMonitoring?: {
-    /** Number of days of inactivity before a user is considered inactive and will receive a notice */
-    daysUntilInactive: number
-    /** Once the user is marked as inactive, this is the number of days until they are kicked */
-    daysAsInactiveBeforeKick: number
-    /** Optional invite link to include in kick notice, allowing the user to rejoin easily */
-    inviteLink?: string
-    /** Optional role to assign to inactive users */
-    inactiveRoleId?: string
-  }
 }
 
 interface GuildConfigs {
@@ -82,12 +68,6 @@ const devGuildConfigs: GuildConfigs = {
       channelId: "1216485497501908992", // #dora-test
       roleId: "1276262193515593780",
     },
-    inactivityMonitoring: {
-      daysUntilInactive: 90,
-      daysAsInactiveBeforeKick: 30,
-      inviteLink: "https://discord.gg/QZxuMF8CE6",
-      inactiveRoleId: "1430600447332319232",
-    },
   },
 }
 
@@ -107,12 +87,6 @@ const prodGuildConfigs: GuildConfigs = {
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
       roleId: "1308163163149307955",
-    },
-    inactivityMonitoring: {
-      daysUntilInactive: 90,
-      daysAsInactiveBeforeKick: 30,
-      inviteLink: "https://discord.gg/RBKyxwPpEG",
-      inactiveRoleId: "1430587862298005656",
     },
   },
   // Eithon

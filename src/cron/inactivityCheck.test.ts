@@ -3,6 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { mockMemberData } from "~/lib/database/__mocks__/mockMemberData"
 import {
+  getAllGuildConfigs,
+  type GuildConfig,
+} from "~/lib/database/guildConfigService"
+import {
   getAllGuildMemberData,
   type MemberData,
   setMemberData,
@@ -14,10 +18,9 @@ import { sendInactivityNotice, sendKickNotice } from "~/lib/discord/sendMessage"
 import { subtractDaysFromDate } from "~/lib/helpers/date"
 import { logger } from "~/lib/logger"
 
-import type { GuildConfig } from "../../guildConfigs"
-import { staticGuildConfigs } from "../../guildConfigs"
 import { inactivityMonitor } from "./inactivityCheck"
 
+vi.mock("~/lib/database/guildConfigService")
 vi.mock("~/lib/database/memberDataService")
 vi.mock("~/lib/discord/guilds")
 vi.mock("~/lib/discord/roles")
@@ -31,9 +34,6 @@ vi.mock("~/lib/logger", () => ({
     child: vi.fn().mockReturnThis(),
   },
 }))
-vi.mock("../../guildConfigs", () => ({
-  staticGuildConfigs: {} as Record<string, GuildConfig>,
-}))
 
 const mockNowTime = new Date("2026-01-01")
 
@@ -41,11 +41,10 @@ const mockGuildId = "test-guild"
 const mockDaysUntilInactive = 30
 const mockDaysAsInactiveBeforeKick = 10
 const mockInactiveRoleId = "inactive-role-id"
-const mockGuildConfig = {
+const mockGuildConfig: GuildConfig = {
+  id: "config-id",
   guildId: mockGuildId,
-  optInMemberFields: [],
-  birthdays: {},
-  inactivityMonitoring: {
+  inactivity: {
     daysUntilInactive: mockDaysUntilInactive,
     daysAsInactiveBeforeKick: mockDaysAsInactiveBeforeKick,
     inactiveRoleId: mockInactiveRoleId,
@@ -118,6 +117,7 @@ const mockToKickMemberData = mockMemberData({
 })
 
 describe("inactivityMonitor", () => {
+  const mockGetAllGuildConfigs = vi.mocked(getAllGuildConfigs)
   const mockGetAllGuildMemberData = vi.mocked(getAllGuildMemberData)
   const mockSetMemberData = vi.mocked(setMemberData)
   const mockGetGuild = vi.mocked(getGuild)
@@ -125,10 +125,9 @@ describe("inactivityMonitor", () => {
   const mockSendInactivityNotice = vi.mocked(sendInactivityNotice)
   const mockSendKickNotice = vi.mocked(sendKickNotice)
   const mockLogger = vi.mocked(logger)
-  const mockGuildConfigs = staticGuildConfigs as Record<string, GuildConfig>
 
-  const setupMocks = () => {
-    mockGuildConfigs[mockGuildId] = mockGuildConfig
+  const setupMocks = (guildConfig: GuildConfig = mockGuildConfig) => {
+    mockGetAllGuildConfigs.mockResolvedValue([guildConfig])
 
     const mockMembers = new Collection<string, GuildMember>([
       [mockActiveMember.id, mockActiveMember],
@@ -167,10 +166,10 @@ describe("inactivityMonitor", () => {
   })
 
   it("should do nothing if inactivity monitoring is not configured", async () => {
-    mockGuildConfigs.test = {
+    setupMocks({
       ...mockGuildConfig,
-      inactivityMonitoring: undefined,
-    }
+      inactivity: undefined,
+    })
 
     await inactivityMonitor()
 
@@ -202,7 +201,7 @@ describe("inactivityMonitor", () => {
       }) as unknown as MemberData,
       guildName: mockGuild.name,
       member: mockToMarkAsInactiveMember,
-      inactivityConfig: mockGuildConfig.inactivityMonitoring,
+      inactivityConfig: mockGuildConfig.inactivity,
     })
 
     // Kick relevant member
@@ -212,7 +211,7 @@ describe("inactivityMonitor", () => {
       }) as unknown as MemberData,
       guildName: mockGuild.name,
       member: mockMemberToKick,
-      inactivityConfig: mockGuildConfig.inactivityMonitoring,
+      inactivityConfig: mockGuildConfig.inactivity,
     })
     expect(mockKickFn).toHaveBeenCalledWith(
       `Automatically kicked due to inactivity. Last seen ${mockToKickMemberData.latestActivityAt?.toISOString() || "N/A"}`,
