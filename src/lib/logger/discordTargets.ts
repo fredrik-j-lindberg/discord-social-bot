@@ -1,19 +1,21 @@
-import type { TransportTargetOptions } from "pino"
+import { type Level, type TransportTargetOptions } from "pino"
 
-import { staticGuildConfigs } from "../../../guildConfigs"
-
-export const getDiscordTargets = () => {
+export const getDiscordTargets = (
+  logConfigs: {
+    guildId: string
+    webhookUrl: string
+    levelThreshold: Level
+  }[],
+) => {
   const targets: TransportTargetOptions[] = []
 
-  Object.values(staticGuildConfigs).forEach((config) => {
-    if (!config.logs) return
-
+  logConfigs.forEach(({ guildId, webhookUrl, levelThreshold }) => {
     targets.push({
       target: "./discordTransport/discordTransport",
-      level: config.logs.levelThreshold,
+      level: levelThreshold,
       options: {
-        guildId: config.guildId,
-        webhookUrl: config.logs.webhookUrl,
+        guildId,
+        webhookUrl,
       },
     })
   })
