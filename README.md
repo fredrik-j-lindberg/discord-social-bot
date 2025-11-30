@@ -217,3 +217,4 @@ There are also some helpful scripts for this:
 - Fetch wrapper
 - Write docs for inactivity handling and file uploads
 - Look through inline TODO comments in code
+- Look at guild config permission and context filtering, apply the same for other commands where relevant
