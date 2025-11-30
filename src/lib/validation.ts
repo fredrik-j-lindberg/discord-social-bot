@@ -24,6 +24,15 @@ export type ObjectWithProperty<
 > = Exclude<TObject, TPropertyKey> &
   NonNullRequired<Pick<TObject, TPropertyKey>>
 
+export const hasDefinedProperty = <
+  TObject extends object,
+  TPropertyKey extends keyof TObject,
+>(
+  objectValue: TObject,
+  propertyKey: TPropertyKey,
+): objectValue is ObjectWithProperty<TObject, TPropertyKey> =>
+  objectValue[propertyKey] !== undefined && objectValue[propertyKey] !== null
+
 export function assertHasDefinedProperty<
   TObject extends object,
   TPropertyKey extends keyof TObject,
@@ -33,10 +42,7 @@ export function assertHasDefinedProperty<
   message: string,
   severity: Severity = DoraException.Severity.Error,
 ): asserts objectValue is ObjectWithProperty<TObject, TPropertyKey> {
-  if (
-    objectValue[propertyKey] === undefined ||
-    objectValue[propertyKey] === null
-  ) {
+  if (!hasDefinedProperty(objectValue, propertyKey)) {
     throw new DoraException(message, DoraException.Type.NotDefined, {
       severity,
     })
