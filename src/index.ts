@@ -11,7 +11,7 @@ const initDiscordFeatures = async () => {
   await initModals()
   await registerEvents()
   await loginBot()
-  const logConfigs = setDiscordLoggers()
+  const logConfigs = await setDiscordLoggers()
   logConfigs.forEach(({ guildId, levelThreshold }) => {
     logger.info(
       { guildId },

@@ -1,5 +1,3 @@
-import type { Level } from "pino"
-
 import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
 
@@ -56,13 +54,6 @@ export interface GuildConfig {
     /** Optional role to assign to inactive users */
     inactiveRoleId?: string
   }
-  /** Configuration for logging, leave out of guild config to disable logging */
-  logs?: {
-    /** Discord channel webhook for sending messages */
-    webhookUrl: string
-    /** Log level to send to Discord. E.g. "warn" will send warning logs and above to Discord (not info and debug) */
-    levelThreshold: Level
-  }
 }
 
 interface GuildConfigs {
@@ -100,11 +91,6 @@ const devGuildConfigs: GuildConfigs = {
       inviteLink: "https://discord.gg/QZxuMF8CE6",
       inactiveRoleId: "1430600447332319232",
     },
-    logs: {
-      webhookUrl:
-        "https://discord.com/api/webhooks/1424836052320780359/wi5zae0S_6yEW3dtYFd70wKeOOT5o1-y94nvRhRf11e3wx99ruAgnwa_a7ejPC5Czfx8", // #dora-logs
-      levelThreshold: "info",
-    },
   },
 }
 
@@ -132,11 +118,6 @@ const prodGuildConfigs: GuildConfigs = {
       inviteLink: "https://discord.gg/RBKyxwPpEG",
       inactiveRoleId: "1430587862298005656",
     },
-    logs: {
-      webhookUrl:
-        "https://discord.com/api/webhooks/1424860865970180256/sbK03sh-_qvA--oKEO3qw33fTDZI0f-LdJKzoTwS4BFRgoeRbYvX5oFne5J-8_2V3E_E", // #dora-logs
-      levelThreshold: "info",
-    },
   },
   // Eithon
   "106099890320330752": {
@@ -155,11 +136,6 @@ const prodGuildConfigs: GuildConfigs = {
     birthdays: {
       channelId: "106099890320330752", // #general
       roleId: "1276240769975324692",
-    },
-    logs: {
-      webhookUrl:
-        "https://discord.com/api/webhooks/1424861409702973560/p7w5IdLGTovh5nJIhPTqms1XPsC8Di6HkBbu3tkt71cE0JLy22nTAC_u0kFERvDkeDG5", // #log-general
-      levelThreshold: "info",
     },
   },
 }

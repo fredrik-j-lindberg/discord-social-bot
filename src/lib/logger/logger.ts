@@ -4,7 +4,7 @@ import pino, {
   type TransportTargetOptions,
 } from "pino"
 
-import { staticGuildConfigs } from "../../../guildConfigs"
+import { getAllGuildConfigs } from "../database/guildConfigService"
 import { hasDefinedProperty } from "../validation"
 import { getConsolePrettyTarget } from "./consoleTarget"
 import { getDiscordTargets } from "./discordTargets"
@@ -28,9 +28,10 @@ const multistream = pino.multistream({
 
 export const logger = pino(loggerOptions, multistream)
 
-export const setDiscordLoggers = () => {
-  const guildConfigs = staticGuildConfigs
-  const logConfigs = Object.values(guildConfigs)
+export const setDiscordLoggers = async () => {
+  const allGuildConfigs = await getAllGuildConfigs()
+
+  const logConfigs = allGuildConfigs
     .filter((config) => hasDefinedProperty(config, "logs"))
     .map((config) => ({
       guildId: config.guildId,
