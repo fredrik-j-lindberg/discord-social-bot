@@ -85,20 +85,47 @@ const mapRecordToGuildConfig = (
   }
 }
 
+// In-memory cache for guild configs
+const guildConfigCache = new Map<string, GuildConfig | undefined>()
+
 /**
- * Fetches guild config from the database
+ * Clears the cache for a specific guild or all guilds
+ */
+const clearGuildConfigCache = (guildId?: string) => {
+  if (guildId) {
+    guildConfigCache.delete(guildId)
+    logger.debug({ guildId }, "Cleared guild config cache for guild")
+  } else {
+    guildConfigCache.clear()
+    logger.debug("Cleared all guild config cache")
+  }
+}
+
+/**
+ * Fetches guild config from the cache or database
  * Returns undefined if no config exists for the guild
  */
 export const getGuildConfig = async (
   guildId: string,
 ): Promise<GuildConfig | undefined> => {
+  // Check cache first
+  if (guildConfigCache.has(guildId)) {
+    logger.debug({ guildId }, "Guild config cache hit")
+    return guildConfigCache.get(guildId)
+  }
+
   return actionWrapper({
     action: async () => {
       const record = await db.query.guildConfigsTable.findFirst({
         where: eq(guildConfigsTable.guildId, guildId),
       })
 
-      return mapRecordToGuildConfig(record)
+      const config = mapRecordToGuildConfig(record)
+
+      // Store in cache
+      guildConfigCache.set(guildId, config)
+
+      return config
     },
     actionDescription: "Get guild config from database",
     meta: { guildId },
@@ -125,6 +152,7 @@ export const getAllGuildConfigs = async (): Promise<GuildConfig[]> => {
 /**
  * Updates or creates the entire guild configuration
  * Replaces the entire config JSONB field
+ * Automatically invalidates the cache for this guild
  */
 export const upsertGuildConfig = async (
   guildId: string,
@@ -149,6 +177,9 @@ export const upsertGuildConfig = async (
             config: values.config,
           },
         })
+
+      // Invalidate cache for this guild
+      clearGuildConfigCache(guildId)
     },
     actionDescription: "Upsert guild config in database",
     meta: { guildId },
