@@ -64,7 +64,7 @@ const handleInactivityCheck = async ({
     return
   }
 
-  const { daysUntilInactive, debugUserId } = inactivityConfig
+  const { daysUntilInactive } = inactivityConfig
 
   const inactiveThresholdDate = subtractDaysFromDate(
     new Date(),
@@ -99,15 +99,13 @@ const handleInactivityCheck = async ({
     })
   }
 
-  const debugMember = members.find((member) => member.id === debugUserId)
-
   for (const memberData of inactiveMembers.values()) {
     const member = members.get(memberData.userId)
     if (!member) {
       throw new DoraException(
         "Inactive member not found, are they part of the guild?",
         DoraException.Type.NotFound,
-        { metadata: { debugUserId, guildId: guild.id } },
+        { metadata: { userId: memberData.userId, guildId: guild.id } },
       )
     }
 
@@ -130,14 +128,19 @@ const handleInactivityCheck = async ({
     })
   }
 
-  if (debugMember) {
-    await sendDebugInactivitySummaryToUser({
-      inactiveMembers: Array.from(inactiveMembers.values()),
-      debugUser: debugMember.user,
-      guildName: guild.name,
-      inactivityConfig,
-    })
+  // TODO: Handle the summary differently
+  const debugMember = members.find(
+    (member) => member.id === "106098921985556480", // Neylion
+  )
+  if (!debugMember) {
+    return
   }
+  await sendDebugInactivitySummaryToUser({
+    inactiveMembers: Array.from(inactiveMembers.values()),
+    debugUser: debugMember.user,
+    guildName: guild.name,
+    inactivityConfig,
+  })
 }
 
 const handleKickingInactiveMember = async ({
