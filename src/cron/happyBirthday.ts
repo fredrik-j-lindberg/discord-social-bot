@@ -9,10 +9,10 @@ import { sendBirthdayWish } from "~/lib/discord/sendMessage"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { assertIsDefined } from "~/lib/validation"
 
-import { type GuildConfig, guildConfigs } from "../../guildConfigs"
+import { type GuildConfig, staticGuildConfigs } from "../../guildConfigs"
 
 export const happyBirthday = async () => {
-  for (const guildConfig of Object.values(guildConfigs)) {
+  for (const guildConfig of Object.values(staticGuildConfigs)) {
     await actionWrapper({
       action: () => resetBirthdayRole({ guildConfig }),
       actionDescription: "Reset birthday role",
@@ -24,7 +24,7 @@ export const happyBirthday = async () => {
   const membersData = await getMembersWithBirthdayTodayForAllGuilds()
   for (const memberData of membersData) {
     const guild = await getGuild(memberData.guildId)
-    const guildConfig = guildConfigs[guild.id]
+    const guildConfig = staticGuildConfigs[guild.id]
     if (!guildConfig) {
       throw new DoraException(
         "Guild config not found",

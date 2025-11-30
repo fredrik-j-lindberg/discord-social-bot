@@ -19,7 +19,7 @@ import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { formatDate } from "~/lib/helpers/date"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
-import { getGuildConfigById } from "../../guildConfigs"
+import { getStaticGuildConfigById } from "../../guildConfigs"
 
 const memberOptionName = "member"
 const memberDataOptionName = "memberdata"
@@ -57,7 +57,7 @@ export default {
       "guild",
       "Command autocomplete issued without associated guild",
     )
-    const guildConfig = getGuildConfigById(interaction.guild.id)
+    const guildConfig = getStaticGuildConfigById(interaction.guild.id)
     return guildConfig.optInMemberFields.map((field) => ({
       name: field,
       value: field,
@@ -127,7 +127,7 @@ export const handleWhoIs = async ({
     return { embeds: [embed] }
   }
 
-  const validChoices = getGuildConfigById(
+  const validChoices = getStaticGuildConfigById(
     interaction.guild.id,
   ).optInMemberFields
 

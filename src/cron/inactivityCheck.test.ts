@@ -15,7 +15,7 @@ import { subtractDaysFromDate } from "~/lib/helpers/date"
 import { logger } from "~/lib/logger"
 
 import type { GuildConfig } from "../../guildConfigs"
-import { guildConfigs } from "../../guildConfigs"
+import { staticGuildConfigs } from "../../guildConfigs"
 import { inactivityMonitor } from "./inactivityCheck"
 
 vi.mock("~/lib/database/memberDataService")
@@ -32,7 +32,7 @@ vi.mock("~/lib/logger", () => ({
   },
 }))
 vi.mock("../../guildConfigs", () => ({
-  guildConfigs: {} as Record<string, GuildConfig>,
+  staticGuildConfigs: {} as Record<string, GuildConfig>,
 }))
 
 const mockNowTime = new Date("2026-01-01")
@@ -125,7 +125,7 @@ describe("inactivityMonitor", () => {
   const mockSendInactivityNotice = vi.mocked(sendInactivityNotice)
   const mockSendKickNotice = vi.mocked(sendKickNotice)
   const mockLogger = vi.mocked(logger)
-  const mockGuildConfigs = guildConfigs as Record<string, GuildConfig>
+  const mockGuildConfigs = staticGuildConfigs as Record<string, GuildConfig>
 
   const setupMocks = () => {
     mockGuildConfigs[mockGuildId] = mockGuildConfig

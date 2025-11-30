@@ -108,7 +108,7 @@ const devGuildConfigs: GuildConfigs = {
   },
 }
 
-export const prodGuildConfigs: GuildConfigs = {
+const prodGuildConfigs: GuildConfigs = {
   // Climbing (Dora the Explorer)
   "1193809867232772126": {
     guildId: "1193809867232772126",
@@ -164,12 +164,12 @@ export const prodGuildConfigs: GuildConfigs = {
   },
 }
 
-export const guildConfigs: GuildConfigs = env.USE_DEV_GUILD_CONFIGS
+export const staticGuildConfigs: GuildConfigs = env.USE_DEV_GUILD_CONFIGS
   ? devGuildConfigs
   : prodGuildConfigs
 
-export const getGuildConfigById = (guildId: string) => {
-  const guildConfig = Object.values(guildConfigs).find(
+export const getStaticGuildConfigById = (guildId: string) => {
+  const guildConfig = Object.values(staticGuildConfigs).find(
     (config) => config.guildId === guildId,
   )
   if (!guildConfig) {

@@ -16,7 +16,7 @@ import { DoraException } from "~/lib/exceptions/DoraException"
 import { subtractDaysFromDate } from "~/lib/helpers/date"
 import { logger } from "~/lib/logger"
 
-import { type GuildConfig, guildConfigs } from "../../guildConfigs"
+import { type GuildConfig, staticGuildConfigs } from "../../guildConfigs"
 
 export interface InactivityMemberData {
   guildId: string
@@ -39,7 +39,7 @@ export const inactivityMonitor = async () => {
     return
   }
 
-  for (const guildConfig of Object.values(guildConfigs)) {
+  for (const guildConfig of Object.values(staticGuildConfigs)) {
     await actionWrapper({
       action: () =>
         handleInactivityCheck({

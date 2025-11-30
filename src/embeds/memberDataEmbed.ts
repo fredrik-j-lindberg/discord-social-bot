@@ -9,7 +9,10 @@ import {
   createRoleMention,
 } from "~/lib/discord/message"
 
-import { type DoraMemberFields, getGuildConfigById } from "../../guildConfigs"
+import {
+  type DoraMemberFields,
+  getStaticGuildConfigById,
+} from "../../guildConfigs"
 
 const getFieldsRelevantForGuilds = ({
   guildId,
@@ -148,7 +151,7 @@ const getFieldsRelevantForGuilds = ({
       },
     ],
   }
-  const guildConfig = getGuildConfigById(guildId)
+  const guildConfig = getStaticGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)
     .map(([key, value]) => {
       if (!guildConfig.optInMemberFields.includes(key as DoraMemberFields)) {

@@ -8,7 +8,7 @@ import { extractEmojisFromMessage } from "~/lib/discord/message"
 import { removeRole } from "~/lib/discord/roles"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import { guildConfigs } from "../../../../guildConfigs"
+import { staticGuildConfigs } from "../../../../guildConfigs"
 
 export default {
   data: { name: "messageTracking" },
@@ -45,7 +45,7 @@ export default {
     const oauthGuild = await getGuild(guildId)
     const guild = await oauthGuild.fetch()
 
-    const guildConfig = guildConfigs[guildId]
+    const guildConfig = staticGuildConfigs[guildId]
     const inactiveRoleId = guildConfig?.inactivityMonitoring?.inactiveRoleId
     if (inactiveRoleId) {
       await removeRole({

@@ -19,7 +19,10 @@ import {
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import { getGuildConfigById, SUPPORTED_MEMBER_FIELDS } from "../../guildConfigs"
+import {
+  getStaticGuildConfigById,
+  SUPPORTED_MEMBER_FIELDS,
+} from "../../guildConfigs"
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
   getPrefilledValue: (memberData?: MemberData) => string | null | undefined
@@ -142,7 +145,7 @@ export default {
       .setCustomId(this.data.name)
       .setTitle("Member data form. Optional!")
 
-    const relevantFields = getGuildConfigById(guildId).optInMemberFields
+    const relevantFields = getStaticGuildConfigById(guildId).optInMemberFields
     const fieldsToGenerateConfigs: ModalFieldConfig[] = piiFieldConfigs.filter(
       (fieldConfig) =>
         relevantFields.some(
@@ -193,7 +196,7 @@ export default {
     const inputParsing = extractAndValidateModalValues({
       interaction,
       fieldConfigs: piiFieldConfigs,
-      fieldsToExtract: getGuildConfigById(interaction.guild.id)
+      fieldsToExtract: getStaticGuildConfigById(interaction.guild.id)
         .optInMemberFields,
       validationSchema: piiModalInputSchema,
     })

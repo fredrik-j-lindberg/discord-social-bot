@@ -13,7 +13,7 @@ import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
 import {
   type DoraMemberFields,
-  getGuildConfigById,
+  getStaticGuildConfigById,
   SUPPORTED_MEMBER_FIELDS,
 } from "../../guildConfigs"
 
@@ -47,7 +47,7 @@ export default {
       "guild",
       "Command autocomplete issued without associated guild",
     )
-    const guildConfig = getGuildConfigById(interaction.guild.id)
+    const guildConfig = getStaticGuildConfigById(interaction.guild.id)
     return guildConfig.optInMemberFields.map((field) => ({
       name: field,
       value: field,

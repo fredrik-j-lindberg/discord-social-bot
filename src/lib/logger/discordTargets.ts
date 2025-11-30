@@ -1,11 +1,11 @@
 import type { TransportTargetOptions } from "pino"
 
-import { guildConfigs } from "../../../guildConfigs"
+import { staticGuildConfigs } from "../../../guildConfigs"
 
 export const getDiscordTargets = () => {
   const targets: TransportTargetOptions[] = []
 
-  Object.values(guildConfigs).forEach((config) => {
+  Object.values(staticGuildConfigs).forEach((config) => {
     if (!config.logs) return
 
     targets.push({
