@@ -4,6 +4,41 @@ import path from "path"
 
 import { DoraException } from "../exceptions/DoraException"
 
+function assertIsValidExportedModule<
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+  TDefaultExport extends { data: { name: string } },
+>(
+  exportedModule: unknown,
+  filePath: string,
+): asserts exportedModule is { default: TDefaultExport } {
+  if (!exportedModule || typeof exportedModule !== "object") {
+    throw new DoraException(
+      "Module was not properly exported",
+      DoraException.Type.Unknown,
+      { metadata: { filePath } },
+    )
+  }
+
+  const defaultExport =
+    "default" in exportedModule ? exportedModule.default : undefined
+  if (!defaultExport || typeof defaultExport !== "object") {
+    throw new DoraException(
+      "Module does not have a default (object) export",
+      DoraException.Type.Unknown,
+      { metadata: { filePath } },
+    )
+  }
+
+  const data = "data" in defaultExport ? defaultExport.data : undefined
+  if (!data || typeof data !== "object" || !("name" in data)) {
+    throw new DoraException(
+      "Module default export does not have a properly configured data property",
+      DoraException.Type.TypeError,
+      { metadata: { filePath } },
+    )
+  }
+}
+
 /**
  * This will grab the default exports for all modules in specified folder
  * Useful to dynamically import modules that have a default export with a specific structure
@@ -20,10 +55,10 @@ export const importFolderModules = async <
     for (const file of filesToImport) {
       const filePath = path.join(folderPath, file)
       try {
-        const { default: defaultExport } = (await import(filePath)) as {
-          default: TDefaultExport
-        }
-        modulesByName[defaultExport.data.name] = defaultExport
+        const importedModule = (await import(filePath)) as unknown
+        assertIsValidExportedModule<TDefaultExport>(importedModule, filePath)
+
+        modulesByName[importedModule.default.data.name] = importedModule.default
       } catch (err) {
         throw new DoraException(
           "Failed to import module dynamically",
