@@ -41,7 +41,7 @@ export interface GuildConfig {
     roleId?: string
   }
   /**
-   * If this is setting is set, the bot will monitor user inactivity
+   * If this setting is set, the bot will monitor user inactivity
    * and ultimately kick inactive users. Check readme for more details
    */
   inactivityMonitoring?: {

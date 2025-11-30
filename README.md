@@ -181,17 +181,17 @@ There are also some helpful scripts for this:
     - ~~Should be sent 1 month after the inactivity warning timestamp was added~~
     - ~~Should include a link back to the server they were kicked from, to make it easy to re-join~~
 
-  Once the previous steps are confirmed to be working.
-  - Step 4: Start sending the messages to actual members
-    - When sending a message to a user, a message should also be sent to the admin(s)
-    - When the admin message is implemented, remove the debug summary message thing as it will be redundant
-  - Step 5: Implement the kick
-  - Step 6: Add tests for the feature before production "release" (as a feature that handles kicking is a high impact area)
+  ~~Once the previous steps are confirmed to be working.~~
+  - ~~Step 4: Start sending the messages to actual members~~
+    - ~~When sending a message to a user, a message should also be sent to the admin(s)~~
+    - ~~When the admin message is implemented, remove the debug summary message thing as it will be redundant~~
+  - ~~Step 5: Implement the kick~~
+  - ~~Step 6: Add tests for the feature before production "release" (as a feature that handles kicking is a high impact area)~~
 
   Extras:
   - Post the inactivity summary in a server channel
-  - Consider if we should have a way to exempt users from the inactivity check
-  - Consider adding an "inactive" role to users who have received the warning
+  - ~~Consider if we should have a way to exempt users from the inactivity check~~
+  - ~~Consider adding an "inactive" role to users who have received the warning~~
 
 - Smhi integration?
 - Instead of below, perhaps an integration with Cloudflare R2 to simply host images for us
