@@ -85,6 +85,13 @@
       "when": 1761512212022,
       "tag": "0011_add-files-table",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1764517518686,
+      "tag": "0012_add-guild-config-table",
+      "breakpoints": true
     }
   ]
 }

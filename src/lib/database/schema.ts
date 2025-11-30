@@ -3,6 +3,7 @@ import {
   boolean,
   date,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -197,3 +198,21 @@ export const itemTagRelations = relations(itemTagsTable, ({ one }) => ({
     references: [memberFilesTable.id],
   }),
 }))
+
+/** The table containing guild configurations that can be updated dynamically */
+export const guildConfigsTable = pgTable("guild_configs", {
+  id: uuid().defaultRandom().notNull().unique().primaryKey(),
+  guildId: varchar({ length: 255 }).notNull().unique(),
+
+  /**
+   * JSONB field containing the entire guild configuration.
+   * Extract relevant fields if there is a need for querying purposes. Otherwise this field allows for flexibility and nesting and generally don't benefit much from normalization
+   * The data is being validated when reading from and writing to the database.
+   */
+  config: jsonb(),
+
+  ...commonTimestamps,
+})
+
+export type GuildConfigRecord = typeof guildConfigsTable.$inferSelect
+export type GuildConfigRecordInsert = typeof guildConfigsTable.$inferInsert
