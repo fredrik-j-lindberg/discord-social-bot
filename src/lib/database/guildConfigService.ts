@@ -26,9 +26,22 @@ const guildConfigLogsSchema = z.object({
   levelThreshold: logLevelSchema,
 })
 
+const guildConfigInactivitySchema = z.object({
+  /** Number of days of inactivity before a user is considered inactive and will receive a notice */
+  daysUntilInactive: z.number().int().positive(),
+  /** Once the user is marked as inactive, this is the number of days until they are kicked */
+  daysAsInactiveBeforeKick: z.number().int().positive(),
+  /** Optional invite link to include in kick notice, allowing the user to rejoin easily */
+  inviteLink: z.url().optional(),
+  /** Optional role to assign to inactive users */
+  inactiveRoleId: z.string().optional(),
+})
+
 const guildConfigDataSchema = z.object({
   /** Configuration for logging, leave out of guild config to disable logging */
   logs: guildConfigLogsSchema.optional(),
+  /** Configuration for inactivity monitoring, leave out of guild config to disable monitoring */
+  inactivity: guildConfigInactivitySchema.optional(),
 })
 
 /** All the values that can be configured for the guild */

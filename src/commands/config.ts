@@ -3,6 +3,7 @@ import { SlashCommandBuilder } from "discord.js"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import { getGuildConfig } from "~/lib/database/guildConfigService"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
+import guildConfigInactivityModal from "~/modals/guildConfigInactivityModal"
 import guildConfigLogsModal from "~/modals/guildConfigLogsModal"
 
 const command = new SlashCommandBuilder()
@@ -15,7 +16,10 @@ const command = new SlashCommandBuilder()
       .setName("setting")
       .setDescription("What part of the config to configure")
       .setRequired(true)
-      .addChoices({ name: "Logs", value: "logs" }),
+      .addChoices(
+        { name: "Logs", value: "logs" },
+        { name: "Inactivity", value: "inactivity" },
+      ),
   )
 
 export default {
@@ -37,6 +41,11 @@ export default {
     switch (setting) {
       case "logs": {
         const modal = await guildConfigLogsModal.createModal(currentConfig)
+        await interaction.showModal(modal)
+        return undefined // No immediate reply since we're showing a modal
+      }
+      case "inactivity": {
+        const modal = guildConfigInactivityModal.createModal(currentConfig)
         await interaction.showModal(modal)
         return undefined // No immediate reply since we're showing a modal
       }
