@@ -7,11 +7,24 @@ import {
 } from "discord.js"
 import z, { ZodType } from "zod/v4"
 
-export interface ModalFieldConfig {
+interface ModalFieldTextConfig {
+  /** Determines which kind of field this config is for. Defaults to text */
+  fieldType: "text"
+  style: TextInputStyle
+}
+
+interface ModalFieldSelectConfig {
+  fieldType: "select"
+  style?: never
+}
+
+export type ModalFieldConfig = (
+  | ModalFieldTextConfig
+  | ModalFieldSelectConfig
+) & {
   fieldName: string
   label: string
   description?: string
-  style: TextInputStyle
   getPrefilledValue: (
     /** The metadata relevant to prefill the data. For example for the member data (/pii) modal this might the database values for the member */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,9 +93,18 @@ export const extractAndValidateModalValues = <
 
   const valuesToValidate: { [key in string]?: string | null } = {}
   for (const fieldConfig of fieldsToExtractConfigs) {
-    // TODO: Can this be solved without the coercion
-    valuesToValidate[fieldConfig.fieldName] =
-      interaction.fields.getTextInputValue(fieldConfig.fieldName) || null
+    if (fieldConfig.fieldType === "select") {
+      // For select menus, getStringSelectValues returns an array
+      // We take the first value since single-select menus only have one value
+      const values = interaction.fields.getStringSelectValues(
+        fieldConfig.fieldName,
+      )
+      valuesToValidate[fieldConfig.fieldName] = values[0] ?? null
+    } else {
+      // Default to text input
+      valuesToValidate[fieldConfig.fieldName] =
+        interaction.fields.getTextInputValue(fieldConfig.fieldName) || null
+    }
   }
 
   return validationSchema.safeParse(valuesToValidate)

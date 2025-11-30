@@ -11,6 +11,7 @@ import {
   type MemberData,
   setMemberData,
 } from "~/lib/database/memberDataService"
+import { DoraException } from "~/lib/exceptions/DoraException"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import {
   extractAndValidateModalValues,
@@ -30,6 +31,7 @@ type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
 
 const piiFieldConfigsMap = {
   [SUPPORTED_MEMBER_FIELDS.firstName]: {
+    fieldType: "text",
     fieldName: SUPPORTED_MEMBER_FIELDS.firstName,
     label: "First name",
     getPrefilledValue: (memberData) => memberData?.firstName || "",
@@ -43,6 +45,7 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [SUPPORTED_MEMBER_FIELDS.birthday]: {
+    fieldType: "text",
     fieldName: SUPPORTED_MEMBER_FIELDS.birthday,
     label: "Birthday (DD/MM/YYYY)",
     description:
@@ -60,6 +63,7 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [SUPPORTED_MEMBER_FIELDS.switchFriendCode]: {
+    fieldType: "text",
     fieldName: SUPPORTED_MEMBER_FIELDS.switchFriendCode,
     label: "Nintendo Switch friend code",
     getPrefilledValue: (memberData) => memberData?.switchFriendCode || "",
@@ -73,6 +77,7 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode]: {
+    fieldType: "text",
     fieldName: SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode,
     label: "Pokémon TCGP friend code",
     getPrefilledValue: (memberData) => memberData?.pokemonTcgpFriendCode || "",
@@ -93,6 +98,7 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [SUPPORTED_MEMBER_FIELDS.phoneNumber]: {
+    fieldType: "text",
     fieldName: SUPPORTED_MEMBER_FIELDS.phoneNumber,
     label: "Phone number",
     getPrefilledValue: (memberData) => memberData?.phoneNumber,
@@ -103,6 +109,7 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [SUPPORTED_MEMBER_FIELDS.email]: {
+    fieldType: "text",
     fieldName: SUPPORTED_MEMBER_FIELDS.email,
     label: "Email",
     getPrefilledValue: (memberData) => memberData?.email,
@@ -120,6 +127,7 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [SUPPORTED_MEMBER_FIELDS.dietaryPreferences]: {
+    fieldType: "text",
     fieldName: SUPPORTED_MEMBER_FIELDS.dietaryPreferences,
     label: "Dietary preferences",
     getPrefilledValue: (memberData) => memberData?.dietaryPreferences,
@@ -161,21 +169,26 @@ export default {
     }
 
     const components = fieldsToGenerateConfigs.map((fieldConfig) => {
-      const label = new LabelBuilder()
-        .setLabel(fieldConfig.label)
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId(fieldConfig.fieldName)
-            .setValue(fieldConfig.getPrefilledValue(memberData) || "")
-            .setStyle(fieldConfig.style)
-            .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
-            .setPlaceholder(fieldConfig.placeholder || "")
-            .setRequired(fieldConfig.isRequired),
-        )
-      if (fieldConfig.description) {
-        label.setDescription(fieldConfig.description)
+      if (fieldConfig.fieldType === "text") {
+        const label = new LabelBuilder()
+          .setLabel(fieldConfig.label)
+          .setTextInputComponent(
+            new TextInputBuilder()
+              .setCustomId(fieldConfig.fieldName)
+              .setValue(fieldConfig.getPrefilledValue(memberData) || "")
+              .setStyle(fieldConfig.style)
+              .setMaxLength(fieldConfig.maxLength || 4000) // Discord's max length for text inputs is 4000 characters
+              .setPlaceholder(fieldConfig.placeholder || "")
+              .setRequired(fieldConfig.isRequired),
+          )
+        if (fieldConfig.description) {
+          label.setDescription(fieldConfig.description)
+        }
+        return label
       }
-      return label
+      throw new DoraException(
+        `Unsupported field type in PII modal: ${JSON.stringify(fieldConfig)}`,
+      )
     })
 
     modal.addLabelComponents(components)
