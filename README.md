@@ -92,7 +92,7 @@ Discord.js emits Discord events that we can act on. Our listeners for this can b
 ┣ 📂 interactionCreate - The event that we want to listen to
 ┃ ┣ 📂 listeners - Files in this dir are automatically picked up as listeners.
 ┃ ┃ ┣ 📜 commandRouter.ts - Listens to the events but only proceeds with command interactions
-┃ ┃ ┗ 📜 modalSubmitRouter.ts - Listens to the events but only proceeds with command interactions
+┃ ┃ ┗ 📜 modalSubmitRouter.ts - Listens to the events but only proceeds with modal submit interactions
 ┃ ┣ 📜 index.ts - Just exporting the event file for better looking imports
 ┃ ┗ 📜 interactionCreateEvent.ts - Hooks up all the listeners to the event and wraps them with basic error handling and logging.
 ```
@@ -215,6 +215,10 @@ There are also some helpful scripts for this:
 - Align action wrapper usage around database methods (e.g. the new services)
 - Cache the /pii data for a short while (e.g. 10 minutes)? This would allow you to not lose all the data when failing the validation
 - Fetch wrapper
-- Write docs for inactivity handling and file uploads
+- Write docs
+  - Inactivity monitoring
+  - File uploads
+  - Guild config
 - Look through inline TODO comments in code
 - Look at guild config permission and context filtering, apply the same for other commands where relevant
+- Add an actual monitoring tool, e.g. grafana logs?

@@ -29,18 +29,7 @@ export interface InactivityMemberData {
   inactiveSince?: Date | null
 }
 
-/** Since we started collecting stats recently, let's wait with the inactivity monitor until we have enough data */
-const inactivityActivityEnableDate = new Date("2025-12-01")
-
 export const inactivityMonitor = async () => {
-  // TODO: Remove this check when we pass the threshold date. Just in place to avoid kicking people prematurely
-  if (new Date() < inactivityActivityEnableDate) {
-    logger.debug(
-      `The threshold date ${inactivityActivityEnableDate.toISOString()} has not passed. Inactivity monitor will run.`,
-    )
-    return
-  }
-
   const guildConfigs = await getAllGuildConfigs()
 
   for (const guildConfig of guildConfigs) {
@@ -114,22 +103,21 @@ const handleInactivityCheck = async ({
     }
 
     if (memberData.inactiveSince) {
-      await handleKickingInactiveMember({
+      await handleKickingInactiveMemberIfRelevant({
         memberData: { ...memberData, inactiveSince: memberData.inactiveSince },
         guild,
         inactivityConfig,
         member,
       })
-      continue
+    } else {
+      await handleSetMemberAsInactive({
+        memberData,
+        guild,
+        inactivityConfig,
+        member,
+        inactiveThresholdDate,
+      })
     }
-
-    await handleSetMemberAsInactive({
-      memberData,
-      guild,
-      inactivityConfig,
-      member,
-      inactiveThresholdDate,
-    })
   }
 
   // TODO: Handle the summary differently
@@ -147,7 +135,8 @@ const handleInactivityCheck = async ({
   })
 }
 
-const handleKickingInactiveMember = async ({
+/** Kicks the member if it has been inactive for too enough, based on the guild config */
+const handleKickingInactiveMemberIfRelevant = async ({
   memberData,
   guild,
   member,
