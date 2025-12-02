@@ -9,11 +9,7 @@ import {
   createUserMention,
 } from "~/lib/discord/message"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import {
-  composeFileUpload,
-  composeSelectMenu,
-  type ModalInputConfig,
-} from "~/lib/helpers/modals"
+import { composeModalInputs, type ModalInputConfig } from "~/lib/helpers/modals"
 import { uploadMultipleAttachmentsToR2 } from "~/lib/r2/uploadService"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
@@ -57,6 +53,8 @@ const modalInputsMap = {
   ModalInputConfig<string, { guildId: string }>
 >
 
+const modalInputsConfig = Object.values(modalInputsMap)
+
 const getModalTagValues = (interaction: ModalSubmitInteraction): string[] => {
   try {
     return interaction.fields.getStringSelectValues(
@@ -74,13 +72,10 @@ export default {
       .setCustomId(this.data.name)
       .setTitle("Photo Upload")
 
-    const tagMenuLabel = await composeSelectMenu(modalInputsMap.tags, {
+    const composedInputs = await composeModalInputs(modalInputsConfig, {
       guildId,
     })
-    if (tagMenuLabel) modal.addLabelComponents(tagMenuLabel)
-
-    const uploadFileLabel = composeFileUpload(modalInputsMap.fileUpload)
-    modal.addLabelComponents(uploadFileLabel)
+    modal.addLabelComponents(...composedInputs)
 
     return modal
   },

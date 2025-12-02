@@ -9,7 +9,7 @@ import {
   upsertGuildConfig,
 } from "~/lib/database/guildConfigService"
 import {
-  composeTextInput,
+  composeModalInputs,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalInputConfig,
@@ -77,40 +77,22 @@ const modalInputsMap = {
 
 const guildConfigInactivityModalSchema = generateModalSchema(modalInputsMap)
 
-const inputConfigs = Object.values(modalInputsMap)
+const modalInputsConfig = Object.values(modalInputsMap)
 
 export default {
   data: {
     name: "guildConfigInactivityModal",
   },
-  createModal(currentConfig) {
+  async createModal(currentConfig) {
     const modal = new ModalBuilder()
       .setCustomId("guildConfigInactivityModal")
       .setTitle("Update Inactivity Configuration")
 
-    const daysUntilInactiveInput = composeTextInput(
-      modalInputsMap.daysUntilInactive,
+    const composedInputs = await composeModalInputs(
+      modalInputsConfig,
       currentConfig,
     )
-    modal.addLabelComponents(daysUntilInactiveInput)
-
-    const daysAsInactiveBeforeKickInput = composeTextInput(
-      modalInputsMap.daysAsInactiveBeforeKick,
-      currentConfig,
-    )
-    modal.addLabelComponents(daysAsInactiveBeforeKickInput)
-
-    const inviteLinkInput = composeTextInput(
-      modalInputsMap.inviteLink,
-      currentConfig,
-    )
-    modal.addLabelComponents(inviteLinkInput)
-
-    const inactiveRoleIdInput = composeTextInput(
-      modalInputsMap.inactiveRoleId,
-      currentConfig,
-    )
-    modal.addLabelComponents(inactiveRoleIdInput)
+    modal.addLabelComponents(...composedInputs)
 
     return modal
   },
@@ -127,8 +109,8 @@ export default {
     // Extract and validate form data
     const inputParsing = extractAndValidateModalValues({
       interaction,
-      inputConfigs,
-      inputsToExtract: inputConfigs.map((f) => f.id),
+      inputConfigs: modalInputsConfig,
+      inputsToExtract: modalInputsConfig.map((f) => f.id),
       validationSchema: guildConfigInactivityModalSchema,
     })
 

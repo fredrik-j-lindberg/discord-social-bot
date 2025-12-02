@@ -8,10 +8,9 @@ import {
   type MemberData,
   setMemberData,
 } from "~/lib/database/memberDataService"
-import { DoraException } from "~/lib/exceptions/DoraException"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import {
-  composeTextInput,
+  composeModalInputs,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalInputConfig,
@@ -144,7 +143,7 @@ interface CreateModalProps {
 }
 export default {
   data: { name: "memberDataModal" },
-  createModal({ guildId, memberData }: CreateModalProps) {
+  async createModal({ guildId, memberData }: CreateModalProps) {
     const modal = new ModalBuilder()
       .setCustomId(this.data.name)
       .setTitle("Member data form. Optional!")
@@ -157,23 +156,12 @@ export default {
         ),
     )
 
-    if (inputsToGenerateConfig.length > 5) {
-      throw new Error(
-        // Discord modals have a limit of 5 inputs per modal
-        `Tried to generate too many modal inputs. Max allowed per modal is 5 inputs but tried to generate '${inputsToGenerateConfig.map((inputConfig) => inputConfig.id).join(", ")}'`,
-      )
-    }
+    const composedInputs = await composeModalInputs(
+      inputsToGenerateConfig,
+      memberData,
+    )
+    modal.addLabelComponents(...composedInputs)
 
-    const components = inputsToGenerateConfig.map((inputConfig) => {
-      if (inputConfig.type === "text") {
-        return composeTextInput(inputConfig, memberData)
-      }
-      throw new DoraException(
-        `Unsupported input type in PII modal: ${JSON.stringify(inputConfig)}`,
-      )
-    })
-
-    modal.addLabelComponents(components)
     return modal
   },
   deferReply: true,

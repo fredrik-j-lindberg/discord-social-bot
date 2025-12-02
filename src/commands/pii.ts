@@ -26,7 +26,7 @@ export default {
       userId: interaction.user.id,
       guildId: interaction.guild.id,
     })
-    const modal = piiModal.createModal({
+    const modal = await piiModal.createModal({
       guildId: interaction.guild.id,
       memberData,
     })

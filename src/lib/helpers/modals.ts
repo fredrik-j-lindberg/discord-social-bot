@@ -9,6 +9,7 @@ import {
 } from "discord.js"
 import z, { ZodType } from "zod/v4"
 
+import { DoraException } from "../exceptions/DoraException"
 import { logger } from "../logger"
 
 interface ModalInputBaseConfig<TId extends string = string> {
@@ -161,13 +162,15 @@ const createFieldLabelBuilder = (inputConfig: ModalInputConfig) => {
   return labelBuilder
 }
 
-export const composeSelectMenu = async (
+export const composeSelectMenuInput = async (
   selectInputConfig: ModalSelectInputConfig,
   modalMetadata?: unknown,
 ) => {
   const options = await selectInputConfig.getOptions(modalMetadata)
   if (!options.length) {
-    return
+    throw new DoraException(
+      `No options available for select menu with id '${selectInputConfig.id}'`,
+    )
   }
   return createFieldLabelBuilder(
     selectInputConfig,
@@ -215,7 +218,7 @@ export const composeTextInput = (
   )
 }
 
-export const composeFileUpload = (
+export const composeFileUploadInput = (
   fileUploadInputConfig: ModalFileUploadInputConfig,
 ) => {
   const fileUploadBuilder = new FileUploadBuilder()
@@ -229,4 +232,46 @@ export const composeFileUpload = (
   return createFieldLabelBuilder(fileUploadInputConfig).setFileUploadComponent(
     fileUploadBuilder,
   )
+}
+
+/**
+ * Composes all modal inputs from a list of config objects and returns a list of LabelBuilders.
+ *
+ * @throws {DoraException} If no valid modal inputs were composed.
+ */
+export const composeModalInputs = async (
+  inputConfigs: ModalInputConfig[],
+  modalMetadata?: unknown,
+) => {
+  const composedInputs = await Promise.all(
+    inputConfigs.map(async (inputConfig) => {
+      switch (inputConfig.type) {
+        case "text":
+          return composeTextInput(inputConfig, modalMetadata)
+        case "select":
+          return await composeSelectMenuInput(inputConfig, modalMetadata)
+        case "fileUpload":
+          return composeFileUploadInput(inputConfig)
+        default:
+          throw new DoraException(
+            `Unknown modal input type: ${JSON.stringify(inputConfig)}`,
+          )
+      }
+    }),
+  )
+
+  if (composedInputs.length > 5) {
+    throw new DoraException(
+      // Discord modals have a limit of 5 inputs per modal
+      `Tried to generate too many modal inputs. Max allowed per modal is 5 inputs but tried to generate '${composedInputs.map((input) => input.toJSON().id).join(", ")}'`,
+    )
+  }
+
+  if (composedInputs.length === 0) {
+    throw new DoraException(
+      "No valid modal inputs were composed. Ensure at least one input config is provided.",
+    )
+  }
+
+  return composedInputs
 }

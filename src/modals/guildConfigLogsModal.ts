@@ -9,8 +9,7 @@ import {
   upsertGuildConfig,
 } from "~/lib/database/guildConfigService"
 import {
-  composeSelectMenu,
-  composeTextInput,
+  composeModalInputs,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalInputConfig,
@@ -51,7 +50,7 @@ const modalInputsMap = {
 
 const guildConfigLogsModalSchema = generateModalSchema(modalInputsMap)
 
-const inputConfigs = Object.values(modalInputsMap)
+const modalInputsConfig = Object.values(modalInputsMap)
 
 export default {
   data: {
@@ -62,19 +61,11 @@ export default {
       .setCustomId("guildConfigLogsModal")
       .setTitle("Update Guild Log Configuration")
 
-    const webhookUrlLabel = composeTextInput(
-      modalInputsMap.webhookUrl,
+    const composedInputs = await composeModalInputs(
+      modalInputsConfig,
       currentConfig,
     )
-    modal.addLabelComponents(webhookUrlLabel)
-
-    const levelThresholdLabel = await composeSelectMenu(
-      modalInputsMap.levelThreshold,
-      currentConfig,
-    )
-    if (levelThresholdLabel) {
-      modal.addLabelComponents(levelThresholdLabel)
-    }
+    modal.addLabelComponents(...composedInputs)
 
     return modal
   },
@@ -91,8 +82,8 @@ export default {
     // Extract and validate form data
     const inputParsing = extractAndValidateModalValues({
       interaction,
-      inputConfigs,
-      inputsToExtract: inputConfigs.map((input) => input.id),
+      inputConfigs: modalInputsConfig,
+      inputsToExtract: modalInputsConfig.map((input) => input.id),
       validationSchema: guildConfigLogsModalSchema,
     })
 

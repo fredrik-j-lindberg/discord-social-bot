@@ -3,8 +3,7 @@ import { ModalBuilder, TextInputStyle } from "discord.js"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import { createTags } from "~/lib/database/tagService"
 import {
-  composeSelectMenu,
-  composeTextInput,
+  composeModalInputs,
   type ModalInputConfig,
   type SelectMenuOption,
 } from "~/lib/helpers/modals"
@@ -43,6 +42,8 @@ const modalInputsMap = {
   },
 } as const satisfies Record<string, ModalInputConfig>
 
+const modalInputsConfig = Object.values(modalInputsMap)
+
 export default {
   data: { name: "tagModal" },
   async createModal() {
@@ -50,14 +51,8 @@ export default {
       .setCustomId(this.data.name)
       .setTitle("Add a tag")
 
-    const tagTypeLabel = await composeSelectMenu(modalInputsMap.tagType)
-    if (tagTypeLabel) modal.addLabelComponents(tagTypeLabel)
-
-    const tagNameLabel = composeTextInput(modalInputsMap.tagName)
-    modal.addLabelComponents(tagNameLabel)
-
-    const tagDescriptionLabel = composeTextInput(modalInputsMap.tagDescription)
-    modal.addLabelComponents(tagDescriptionLabel)
+    const composedInputs = await composeModalInputs(modalInputsConfig)
+    modal.addLabelComponents(...composedInputs)
 
     return modal
   },

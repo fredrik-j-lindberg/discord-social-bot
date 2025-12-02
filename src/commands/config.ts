@@ -45,7 +45,8 @@ export default {
         return undefined // No immediate reply since we're showing a modal
       }
       case "inactivity": {
-        const modal = guildConfigInactivityModal.createModal(currentConfig)
+        const modal =
+          await guildConfigInactivityModal.createModal(currentConfig)
         await interaction.showModal(modal)
         return undefined // No immediate reply since we're showing a modal
       }
