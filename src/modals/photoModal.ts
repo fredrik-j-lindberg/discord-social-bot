@@ -12,7 +12,7 @@ import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import {
   composeFileUpload,
   composeSelectMenu,
-  type ModalFieldConfig,
+  type ModalInputConfig,
 } from "~/lib/helpers/modals"
 import { uploadMultipleAttachmentsToR2 } from "~/lib/r2/uploadService"
 import { assertHasDefinedProperty } from "~/lib/validation"
@@ -28,13 +28,13 @@ const ACCEPTED_MIME_TYPES = [
   "video/quicktime",
 ]
 
-const modalFields = {
+const modalInputsMap = {
   tags: {
-    fieldType: "select",
-    fieldName: "tags",
+    type: "select",
+    id: "tags",
     label: "Select tag(s)",
     isRequired: false,
-    getOptions: async ({ guildId }: { guildId: string }) => {
+    getOptions: async ({ guildId }) => {
       const tags = await getTags({ guildId, type: "media" })
       return tags.map((tag) => ({
         name: tag.name,
@@ -45,19 +45,22 @@ const modalFields = {
     },
   },
   fileUpload: {
-    fieldType: "fileUpload",
-    fieldName: "fileUpload",
+    type: "fileUpload",
+    id: "fileUpload",
     label: "Upload file",
     isRequired: true,
     maxValues: 10,
     acceptedMimeTypes: ACCEPTED_MIME_TYPES,
   },
-} as const satisfies Record<string, ModalFieldConfig>
+} as const satisfies Record<
+  string,
+  ModalInputConfig<string, { guildId: string }>
+>
 
 const getModalTagValues = (interaction: ModalSubmitInteraction): string[] => {
   try {
     return interaction.fields.getStringSelectValues(
-      modalFields.tags.fieldName,
+      modalInputsMap.tags.id,
     ) as string[] // TODO: Look into handling this without the coercion
   } catch {
     return [] // Since this is optional, return empty array if it fails
@@ -71,10 +74,12 @@ export default {
       .setCustomId(this.data.name)
       .setTitle("Photo Upload")
 
-    const tagMenuLabel = await composeSelectMenu(modalFields.tags, { guildId })
+    const tagMenuLabel = await composeSelectMenu(modalInputsMap.tags, {
+      guildId,
+    })
     if (tagMenuLabel) modal.addLabelComponents(tagMenuLabel)
 
-    const uploadFileLabel = composeFileUpload(modalFields.fileUpload)
+    const uploadFileLabel = composeFileUpload(modalInputsMap.fileUpload)
     modal.addLabelComponents(uploadFileLabel)
 
     return modal
@@ -87,7 +92,7 @@ export default {
       "Modal submitted without associated guild",
     )
     const uploadedFilesCollection = interaction.fields.getUploadedFiles(
-      modalFields.fileUpload.fieldName,
+      modalInputsMap.fileUpload.id,
     )
     if (!uploadedFilesCollection || uploadedFilesCollection.size === 0) {
       return "No files were uploaded. Please try again."
@@ -100,9 +105,9 @@ export default {
           `Uploaded file '${name}' is missing content type`,
         )
       }
-      if (!modalFields.fileUpload.acceptedMimeTypes.includes(contentType)) {
+      if (!modalInputsMap.fileUpload.acceptedMimeTypes.includes(contentType)) {
         throw new DoraUserException(
-          `Uploaded file '${name}' has unsupported content type '${contentType}'. Valid content types are ${modalFields.fileUpload.acceptedMimeTypes.join(", ")}`,
+          `Uploaded file '${name}' has unsupported content type '${contentType}'. Valid content types are ${modalInputsMap.fileUpload.acceptedMimeTypes.join(", ")}`,
         )
       }
     })

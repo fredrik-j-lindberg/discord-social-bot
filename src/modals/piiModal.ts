@@ -1,6 +1,7 @@
 import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
+import type { DoraMemberFields } from "~/configs/memberDataConfig"
 import { allMemberFieldsConfig } from "~/configs/memberDataConfig"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import {
@@ -13,20 +14,21 @@ import {
   composeTextInput,
   extractAndValidateModalValues,
   generateModalSchema,
-  type ModalFieldConfig,
+  type ModalInputConfig,
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 import { getStaticGuildConfigById } from "../../guildConfigs"
 
-type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
-  getPrefilledValue: (memberData?: MemberData) => string | null | undefined
-}
+type PiiModalInputConfig = ModalInputConfig<
+  DoraMemberFields,
+  MemberData | undefined
+>
 
-const piiFieldConfigsMap = {
+const modalInputsMap = {
   [allMemberFieldsConfig.firstName.name]: {
-    fieldType: "text",
-    fieldName: allMemberFieldsConfig.firstName.name,
+    type: "text",
+    id: allMemberFieldsConfig.firstName.name,
     label: "First name",
     getPrefilledValue: (memberData) => memberData?.firstName || "",
     style: TextInputStyle.Short,
@@ -39,8 +41,8 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [allMemberFieldsConfig.birthday.name]: {
-    fieldType: "text",
-    fieldName: allMemberFieldsConfig.birthday.name,
+    type: "text",
+    id: allMemberFieldsConfig.birthday.name,
     label: "Birthday (DD/MM/YYYY)",
     description:
       "Feel free to set a random year if you prefer not to share your age",
@@ -57,8 +59,8 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [allMemberFieldsConfig.switchFriendCode.name]: {
-    fieldType: "text",
-    fieldName: allMemberFieldsConfig.switchFriendCode.name,
+    type: "text",
+    id: allMemberFieldsConfig.switchFriendCode.name,
     label: "Nintendo Switch friend code",
     getPrefilledValue: (memberData) => memberData?.switchFriendCode || "",
     style: TextInputStyle.Short,
@@ -71,8 +73,8 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [allMemberFieldsConfig.pokemonTcgpFriendCode.name]: {
-    fieldType: "text",
-    fieldName: allMemberFieldsConfig.pokemonTcgpFriendCode.name,
+    type: "text",
+    id: allMemberFieldsConfig.pokemonTcgpFriendCode.name,
     label: "Pokémon TCGP friend code",
     getPrefilledValue: (memberData) => memberData?.pokemonTcgpFriendCode || "",
     style: TextInputStyle.Short,
@@ -92,8 +94,8 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [allMemberFieldsConfig.phoneNumber.name]: {
-    fieldType: "text",
-    fieldName: allMemberFieldsConfig.phoneNumber.name,
+    type: "text",
+    id: allMemberFieldsConfig.phoneNumber.name,
     label: "Phone number",
     getPrefilledValue: (memberData) => memberData?.phoneNumber,
     placeholder: "+46712345673",
@@ -103,8 +105,8 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [allMemberFieldsConfig.email.name]: {
-    fieldType: "text",
-    fieldName: allMemberFieldsConfig.email.name,
+    type: "text",
+    id: allMemberFieldsConfig.email.name,
     label: "Email",
     getPrefilledValue: (memberData) => memberData?.email,
     style: TextInputStyle.Short,
@@ -121,8 +123,8 @@ const piiFieldConfigsMap = {
     isRequired: false,
   },
   [allMemberFieldsConfig.dietaryPreferences.name]: {
-    fieldType: "text",
-    fieldName: allMemberFieldsConfig.dietaryPreferences.name,
+    type: "text",
+    id: allMemberFieldsConfig.dietaryPreferences.name,
     label: "Dietary preferences",
     getPrefilledValue: (memberData) => memberData?.dietaryPreferences,
     style: TextInputStyle.Short,
@@ -131,10 +133,10 @@ const piiFieldConfigsMap = {
     maxLength: 50,
     isRequired: false,
   },
-} as const satisfies Record<string, PiiModalFieldConfig>
+} as const satisfies Partial<Record<DoraMemberFields, PiiModalInputConfig>>
 
-const piiFieldConfigs = Object.values(piiFieldConfigsMap)
-const piiModalInputSchema = generateModalSchema(piiFieldConfigsMap)
+const modalInputsConfig = Object.values(modalInputsMap)
+const inputSchema = generateModalSchema(modalInputsMap)
 
 interface CreateModalProps {
   guildId: string
@@ -148,26 +150,26 @@ export default {
       .setTitle("Member data form. Optional!")
 
     const relevantFields = getStaticGuildConfigById(guildId).optInMemberFields
-    const fieldsToGenerateConfigs: ModalFieldConfig[] = piiFieldConfigs.filter(
-      (fieldConfig) =>
+    const inputsToGenerateConfig: ModalInputConfig[] = modalInputsConfig.filter(
+      (inputConfig) =>
         relevantFields.some(
-          (fieldToExtract) => fieldConfig.fieldName === fieldToExtract,
+          (fieldToExtract) => inputConfig.id === fieldToExtract,
         ),
     )
 
-    if (fieldsToGenerateConfigs.length > 5) {
+    if (inputsToGenerateConfig.length > 5) {
       throw new Error(
-        // Discord modals have a limit of 5 fields per modal
-        `Tried to generate too many modal fields. Max allowed per modal is 5 fields but tried to generate '${fieldsToGenerateConfigs.map((fieldConfig) => fieldConfig.fieldName).join(", ")}'`,
+        // Discord modals have a limit of 5 inputs per modal
+        `Tried to generate too many modal inputs. Max allowed per modal is 5 inputs but tried to generate '${inputsToGenerateConfig.map((inputConfig) => inputConfig.id).join(", ")}'`,
       )
     }
 
-    const components = fieldsToGenerateConfigs.map((fieldConfig) => {
-      if (fieldConfig.fieldType === "text") {
-        return composeTextInput(fieldConfig, memberData)
+    const components = inputsToGenerateConfig.map((inputConfig) => {
+      if (inputConfig.type === "text") {
+        return composeTextInput(inputConfig, memberData)
       }
       throw new DoraException(
-        `Unsupported field type in PII modal: ${JSON.stringify(fieldConfig)}`,
+        `Unsupported input type in PII modal: ${JSON.stringify(inputConfig)}`,
       )
     })
 
@@ -188,10 +190,10 @@ export default {
 
     const inputParsing = extractAndValidateModalValues({
       interaction,
-      fieldConfigs: piiFieldConfigs,
-      fieldsToExtract: getStaticGuildConfigById(interaction.guild.id)
+      inputConfigs: modalInputsConfig,
+      inputsToExtract: getStaticGuildConfigById(interaction.guild.id)
         .optInMemberFields,
-      validationSchema: piiModalInputSchema,
+      validationSchema: inputSchema,
     })
 
     if (!inputParsing.success) {

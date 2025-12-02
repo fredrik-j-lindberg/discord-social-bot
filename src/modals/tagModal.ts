@@ -5,7 +5,7 @@ import { createTags } from "~/lib/database/tagService"
 import {
   composeSelectMenu,
   composeTextInput,
-  type ModalFieldConfig,
+  type ModalInputConfig,
   type SelectMenuOption,
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
@@ -19,29 +19,29 @@ const tagTypeOptions: SelectMenuOption[] = [
   },
 ] as const
 
-const modalFields = {
+const modalInputsMap = {
   tagType: {
-    fieldType: "select" as const,
-    fieldName: "tagType",
+    type: "select" as const,
+    id: "tagType",
     label: "Tag Type",
     isRequired: true,
     getOptions: () => tagTypeOptions,
   },
   tagName: {
-    fieldType: "text" as const,
-    fieldName: "tagName",
+    type: "text" as const,
+    id: "tagName",
     label: "Tag name",
     style: TextInputStyle.Short,
     isRequired: true,
   },
   tagDescription: {
-    fieldType: "text" as const,
-    fieldName: "tagDescription",
+    type: "text" as const,
+    id: "tagDescription",
     label: "Tag description",
     style: TextInputStyle.Paragraph,
     isRequired: false,
   },
-} as const satisfies Record<string, ModalFieldConfig>
+} as const satisfies Record<string, ModalInputConfig>
 
 export default {
   data: { name: "tagModal" },
@@ -50,13 +50,13 @@ export default {
       .setCustomId(this.data.name)
       .setTitle("Add a tag")
 
-    const tagTypeLabel = await composeSelectMenu(modalFields.tagType)
+    const tagTypeLabel = await composeSelectMenu(modalInputsMap.tagType)
     if (tagTypeLabel) modal.addLabelComponents(tagTypeLabel)
 
-    const tagNameLabel = composeTextInput(modalFields.tagName)
+    const tagNameLabel = composeTextInput(modalInputsMap.tagName)
     modal.addLabelComponents(tagNameLabel)
 
-    const tagDescriptionLabel = composeTextInput(modalFields.tagDescription)
+    const tagDescriptionLabel = composeTextInput(modalInputsMap.tagDescription)
     modal.addLabelComponents(tagDescriptionLabel)
 
     return modal
@@ -70,19 +70,19 @@ export default {
     )
 
     const tagType = interaction.fields.getStringSelectValues(
-      modalFields.tagType.fieldName,
+      modalInputsMap.tagType.id,
     )[0]
 
     if (!tagType) {
       throw new Error("Tag type is required")
     }
     const tagName = interaction.fields
-      .getTextInputValue(modalFields.tagName.fieldName)
+      .getTextInputValue(modalInputsMap.tagName.id)
       .trim()
       .toLowerCase()
     const tagDescription =
       interaction.fields
-        .getTextInputValue(modalFields.tagDescription.fieldName)
+        .getTextInputValue(modalInputsMap.tagDescription.id)
         .trim() || null
 
     await createTags({

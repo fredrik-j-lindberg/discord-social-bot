@@ -12,26 +12,26 @@ import {
   composeTextInput,
   extractAndValidateModalValues,
   generateModalSchema,
-  type ModalFieldConfig,
+  type ModalInputConfig,
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-const guildConfigInactivityFieldConfigsMap = {
+const modalInputsMap = {
   daysUntilInactive: {
-    fieldType: "text" as const,
-    fieldName: "daysUntilInactive",
+    type: "text" as const,
+    id: "daysUntilInactive",
     label: "Days Until Inactive",
     description: "Number of days of inactivity before marking a user inactive",
     style: TextInputStyle.Short,
     validation: z.coerce.number().int().positive(),
     placeholder: "90",
     isRequired: true,
-    getPrefilledValue: (config?: GuildConfig) =>
+    getPrefilledValue: (config) =>
       config?.inactivity?.daysUntilInactive.toString(),
   },
   daysAsInactiveBeforeKick: {
-    fieldType: "text" as const,
-    fieldName: "daysAsInactiveBeforeKick",
+    type: "text" as const,
+    id: "daysAsInactiveBeforeKick",
     label: "Days as Inactive Before Kick",
     description:
       "Days after being marked inactive before kicking the user from the server",
@@ -39,12 +39,12 @@ const guildConfigInactivityFieldConfigsMap = {
     validation: z.coerce.number().int().positive(),
     placeholder: "30",
     isRequired: true,
-    getPrefilledValue: (config?: GuildConfig) =>
+    getPrefilledValue: (config) =>
       config?.inactivity?.daysAsInactiveBeforeKick.toString(),
   },
   inviteLink: {
-    fieldType: "text" as const,
-    fieldName: "inviteLink",
+    type: "text" as const,
+    id: "inviteLink",
     label: "Invite Link",
     description: "Invite link to include in kick notice for easy rejoining",
     style: TextInputStyle.Short,
@@ -56,11 +56,11 @@ const guildConfigInactivityFieldConfigsMap = {
       .pipe(z.url().optional()),
     placeholder: "https://discord.gg/...",
     isRequired: false,
-    getPrefilledValue: (config?: GuildConfig) => config?.inactivity?.inviteLink,
+    getPrefilledValue: (config) => config?.inactivity?.inviteLink,
   },
   inactiveRoleId: {
-    fieldType: "text" as const,
-    fieldName: "inactiveRoleId",
+    type: "text" as const,
+    id: "inactiveRoleId",
     label: "Inactive Role ID",
     description: "Role ID to assign to inactive users",
     style: TextInputStyle.Short,
@@ -71,16 +71,13 @@ const guildConfigInactivityFieldConfigsMap = {
       .transform((val) => (val && val.length > 0 ? val : undefined)),
     placeholder: "1234567890123456789",
     isRequired: false,
-    getPrefilledValue: (config?: GuildConfig) =>
-      config?.inactivity?.inactiveRoleId,
+    getPrefilledValue: (config) => config?.inactivity?.inactiveRoleId,
   },
-} satisfies Record<string, ModalFieldConfig>
+} satisfies Record<string, ModalInputConfig<string, GuildConfig | undefined>>
 
-const guildConfigInactivityModalSchema = generateModalSchema(
-  guildConfigInactivityFieldConfigsMap,
-)
+const guildConfigInactivityModalSchema = generateModalSchema(modalInputsMap)
 
-const fieldConfigs = Object.values(guildConfigInactivityFieldConfigsMap)
+const inputConfigs = Object.values(modalInputsMap)
 
 export default {
   data: {
@@ -92,25 +89,25 @@ export default {
       .setTitle("Update Inactivity Configuration")
 
     const daysUntilInactiveInput = composeTextInput(
-      guildConfigInactivityFieldConfigsMap.daysUntilInactive,
+      modalInputsMap.daysUntilInactive,
       currentConfig,
     )
     modal.addLabelComponents(daysUntilInactiveInput)
 
     const daysAsInactiveBeforeKickInput = composeTextInput(
-      guildConfigInactivityFieldConfigsMap.daysAsInactiveBeforeKick,
+      modalInputsMap.daysAsInactiveBeforeKick,
       currentConfig,
     )
     modal.addLabelComponents(daysAsInactiveBeforeKickInput)
 
     const inviteLinkInput = composeTextInput(
-      guildConfigInactivityFieldConfigsMap.inviteLink,
+      modalInputsMap.inviteLink,
       currentConfig,
     )
     modal.addLabelComponents(inviteLinkInput)
 
     const inactiveRoleIdInput = composeTextInput(
-      guildConfigInactivityFieldConfigsMap.inactiveRoleId,
+      modalInputsMap.inactiveRoleId,
       currentConfig,
     )
     modal.addLabelComponents(inactiveRoleIdInput)
@@ -130,8 +127,8 @@ export default {
     // Extract and validate form data
     const inputParsing = extractAndValidateModalValues({
       interaction,
-      fieldConfigs,
-      fieldsToExtract: fieldConfigs.map((f) => f.fieldName),
+      inputConfigs,
+      inputsToExtract: inputConfigs.map((f) => f.id),
       validationSchema: guildConfigInactivityModalSchema,
     })
 

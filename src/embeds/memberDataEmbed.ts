@@ -1,5 +1,6 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 
+import type { DoraMemberFields } from "~/configs/memberDataConfig"
 import type { MemberData } from "~/lib/database/memberDataService"
 import type { EmojiCount } from "~/lib/database/memberEmojisService"
 import {
@@ -9,10 +10,7 @@ import {
   createRoleMention,
 } from "~/lib/discord/message"
 
-import {
-  type DoraMemberFields,
-  getStaticGuildConfigById,
-} from "../../guildConfigs"
+import { getStaticGuildConfigById } from "../../guildConfigs"
 
 const getFieldsRelevantForGuilds = ({
   guildId,
@@ -154,7 +152,7 @@ const getFieldsRelevantForGuilds = ({
   const guildConfig = getStaticGuildConfigById(guildId)
   const relevantFields = Object.entries(optInEmbedFields)
     .map(([key, value]) => {
-      if (!guildConfig.optInMemberFields.includes(key as DoraMemberFields)) {
+      if (!guildConfig.optInMemberFields.some((field) => field === key)) {
         return null
       }
       return value

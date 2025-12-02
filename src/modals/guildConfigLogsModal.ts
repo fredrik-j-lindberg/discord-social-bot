@@ -13,16 +13,16 @@ import {
   composeTextInput,
   extractAndValidateModalValues,
   generateModalSchema,
-  type ModalFieldConfig,
+  type ModalInputConfig,
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 const LOG_LEVELS = ["info", "warn", "error", "fatal"] as const
 
-const guildConfigLogsFieldConfigsMap = {
+const modalInputsMap = {
   webhookUrl: {
-    fieldType: "text" as const,
-    fieldName: "webhookUrl",
+    type: "text" as const,
+    id: "webhookUrl",
     label: "Discord Webhook URL",
     description:
       "Webhook URL to send the logs to (Channel settings -> Integrations -> Webhooks)",
@@ -30,15 +30,15 @@ const guildConfigLogsFieldConfigsMap = {
     validation: z.url(),
     placeholder: "https://discord.com/api/webhooks/...",
     isRequired: true,
-    getPrefilledValue: (config?: GuildConfig) => config?.logs?.webhookUrl,
+    getPrefilledValue: (config) => config?.logs?.webhookUrl,
   },
   levelThreshold: {
-    fieldType: "select" as const,
-    fieldName: "levelThreshold",
+    type: "select" as const,
+    id: "levelThreshold",
     label: "Level Threshold",
     validation: z.enum(LOG_LEVELS),
     isRequired: true,
-    getOptions: (config?: GuildConfig) =>
+    getOptions: (config) =>
       LOG_LEVELS.map((level) => ({
         value: level,
         name: level.toUpperCase(),
@@ -47,13 +47,11 @@ const guildConfigLogsFieldConfigsMap = {
           : level === "info",
       })),
   },
-} satisfies Record<string, ModalFieldConfig>
+} satisfies Record<string, ModalInputConfig<string, GuildConfig | undefined>>
 
-const guildConfigLogsModalSchema = generateModalSchema(
-  guildConfigLogsFieldConfigsMap,
-)
+const guildConfigLogsModalSchema = generateModalSchema(modalInputsMap)
 
-const fieldConfigs = Object.values(guildConfigLogsFieldConfigsMap)
+const inputConfigs = Object.values(modalInputsMap)
 
 export default {
   data: {
@@ -65,13 +63,13 @@ export default {
       .setTitle("Update Guild Log Configuration")
 
     const webhookUrlLabel = composeTextInput(
-      guildConfigLogsFieldConfigsMap.webhookUrl,
+      modalInputsMap.webhookUrl,
       currentConfig,
     )
     modal.addLabelComponents(webhookUrlLabel)
 
     const levelThresholdLabel = await composeSelectMenu(
-      guildConfigLogsFieldConfigsMap.levelThreshold,
+      modalInputsMap.levelThreshold,
       currentConfig,
     )
     if (levelThresholdLabel) {
@@ -93,8 +91,8 @@ export default {
     // Extract and validate form data
     const inputParsing = extractAndValidateModalValues({
       interaction,
-      fieldConfigs,
-      fieldsToExtract: fieldConfigs.map((f) => f.fieldName),
+      inputConfigs,
+      inputsToExtract: inputConfigs.map((input) => input.id),
       validationSchema: guildConfigLogsModalSchema,
     })
 
