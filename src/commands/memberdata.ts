@@ -1,5 +1,9 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
+import {
+  allMemberFieldsConfig,
+  type DoraMemberFields,
+} from "~/configs/memberDataConfig"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
   getMembersWithField,
@@ -11,11 +15,7 @@ import { createDiscordTimestamp } from "~/lib/discord/message"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
-import {
-  type DoraMemberFields,
-  getStaticGuildConfigById,
-  SUPPORTED_MEMBER_FIELDS,
-} from "../../guildConfigs"
+import { getStaticGuildConfigById } from "../../guildConfigs"
 
 const memberDataOptionName = "memberdata"
 const roleOptionName = "role"
@@ -67,7 +67,9 @@ export default {
       )
     }
 
-    const validFieldChoices = Object.values(SUPPORTED_MEMBER_FIELDS)
+    const validFieldChoices = Object.values(allMemberFieldsConfig).map(
+      (config) => config.name,
+    )
     if (!isOneOf(field, validFieldChoices)) {
       throw new DoraUserException(
         `Invalid field '${field}' provided. Valid fields are: ${validFieldChoices.join(

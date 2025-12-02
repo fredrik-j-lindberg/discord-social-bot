@@ -1,6 +1,7 @@
 import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
+import { allMemberFieldsConfig } from "~/configs/memberDataConfig"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import {
   type MemberData,
@@ -16,19 +17,16 @@ import {
 } from "~/lib/helpers/modals"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
-import {
-  getStaticGuildConfigById,
-  SUPPORTED_MEMBER_FIELDS,
-} from "../../guildConfigs"
+import { getStaticGuildConfigById } from "../../guildConfigs"
 
 type PiiModalFieldConfig = Omit<ModalFieldConfig, "getPrefilledValue"> & {
   getPrefilledValue: (memberData?: MemberData) => string | null | undefined
 }
 
 const piiFieldConfigsMap = {
-  [SUPPORTED_MEMBER_FIELDS.firstName]: {
+  [allMemberFieldsConfig.firstName.name]: {
     fieldType: "text",
-    fieldName: SUPPORTED_MEMBER_FIELDS.firstName,
+    fieldName: allMemberFieldsConfig.firstName.name,
     label: "First name",
     getPrefilledValue: (memberData) => memberData?.firstName || "",
     style: TextInputStyle.Short,
@@ -40,9 +38,9 @@ const piiFieldConfigsMap = {
     placeholder: "John",
     isRequired: false,
   },
-  [SUPPORTED_MEMBER_FIELDS.birthday]: {
+  [allMemberFieldsConfig.birthday.name]: {
     fieldType: "text",
-    fieldName: SUPPORTED_MEMBER_FIELDS.birthday,
+    fieldName: allMemberFieldsConfig.birthday.name,
     label: "Birthday (DD/MM/YYYY)",
     description:
       "Feel free to set a random year if you prefer not to share your age",
@@ -58,9 +56,9 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  [SUPPORTED_MEMBER_FIELDS.switchFriendCode]: {
+  [allMemberFieldsConfig.switchFriendCode.name]: {
     fieldType: "text",
-    fieldName: SUPPORTED_MEMBER_FIELDS.switchFriendCode,
+    fieldName: allMemberFieldsConfig.switchFriendCode.name,
     label: "Nintendo Switch friend code",
     getPrefilledValue: (memberData) => memberData?.switchFriendCode || "",
     style: TextInputStyle.Short,
@@ -72,9 +70,9 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  [SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode]: {
+  [allMemberFieldsConfig.pokemonTcgpFriendCode.name]: {
     fieldType: "text",
-    fieldName: SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode,
+    fieldName: allMemberFieldsConfig.pokemonTcgpFriendCode.name,
     label: "Pokémon TCGP friend code",
     getPrefilledValue: (memberData) => memberData?.pokemonTcgpFriendCode || "",
     style: TextInputStyle.Short,
@@ -93,9 +91,9 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  [SUPPORTED_MEMBER_FIELDS.phoneNumber]: {
+  [allMemberFieldsConfig.phoneNumber.name]: {
     fieldType: "text",
-    fieldName: SUPPORTED_MEMBER_FIELDS.phoneNumber,
+    fieldName: allMemberFieldsConfig.phoneNumber.name,
     label: "Phone number",
     getPrefilledValue: (memberData) => memberData?.phoneNumber,
     placeholder: "+46712345673",
@@ -104,9 +102,9 @@ const piiFieldConfigsMap = {
     maxLength: 15,
     isRequired: false,
   },
-  [SUPPORTED_MEMBER_FIELDS.email]: {
+  [allMemberFieldsConfig.email.name]: {
     fieldType: "text",
-    fieldName: SUPPORTED_MEMBER_FIELDS.email,
+    fieldName: allMemberFieldsConfig.email.name,
     label: "Email",
     getPrefilledValue: (memberData) => memberData?.email,
     style: TextInputStyle.Short,
@@ -122,9 +120,9 @@ const piiFieldConfigsMap = {
       .nullable(),
     isRequired: false,
   },
-  [SUPPORTED_MEMBER_FIELDS.dietaryPreferences]: {
+  [allMemberFieldsConfig.dietaryPreferences.name]: {
     fieldType: "text",
-    fieldName: SUPPORTED_MEMBER_FIELDS.dietaryPreferences,
+    fieldName: allMemberFieldsConfig.dietaryPreferences.name,
     label: "Dietary preferences",
     getPrefilledValue: (memberData) => memberData?.dietaryPreferences,
     style: TextInputStyle.Short,

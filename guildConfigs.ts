@@ -1,32 +1,9 @@
+import {
+  allMemberFieldsConfig,
+  type DoraMemberFields,
+} from "~/configs/memberDataConfig"
 import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
-
-export const SUPPORTED_MEMBER_FIELDS = {
-  // Discord native values, recommended for all guilds
-  joinedServer: "joinedServer",
-  accountCreation: "accountCreation",
-
-  // Member activity stats
-  messageCount: "messageCount",
-  latestMessageAt: "latestMessageAt",
-  reactionCount: "reactionCount",
-  latestReactionAt: "latestReactionAt",
-  favoriteEmojis: "favoriteEmojis",
-
-  // These require user input via the /pii modal. The modal support a max of 5 fields, so each guild should not have more than that
-  birthday: "birthday",
-  firstName: "firstName",
-  phoneNumber: "phoneNumber",
-  email: "email",
-  dietaryPreferences: "dietaryPreferences",
-  switchFriendCode: "switchFriendCode",
-  pokemonTcgpFriendCode: "pokemonTcgpFriendCode",
-
-  // Values owned by Discord but synced to DB
-  roles: "roles",
-} as const
-export type DoraMemberFields =
-  (typeof SUPPORTED_MEMBER_FIELDS)[keyof typeof SUPPORTED_MEMBER_FIELDS]
 
 export interface GuildConfig {
   guildId: string
@@ -50,19 +27,19 @@ const devGuildConfigs: GuildConfigs = {
   "1211309484811485264": {
     guildId: "1211309484811485264",
     optInMemberFields: [
-      SUPPORTED_MEMBER_FIELDS.birthday,
-      SUPPORTED_MEMBER_FIELDS.firstName,
-      SUPPORTED_MEMBER_FIELDS.phoneNumber,
-      SUPPORTED_MEMBER_FIELDS.dietaryPreferences,
-      SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode,
-      SUPPORTED_MEMBER_FIELDS.joinedServer,
-      SUPPORTED_MEMBER_FIELDS.accountCreation,
-      SUPPORTED_MEMBER_FIELDS.messageCount,
-      SUPPORTED_MEMBER_FIELDS.latestMessageAt,
-      SUPPORTED_MEMBER_FIELDS.reactionCount,
-      SUPPORTED_MEMBER_FIELDS.latestReactionAt,
-      SUPPORTED_MEMBER_FIELDS.roles,
-      SUPPORTED_MEMBER_FIELDS.favoriteEmojis,
+      allMemberFieldsConfig.birthday.name,
+      allMemberFieldsConfig.firstName.name,
+      allMemberFieldsConfig.phoneNumber.name,
+      allMemberFieldsConfig.dietaryPreferences.name,
+      allMemberFieldsConfig.pokemonTcgpFriendCode.name,
+      allMemberFieldsConfig.joinedServer.name,
+      allMemberFieldsConfig.accountCreation.name,
+      allMemberFieldsConfig.messageCount.name,
+      allMemberFieldsConfig.latestMessageAt.name,
+      allMemberFieldsConfig.reactionCount.name,
+      allMemberFieldsConfig.latestReactionAt.name,
+      allMemberFieldsConfig.roles.name,
+      allMemberFieldsConfig.favoriteEmojis.name,
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
@@ -76,13 +53,13 @@ const prodGuildConfigs: GuildConfigs = {
   "1193809867232772126": {
     guildId: "1193809867232772126",
     optInMemberFields: [
-      SUPPORTED_MEMBER_FIELDS.birthday,
-      SUPPORTED_MEMBER_FIELDS.phoneNumber,
-      SUPPORTED_MEMBER_FIELDS.email,
-      SUPPORTED_MEMBER_FIELDS.dietaryPreferences,
-      SUPPORTED_MEMBER_FIELDS.joinedServer,
-      SUPPORTED_MEMBER_FIELDS.accountCreation,
-      SUPPORTED_MEMBER_FIELDS.favoriteEmojis,
+      allMemberFieldsConfig.birthday.name,
+      allMemberFieldsConfig.phoneNumber.name,
+      allMemberFieldsConfig.email.name,
+      allMemberFieldsConfig.dietaryPreferences.name,
+      allMemberFieldsConfig.joinedServer.name,
+      allMemberFieldsConfig.accountCreation.name,
+      allMemberFieldsConfig.favoriteEmojis.name,
     ],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
@@ -93,15 +70,15 @@ const prodGuildConfigs: GuildConfigs = {
   "106099890320330752": {
     guildId: "106099890320330752",
     optInMemberFields: [
-      SUPPORTED_MEMBER_FIELDS.birthday,
-      SUPPORTED_MEMBER_FIELDS.firstName,
-      SUPPORTED_MEMBER_FIELDS.switchFriendCode,
-      SUPPORTED_MEMBER_FIELDS.pokemonTcgpFriendCode,
-      SUPPORTED_MEMBER_FIELDS.joinedServer,
-      SUPPORTED_MEMBER_FIELDS.accountCreation,
-      SUPPORTED_MEMBER_FIELDS.messageCount,
-      SUPPORTED_MEMBER_FIELDS.reactionCount,
-      SUPPORTED_MEMBER_FIELDS.favoriteEmojis,
+      allMemberFieldsConfig.birthday.name,
+      allMemberFieldsConfig.firstName.name,
+      allMemberFieldsConfig.switchFriendCode.name,
+      allMemberFieldsConfig.pokemonTcgpFriendCode.name,
+      allMemberFieldsConfig.joinedServer.name,
+      allMemberFieldsConfig.accountCreation.name,
+      allMemberFieldsConfig.messageCount.name,
+      allMemberFieldsConfig.reactionCount.name,
+      allMemberFieldsConfig.favoriteEmojis.name,
     ],
     birthdays: {
       channelId: "106099890320330752", // #general
