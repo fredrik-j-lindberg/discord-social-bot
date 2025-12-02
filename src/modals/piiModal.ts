@@ -176,19 +176,13 @@ export default {
         ? interaction.member.displayName
         : null
 
-    const inputParsing = extractAndValidateModalValues({
+    const validatedInput = extractAndValidateModalValues({
       interaction,
       inputConfigs: modalInputsConfig,
       inputsToExtract: getStaticGuildConfigById(interaction.guild.id)
         .optInMemberFields,
       validationSchema: inputSchema,
     })
-
-    if (!inputParsing.success) {
-      const errorMessage = z.prettifyError(inputParsing.error)
-      return errorMessage
-    }
-    const validatedInput = inputParsing.data
 
     await setMemberData({
       memberData: {

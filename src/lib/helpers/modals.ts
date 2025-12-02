@@ -10,6 +10,7 @@ import {
 import z, { ZodType } from "zod/v4"
 
 import { DoraException } from "../exceptions/DoraException"
+import { DoraUserException } from "../exceptions/DoraUserException"
 import { logger } from "../logger"
 
 interface ModalInputBaseConfig<TId extends string = string> {
@@ -56,6 +57,8 @@ export interface ModalSelectInputConfig<
     /** The metadata relevant to prefill the data. For example for the tag modal this might be the guild id */
     modalMetadata: TModalMetadata,
   ) => Promise<SelectMenuOption[]> | SelectMenuOption[]
+  /** Whether the user should be able to select multiple options. Defaults to false */
+  multiSelect?: boolean
   /** Not applicable for select fields */
   style?: never
   maxLength?: never
@@ -66,8 +69,6 @@ export interface ModalFileUploadInputConfig<TId extends string = string>
   type: "fileUpload"
   /** Maximum number of files that can be uploaded (Discord limits this to 10) */
   maxValues?: number
-  /** Array of accepted MIME types for file validation (e.g., ['image/jpeg', 'video/mp4']) */
-  acceptedMimeTypes?: string[]
   /** Not applicable for file upload fields */
   style?: never
   maxLength?: never
@@ -123,30 +124,68 @@ export const extractAndValidateModalValues = <
 }: {
   interaction: ModalSubmitInteractionWithGuild
   inputConfigs: ModalInputConfig[]
-  inputsToExtract: string[]
+  /** Include if you want to limit the fields that we extract and validate */
+  inputsToExtract?: string[]
   validationSchema: TValidationSchema
 }) => {
   // It is important to filter these out before extracting the values as if the field is not
   // enabled for the guild, discord.js will throw an error when trying to get the value
-  const inputsToExtractConfigs = inputConfigs.filter((inputConfig) =>
-    inputsToExtract.some((inputToExtract) => inputConfig.id === inputToExtract),
-  )
+  const inputsToExtractConfigs = inputsToExtract
+    ? inputConfigs.filter((inputConfig) =>
+        inputsToExtract.some(
+          (inputToExtract) => inputConfig.id === inputToExtract,
+        ),
+      )
+    : inputConfigs
 
-  const valuesToValidate: { [key in string]?: string | null } = {}
+  const valuesToValidate: { [key in string]?: unknown } = {}
   for (const inputConfig of inputsToExtractConfigs) {
-    if (inputConfig.type === "select") {
-      const values = interaction.fields.getStringSelectValues(inputConfig.id)
-      // TODO: support multiple values
-      // We take the first value since single-select menus only have one value
-      valuesToValidate[inputConfig.id] = values[0] ?? null
-    } else {
-      // Default to text input
-      valuesToValidate[inputConfig.id] =
-        interaction.fields.getTextInputValue(inputConfig.id) || null
+    switch (inputConfig.type) {
+      case "select": {
+        const values = interaction.fields.getStringSelectValues(inputConfig.id)
+        if (inputConfig.multiSelect) {
+          valuesToValidate[inputConfig.id] = [...values]
+        } else {
+          valuesToValidate[inputConfig.id] = values[0] || null
+        }
+        break
+      }
+      case "text": {
+        valuesToValidate[inputConfig.id] =
+          interaction.fields.getTextInputValue(inputConfig.id) || null
+        break
+      }
+      case "fileUpload": {
+        const uploadedFilesCollection = interaction.fields.getUploadedFiles(
+          inputConfig.id,
+        )
+
+        if (!uploadedFilesCollection || uploadedFilesCollection.size === 0) {
+          valuesToValidate[inputConfig.id] = null
+        } else {
+          const uploadedFiles = [...uploadedFilesCollection.values()]
+          valuesToValidate[inputConfig.id] = uploadedFiles
+        }
+        break
+      }
+      default: {
+        // If you have an error here, it likely means that the switch case is missing one case
+        const exhaustiveCheck: never = inputConfig
+        throw new Error(`Extraction unsupported for type`, exhaustiveCheck)
+      }
     }
   }
 
-  return validationSchema.safeParse(valuesToValidate)
+  const parsing = validationSchema.safeParse(valuesToValidate)
+
+  if (!parsing.success) {
+    const errorMessage = z.prettifyError(parsing.error)
+    throw new DoraUserException(errorMessage, {
+      severity: "Debug",
+      metadata: { userId: interaction.user.id },
+    })
+  }
+  return parsing.data
 }
 
 const createFieldLabelBuilder = (inputConfig: ModalInputConfig) => {

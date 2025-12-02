@@ -1,5 +1,5 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
-import type { Attachment } from "discord.js"
+import { z } from "zod"
 
 import { env } from "~/env"
 
@@ -14,6 +14,16 @@ const r2Client = new S3Client({
 })
 const publicR2DevUrl = "https://pub-c6e6274e80fa4883b490d132062cb48c.r2.dev"
 
+export const fileSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  url: z.url(),
+  contentType: z.string().nullable(),
+  size: z.number().int().positive(),
+})
+
+export type DoraFile = z.infer<typeof fileSchema>
+
 export interface UploadResult {
   key: string
   url: string
@@ -25,15 +35,15 @@ export interface UploadResult {
 /**
  * Upload a Discord attachment to Cloudflare R2
  */
-export async function uploadAttachmentToR2(
+export async function uploadFileToR2(
   /** Discord attachment object */
-  attachment: Attachment,
+  attachment: DoraFile,
   options?: {
     prefix?: string
     customKey?: string
   },
 ): Promise<UploadResult> {
-  // Fetch the file from Discord CDN
+  // Fetch the file from e.g. Discord CDN
   const response = await fetch(attachment.url)
   if (!response.ok) {
     throw new Error(
@@ -80,21 +90,19 @@ export async function uploadAttachmentToR2(
 }
 
 /**
- * Upload multiple Discord attachments to Cloudflare R2
+ * Upload multiple Dora files to Cloudflare R2
  */
-export async function uploadMultipleAttachmentsToR2(
-  /** Array or Collection of Discord attachments */
-  attachments: Attachment[] | Map<string, Attachment>,
+export async function uploadMultipleFilesToR2(
+  /** Array or Collection of Dora files */
+  files: DoraFile[] | Map<string, DoraFile>,
   options?: {
     prefix?: string
   },
 ): Promise<UploadResult[]> {
-  const attachmentArray = Array.isArray(attachments)
-    ? attachments
-    : Array.from(attachments.values())
+  const fileArray = Array.isArray(files) ? files : Array.from(files.values())
 
-  const uploadPromises = attachmentArray.map((attachment) =>
-    uploadAttachmentToR2(attachment, options),
+  const uploadPromises = fileArray.map((attachment) =>
+    uploadFileToR2(attachment, options),
   )
 
   return Promise.all(uploadPromises)

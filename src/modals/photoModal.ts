@@ -1,4 +1,5 @@
-import { ModalBuilder, ModalSubmitInteraction } from "discord.js"
+import { ModalBuilder } from "discord.js"
+import { z } from "zod"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import { getMemberData } from "~/lib/database/memberDataService"
@@ -8,9 +9,13 @@ import {
   createMediaGalleryContainer,
   createUserMention,
 } from "~/lib/discord/message"
-import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import { composeModalInputs, type ModalInputConfig } from "~/lib/helpers/modals"
-import { uploadMultipleAttachmentsToR2 } from "~/lib/r2/uploadService"
+import {
+  composeModalInputs,
+  extractAndValidateModalValues,
+  generateModalSchema,
+  type ModalInputConfig,
+} from "~/lib/helpers/modals"
+import { fileSchema, uploadMultipleFilesToR2 } from "~/lib/r2/uploadService"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 const ACCEPTED_MIME_TYPES = [
@@ -22,7 +27,7 @@ const ACCEPTED_MIME_TYPES = [
   "video/mp4",
   "video/webm",
   "video/quicktime",
-]
+] as const
 
 const modalInputsMap = {
   tags: {
@@ -30,6 +35,7 @@ const modalInputsMap = {
     id: "tags",
     label: "Select tag(s)",
     isRequired: false,
+    validation: z.string().optional().nullable(),
     getOptions: async ({ guildId }) => {
       const tags = await getTags({ guildId, type: "media" })
       return tags.map((tag) => ({
@@ -46,7 +52,15 @@ const modalInputsMap = {
     label: "Upload file",
     isRequired: true,
     maxValues: 10,
-    acceptedMimeTypes: ACCEPTED_MIME_TYPES,
+    validation: z
+      .array(
+        z.object({
+          ...fileSchema.shape,
+          contentType: z.enum(ACCEPTED_MIME_TYPES),
+        }),
+      )
+      .min(1, "At least one file must be uploaded")
+      .max(10, "Maximum 10 files allowed"),
   },
 } as const satisfies Record<
   string,
@@ -54,16 +68,7 @@ const modalInputsMap = {
 >
 
 const modalInputsConfig = Object.values(modalInputsMap)
-
-const getModalTagValues = (interaction: ModalSubmitInteraction): string[] => {
-  try {
-    return interaction.fields.getStringSelectValues(
-      modalInputsMap.tags.id,
-    ) as string[] // TODO: Look into handling this without the coercion
-  } catch {
-    return [] // Since this is optional, return empty array if it fails
-  }
-}
+const photoModalSchema = generateModalSchema(modalInputsMap)
 
 export default {
   data: { name: "photoUploadModal" },
@@ -86,32 +91,18 @@ export default {
       "guild",
       "Modal submitted without associated guild",
     )
-    const uploadedFilesCollection = interaction.fields.getUploadedFiles(
-      modalInputsMap.fileUpload.id,
-    )
-    if (!uploadedFilesCollection || uploadedFilesCollection.size === 0) {
-      return "No files were uploaded. Please try again."
-    }
 
-    const uploadedFiles = Array.from(uploadedFilesCollection.values())
-    uploadedFiles.forEach(({ name, contentType }) => {
-      if (!contentType) {
-        throw new DoraUserException(
-          `Uploaded file '${name}' is missing content type`,
-        )
-      }
-      if (!modalInputsMap.fileUpload.acceptedMimeTypes.includes(contentType)) {
-        throw new DoraUserException(
-          `Uploaded file '${name}' has unsupported content type '${contentType}'. Valid content types are ${modalInputsMap.fileUpload.acceptedMimeTypes.join(", ")}`,
-        )
-      }
+    const validatedInput = extractAndValidateModalValues({
+      interaction,
+      inputConfigs: modalInputsConfig,
+      validationSchema: photoModalSchema,
     })
+    const uploadedFiles = validatedInput.fileUpload
+    const selectedTagIds = validatedInput.tags ? [validatedInput.tags] : []
 
-    const uploadResults = await uploadMultipleAttachmentsToR2(uploadedFiles, {
+    const uploadResults = await uploadMultipleFilesToR2(uploadedFiles, {
       prefix: interaction.guild.id,
     })
-
-    const selectedTagIds = getModalTagValues(interaction)
 
     const memberData = await getMemberData({
       userId: interaction.user.id,

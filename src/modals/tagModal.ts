@@ -1,9 +1,12 @@
 import { ModalBuilder, TextInputStyle } from "discord.js"
+import { z } from "zod"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import { createTags } from "~/lib/database/tagService"
 import {
   composeModalInputs,
+  extractAndValidateModalValues,
+  generateModalSchema,
   type ModalInputConfig,
   type SelectMenuOption,
 } from "~/lib/helpers/modals"
@@ -24,6 +27,7 @@ const modalInputsMap = {
     id: "tagType",
     label: "Tag Type",
     isRequired: true,
+    validation: z.string(),
     getOptions: () => tagTypeOptions,
   },
   tagName: {
@@ -32,6 +36,7 @@ const modalInputsMap = {
     label: "Tag name",
     style: TextInputStyle.Short,
     isRequired: true,
+    validation: z.string().trim().toLowerCase(),
   },
   tagDescription: {
     type: "text" as const,
@@ -39,10 +44,12 @@ const modalInputsMap = {
     label: "Tag description",
     style: TextInputStyle.Paragraph,
     isRequired: false,
+    validation: z.string().trim().nullable().optional(),
   },
 } as const satisfies Record<string, ModalInputConfig>
 
 const modalInputsConfig = Object.values(modalInputsMap)
+const tagModalSchema = generateModalSchema(modalInputsMap)
 
 export default {
   data: { name: "tagModal" },
@@ -64,32 +71,22 @@ export default {
       "Modal submitted without associated guild",
     )
 
-    const tagType = interaction.fields.getStringSelectValues(
-      modalInputsMap.tagType.id,
-    )[0]
-
-    if (!tagType) {
-      throw new Error("Tag type is required")
-    }
-    const tagName = interaction.fields
-      .getTextInputValue(modalInputsMap.tagName.id)
-      .trim()
-      .toLowerCase()
-    const tagDescription =
-      interaction.fields
-        .getTextInputValue(modalInputsMap.tagDescription.id)
-        .trim() || null
+    const validatedInput = extractAndValidateModalValues({
+      interaction,
+      inputConfigs: modalInputsConfig,
+      validationSchema: tagModalSchema,
+    })
 
     await createTags({
       tags: [
         {
           guildId: interaction.guild.id,
-          name: tagName,
-          type: tagType,
-          description: tagDescription,
+          name: validatedInput.tagName,
+          type: validatedInput.tagType,
+          description: validatedInput.tagDescription ?? null,
         },
       ],
     })
-    return `Successfully created \`${tagName}\` as a \`${tagType}\` tag`
+    return `Successfully created \`${validatedInput.tagName}\` as a \`${validatedInput.tagType}\` tag`
   },
 } satisfies ModalData

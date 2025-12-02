@@ -103,39 +103,22 @@ export default {
       "guild",
       "Modal submitted without associated guild",
     )
-
     const guildId = interaction.guild.id
 
-    // Extract and validate form data
-    const inputParsing = extractAndValidateModalValues({
+    const validatedInput = extractAndValidateModalValues({
       interaction,
       inputConfigs: modalInputsConfig,
       inputsToExtract: modalInputsConfig.map((f) => f.id),
       validationSchema: guildConfigInactivityModalSchema,
     })
 
-    if (!inputParsing.success) {
-      const errorMessage = z.prettifyError(inputParsing.error)
-      return errorMessage
-    }
-
-    const validatedInput = inputParsing.data
-
-    // Get current config to merge with
+    // Merge the existing config with the new inactivity config
     const currentConfig = await getGuildConfig(guildId)
-
-    // Prepare new config data
     const newConfigData: GuildConfigData = {
       ...currentConfig,
-      inactivity: {
-        daysUntilInactive: validatedInput.daysUntilInactive,
-        daysAsInactiveBeforeKick: validatedInput.daysAsInactiveBeforeKick,
-        inviteLink: validatedInput.inviteLink,
-        inactiveRoleId: validatedInput.inactiveRoleId,
-      },
+      inactivity: validatedInput,
     }
 
-    // Update the config
     await upsertGuildConfig(guildId, newConfigData)
 
     return "Successfully updated inactivity configuration!"
