@@ -1,9 +1,8 @@
-interface MemberDataFieldConfig {
-  validation?: unknown
+interface MemberFieldConfig {
   name: string
 }
 
-type MemberDataFieldsConfig = Record<string, MemberDataFieldConfig>
+type MemberFieldsConfig = Record<string, MemberFieldConfig>
 
 // TODO: Can we group these fields into different modals to avoid running into the 5 fields limitation?
 // Then the different modals could be triggered like we handle it for /config
@@ -13,7 +12,7 @@ type MemberDataFieldsConfig = Record<string, MemberDataFieldConfig>
  * Note that each guild can support a maximum of 5 of these since the modal used to collect them
  * is limited to 5 fields (discord limitation).
  */
-export const memberDataUserProvidedFieldsConfig = {
+export const memberProvidedFieldsConfig = {
   birthday: {
     name: "birthday",
   },
@@ -35,17 +34,17 @@ export const memberDataUserProvidedFieldsConfig = {
   pokemonTcgpFriendCode: {
     name: "pokemonTcgpFriendCode",
   },
-} as const satisfies MemberDataFieldsConfig
+} as const satisfies MemberFieldsConfig
 
 /** Fields where the Discord api is the source */
-export const memberDataDiscordFieldsConfig = {
+export const memberDiscordProvidedFieldsConfig = {
   joinedServer: {
     name: "joinedServer",
   },
   accountCreation: {
     name: "accountCreation",
   },
-} as const satisfies MemberDataFieldsConfig
+} as const satisfies MemberFieldsConfig
 
 /**
  * Fields related to member activity that are tracked by the bot
@@ -67,17 +66,21 @@ export const memberDataActivityFieldsConfig = {
   favoriteEmojis: {
     name: "favoriteEmojis",
   },
-} as const satisfies MemberDataFieldsConfig
+} as const satisfies MemberFieldsConfig
 
 export const allMemberFieldsConfig = {
-  ...memberDataUserProvidedFieldsConfig,
-  ...memberDataDiscordFieldsConfig,
+  ...memberProvidedFieldsConfig,
+  ...memberDiscordProvidedFieldsConfig,
   ...memberDataActivityFieldsConfig,
   // Values owned by Discord but synced to DB
   roles: {
     name: "roles",
   },
-} as const satisfies MemberDataFieldsConfig
+} as const satisfies MemberFieldsConfig
 
 export type DoraMemberFields =
   (typeof allMemberFieldsConfig)[keyof typeof allMemberFieldsConfig]["name"]
+
+/** Fiels the member has to provide themselves through e.g. /pii modal */
+export type DoraMemberProvidedFields =
+  (typeof memberProvidedFieldsConfig)[keyof typeof memberProvidedFieldsConfig]["name"]

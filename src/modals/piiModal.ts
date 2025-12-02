@@ -1,7 +1,7 @@
 import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
-import type { DoraMemberFields } from "~/configs/memberFieldsConfig"
+import type { DoraMemberProvidedFields } from "~/configs/memberFieldsConfig"
 import { allMemberFieldsConfig } from "~/configs/memberFieldsConfig"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import {
@@ -20,7 +20,7 @@ import { assertHasDefinedProperty } from "~/lib/validation"
 import { getStaticGuildConfigById } from "../../guildConfigs"
 
 type PiiModalInputConfig = ModalInputConfig<
-  DoraMemberFields,
+  DoraMemberProvidedFields,
   MemberData | undefined
 >
 
@@ -132,7 +132,7 @@ const modalInputsMap = {
     maxLength: 50,
     isRequired: false,
   },
-} as const satisfies Partial<Record<DoraMemberFields, PiiModalInputConfig>>
+} as const satisfies Record<DoraMemberProvidedFields, PiiModalInputConfig>
 
 const modalInputsConfig = Object.values(modalInputsMap)
 const inputSchema = generateModalSchema(modalInputsMap)
