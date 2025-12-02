@@ -3,7 +3,7 @@ interface MemberDataFieldConfig {
   name: string
 }
 
-type MemberDataFieldsConfigs = Record<string, MemberDataFieldConfig>
+type MemberDataFieldsConfig = Record<string, MemberDataFieldConfig>
 
 // TODO: Can we group these fields into different modals to avoid running into the 5 fields limitation?
 // Then the different modals could be triggered like we handle it for /config
@@ -35,7 +35,7 @@ export const memberDataUserProvidedFieldsConfig = {
   pokemonTcgpFriendCode: {
     name: "pokemonTcgpFriendCode",
   },
-} as const satisfies MemberDataFieldsConfigs
+} as const satisfies MemberDataFieldsConfig
 
 /** Fields where the Discord api is the source */
 export const memberDataDiscordFieldsConfig = {
@@ -45,7 +45,7 @@ export const memberDataDiscordFieldsConfig = {
   accountCreation: {
     name: "accountCreation",
   },
-} as const satisfies MemberDataFieldsConfigs
+} as const satisfies MemberDataFieldsConfig
 
 /**
  * Fields related to member activity that are tracked by the bot
@@ -67,7 +67,7 @@ export const memberDataActivityFieldsConfig = {
   favoriteEmojis: {
     name: "favoriteEmojis",
   },
-} as const satisfies MemberDataFieldsConfigs
+} as const satisfies MemberDataFieldsConfig
 
 export const allMemberFieldsConfig = {
   ...memberDataUserProvidedFieldsConfig,
@@ -77,7 +77,7 @@ export const allMemberFieldsConfig = {
   roles: {
     name: "roles",
   },
-} as const satisfies MemberDataFieldsConfigs
+} as const satisfies MemberDataFieldsConfig
 
 export type DoraMemberFields =
   (typeof allMemberFieldsConfig)[keyof typeof allMemberFieldsConfig]["name"]

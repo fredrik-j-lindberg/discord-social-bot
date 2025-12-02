@@ -1,6 +1,6 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 
-import type { DoraMemberFields } from "~/configs/memberDataConfig"
+import type { DoraMemberFields } from "~/configs/memberFieldsConfig"
 import type { MemberData } from "~/lib/database/memberDataService"
 import type { EmojiCount } from "~/lib/database/memberEmojisService"
 import {

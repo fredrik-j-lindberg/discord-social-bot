@@ -1,7 +1,7 @@
 import {
   allMemberFieldsConfig,
   type DoraMemberFields,
-} from "~/configs/memberDataConfig"
+} from "~/configs/memberFieldsConfig"
 import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
 

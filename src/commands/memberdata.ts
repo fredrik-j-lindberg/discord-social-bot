@@ -3,7 +3,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 import {
   allMemberFieldsConfig,
   type DoraMemberFields,
-} from "~/configs/memberDataConfig"
+} from "~/configs/memberFieldsConfig"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
   getMembersWithField,

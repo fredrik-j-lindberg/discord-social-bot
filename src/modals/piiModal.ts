@@ -1,8 +1,8 @@
 import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
-import type { DoraMemberFields } from "~/configs/memberDataConfig"
-import { allMemberFieldsConfig } from "~/configs/memberDataConfig"
+import type { DoraMemberFields } from "~/configs/memberFieldsConfig"
+import { allMemberFieldsConfig } from "~/configs/memberFieldsConfig"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import {
   type MemberData,
