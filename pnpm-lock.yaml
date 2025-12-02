@@ -13,7 +13,7 @@ importers:
         version: 3.917.0
       '@t3-oss/env-core':
         specifier: ^0.13.8
-        version: 0.13.8(typescript@5.9.2)(zod@4.1.11)
+        version: 0.13.8(typescript@5.9.2)(zod@4.1.13)
       discord.js:
         specifier: ^14.24.0
         version: 14.24.0
@@ -39,8 +39,8 @@ importers:
         specifier: ^13.1.1
         version: 13.1.1
       zod:
-        specifier: ^4.1.11
-        version: 4.1.11
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@eslint/js':
         specifier: ^9.36.0
@@ -2056,8 +2056,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.1.11:
-    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
+  zod@4.1.13:
+    resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
 
 snapshots:
 
@@ -3222,10 +3222,10 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
-  '@t3-oss/env-core@0.13.8(typescript@5.9.2)(zod@4.1.11)':
+  '@t3-oss/env-core@0.13.8(typescript@5.9.2)(zod@4.1.13)':
     optionalDependencies:
       typescript: 5.9.2
-      zod: 4.1.11
+      zod: 4.1.13
 
   '@types/chai@5.2.2':
     dependencies:
@@ -4217,4 +4217,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@4.1.11: {}
+  zod@4.1.13: {}
