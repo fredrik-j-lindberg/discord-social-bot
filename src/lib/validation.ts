@@ -2,12 +2,15 @@ import { type GuildBasedChannel, TextChannel } from "discord.js"
 
 import { DoraException, type Severity } from "./exceptions/DoraException"
 
+export const isDefined = <T>(value: T): value is NonNullable<T> =>
+  value !== undefined && value !== null
+
 export function assertIsDefined<T>(
   value: T,
   message: string,
   severity: Severity = DoraException.Severity.Error,
 ): asserts value is NonNullable<T> {
-  if (value === undefined || value === null) {
+  if (!isDefined(value)) {
     throw new DoraException(message, DoraException.Type.NotDefined, {
       severity,
     })

@@ -1,5 +1,6 @@
 import { type Interaction, SlashCommandBuilder } from "discord.js"
 
+import { getActiveMemberFields } from "~/configs/memberFieldsConfig"
 import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
 import {
   type Command,
@@ -58,9 +59,9 @@ export default {
       "Command autocomplete issued without associated guild",
     )
     const guildConfig = getStaticGuildConfigById(interaction.guild.id)
-    return guildConfig.optInMemberFields.map((field) => ({
-      name: field,
-      value: field,
+    return Object.values(getActiveMemberFields(guildConfig)).map((field) => ({
+      name: field.name,
+      value: field.name,
     }))
   },
   execute: async (interaction) => {
@@ -127,9 +128,9 @@ export const handleWhoIs = async ({
     return { embeds: [embed] }
   }
 
-  const validChoices = getStaticGuildConfigById(
-    interaction.guild.id,
-  ).optInMemberFields
+  const validChoices = getActiveMemberFields(
+    getStaticGuildConfigById(interaction.guild.id),
+  ).map((validField) => validField.name)
 
   if (!isOneOf(specificMemberData, validChoices)) {
     throw new DoraUserException(

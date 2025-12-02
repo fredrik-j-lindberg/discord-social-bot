@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
 import {
-  allMemberFieldsConfig,
-  type DoraMemberFields,
+  getActiveMemberFields,
+  type MemberFields,
 } from "~/configs/memberFieldsConfig"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
@@ -48,9 +48,9 @@ export default {
       "Command autocomplete issued without associated guild",
     )
     const guildConfig = getStaticGuildConfigById(interaction.guild.id)
-    return guildConfig.optInMemberFields.map((field) => ({
-      name: field,
-      value: field,
+    return Object.values(getActiveMemberFields(guildConfig)).map((field) => ({
+      name: field.name,
+      value: field.name,
     }))
   },
   execute: async (interaction) => {
@@ -67,12 +67,13 @@ export default {
       )
     }
 
-    const validFieldChoices = Object.values(allMemberFieldsConfig).map(
-      (config) => config.name,
-    )
-    if (!isOneOf(field, validFieldChoices)) {
+    const validChoices = getActiveMemberFields(
+      getStaticGuildConfigById(interaction.guild.id),
+    ).map((validField) => validField.name)
+
+    if (!isOneOf(field, validChoices)) {
       throw new DoraUserException(
-        `Invalid field '${field}' provided. Valid fields are: ${validFieldChoices.join(
+        `Invalid field '${field}' provided. Valid fields are: ${validChoices.join(
           ", ",
         )}`,
       )
@@ -94,7 +95,7 @@ const handleFieldChoice = async ({
   field,
 }: {
   interaction: CommandInteractionWithGuild
-  field: DoraMemberFields
+  field: MemberFields
   role?: { id: string } | null
 }) => {
   const role = interaction.options.getRole(roleOptionName)

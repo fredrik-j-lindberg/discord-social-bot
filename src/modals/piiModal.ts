@@ -1,8 +1,11 @@
 import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
-import type { DoraMemberProvidedFields } from "~/configs/memberFieldsConfig"
-import { allMemberFieldsConfig } from "~/configs/memberFieldsConfig"
+import type {
+  MemberFields,
+  MemberOptInFields,
+} from "~/configs/memberFieldsConfig"
+import { memberFieldsConfig } from "~/configs/memberFieldsConfig"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import {
   type MemberData,
@@ -20,14 +23,14 @@ import { assertHasDefinedProperty } from "~/lib/validation"
 import { getStaticGuildConfigById } from "../../guildConfigs"
 
 type PiiModalInputConfig = ModalInputConfig<
-  DoraMemberProvidedFields,
+  MemberFields,
   MemberData | undefined
 >
 
 const modalInputsMap = {
-  [allMemberFieldsConfig.firstName.name]: {
+  [memberFieldsConfig.firstName.name]: {
     type: "text",
-    id: allMemberFieldsConfig.firstName.name,
+    id: memberFieldsConfig.firstName.name,
     label: "First name",
     getPrefilledValue: (memberData) => memberData?.firstName || "",
     style: TextInputStyle.Short,
@@ -39,9 +42,9 @@ const modalInputsMap = {
     placeholder: "John",
     isRequired: false,
   },
-  [allMemberFieldsConfig.birthday.name]: {
+  [memberFieldsConfig.birthday.name]: {
     type: "text",
-    id: allMemberFieldsConfig.birthday.name,
+    id: memberFieldsConfig.birthday.name,
     label: "Birthday (DD/MM/YYYY)",
     description:
       "Feel free to set a random year if you prefer not to share your age",
@@ -57,9 +60,9 @@ const modalInputsMap = {
       .nullable(),
     isRequired: false,
   },
-  [allMemberFieldsConfig.switchFriendCode.name]: {
+  [memberFieldsConfig.switchFriendCode.name]: {
     type: "text",
-    id: allMemberFieldsConfig.switchFriendCode.name,
+    id: memberFieldsConfig.switchFriendCode.name,
     label: "Nintendo Switch friend code",
     getPrefilledValue: (memberData) => memberData?.switchFriendCode || "",
     style: TextInputStyle.Short,
@@ -71,9 +74,9 @@ const modalInputsMap = {
       .nullable(),
     isRequired: false,
   },
-  [allMemberFieldsConfig.pokemonTcgpFriendCode.name]: {
+  [memberFieldsConfig.pokemonTcgpFriendCode.name]: {
     type: "text",
-    id: allMemberFieldsConfig.pokemonTcgpFriendCode.name,
+    id: memberFieldsConfig.pokemonTcgpFriendCode.name,
     label: "Pokémon TCGP friend code",
     getPrefilledValue: (memberData) => memberData?.pokemonTcgpFriendCode || "",
     style: TextInputStyle.Short,
@@ -92,9 +95,9 @@ const modalInputsMap = {
       .nullable(),
     isRequired: false,
   },
-  [allMemberFieldsConfig.phoneNumber.name]: {
+  [memberFieldsConfig.phoneNumber.name]: {
     type: "text",
-    id: allMemberFieldsConfig.phoneNumber.name,
+    id: memberFieldsConfig.phoneNumber.name,
     label: "Phone number",
     getPrefilledValue: (memberData) => memberData?.phoneNumber,
     placeholder: "+46712345673",
@@ -103,9 +106,9 @@ const modalInputsMap = {
     maxLength: 15,
     isRequired: false,
   },
-  [allMemberFieldsConfig.email.name]: {
+  [memberFieldsConfig.email.name]: {
     type: "text",
-    id: allMemberFieldsConfig.email.name,
+    id: memberFieldsConfig.email.name,
     label: "Email",
     getPrefilledValue: (memberData) => memberData?.email,
     style: TextInputStyle.Short,
@@ -121,9 +124,9 @@ const modalInputsMap = {
       .nullable(),
     isRequired: false,
   },
-  [allMemberFieldsConfig.dietaryPreferences.name]: {
+  [memberFieldsConfig.dietaryPreferences.name]: {
     type: "text",
-    id: allMemberFieldsConfig.dietaryPreferences.name,
+    id: memberFieldsConfig.dietaryPreferences.name,
     label: "Dietary preferences",
     getPrefilledValue: (memberData) => memberData?.dietaryPreferences,
     style: TextInputStyle.Short,
@@ -132,7 +135,7 @@ const modalInputsMap = {
     maxLength: 50,
     isRequired: false,
   },
-} as const satisfies Record<DoraMemberProvidedFields, PiiModalInputConfig>
+} as const satisfies Record<MemberOptInFields, PiiModalInputConfig>
 
 const modalInputsConfig = Object.values(modalInputsMap)
 const inputSchema = generateModalSchema(modalInputsMap)

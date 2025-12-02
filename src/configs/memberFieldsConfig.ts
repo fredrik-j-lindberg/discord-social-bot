@@ -1,69 +1,107 @@
+import type { StaticGuildConfig } from "../../guildConfigs"
+
+export type MemberOptInFields =
+  | "birthday"
+  | "firstName"
+  | "phoneNumber"
+  | "email"
+  | "dietaryPreferences"
+  | "switchFriendCode"
+  | "pokemonTcgpFriendCode"
+
+type MemberDoraProvidedFields =
+  | "messageCount"
+  | "latestMessageAt"
+  | "reactionCount"
+  | "latestReactionAt"
+  | "favoriteEmojis"
+  | "nextBirthday"
+  | "age"
+  | "roles"
+  | "joinedServer"
+  | "accountCreation"
+
+export type MemberFields = MemberOptInFields | MemberDoraProvidedFields
+
 interface MemberFieldConfig {
-  name: string
+  name: MemberFields
+  optIn?: boolean
+  /** If this field depends on another being enabled, for this field to be valid */
+  dependsOn?: MemberFields
 }
 
-type MemberFieldsConfig = Record<string, MemberFieldConfig>
+type MemberFieldsConfig = Record<MemberFields, MemberFieldConfig>
 
-// TODO: Can we group these fields into different modals to avoid running into the 5 fields limitation?
-// Then the different modals could be triggered like we handle it for /config
-/**
- * Fields that the user has to provide themselves (via the /pii modal) and then stored in the DB.
- *
- * Note that each guild can support a maximum of 5 of these since the modal used to collect them
- * is limited to 5 fields (discord limitation).
- */
-export const memberProvidedFieldsConfig = {
+export const memberFieldsConfig = {
+  // TODO: Can we group these fields into different modals to avoid running into the 5 fields limitation?
+  // Then the different modals could be triggered like we handle it for /config
+  /**
+   * Fields that the user has to provide themselves (via the /pii modal) and then stored in the DB.
+   *
+   * Note that each guild can support a maximum of 5 of these since the modal used to collect them
+   * is limited to 5 fields (discord limitation).
+   */
   birthday: {
     name: "birthday",
+    optIn: true,
+    dependsOn: undefined,
   },
   firstName: {
     name: "firstName",
+    optIn: true,
+    dependsOn: undefined,
   },
   phoneNumber: {
     name: "phoneNumber",
+    optIn: true,
+    dependsOn: undefined,
   },
   email: {
     name: "email",
+    optIn: true,
+    dependsOn: undefined,
   },
   dietaryPreferences: {
     name: "dietaryPreferences",
+    optIn: true,
+    dependsOn: undefined,
   },
   switchFriendCode: {
     name: "switchFriendCode",
+    optIn: true,
+    dependsOn: undefined,
   },
   pokemonTcgpFriendCode: {
     name: "pokemonTcgpFriendCode",
+    optIn: true,
+    dependsOn: undefined,
   },
-} as const satisfies MemberFieldsConfig
+  // opt in fields above
 
-/** Fields where the Discord api is the source */
-export const memberDiscordProvidedFieldsConfig = {
-  joinedServer: {
-    name: "joinedServer",
-  },
-  accountCreation: {
-    name: "accountCreation",
-  },
-} as const satisfies MemberFieldsConfig
-
-/**
- * Fields that are collected by and fetched via Dora
- */
-export const doraProvidedValues = {
   messageCount: {
     name: "messageCount",
+    optIn: false,
+    dependsOn: undefined,
   },
   latestMessageAt: {
     name: "latestMessageAt",
+    optIn: false,
+    dependsOn: undefined,
   },
   reactionCount: {
     name: "reactionCount",
+    optIn: false,
+    dependsOn: undefined,
   },
   latestReactionAt: {
     name: "latestReactionAt",
+    optIn: false,
+    dependsOn: undefined,
   },
   favoriteEmojis: {
     name: "favoriteEmojis",
+    optIn: false,
+    dependsOn: undefined,
   },
   /**
    * Based on the "birthday" input that we get from the user, but
@@ -71,9 +109,13 @@ export const doraProvidedValues = {
    */
   nextBirthday: {
     name: "nextBirthday",
+    optIn: false,
+    dependsOn: "birthday",
   },
   age: {
     name: "age",
+    optIn: false,
+    dependsOn: "birthday",
   },
   /**
    * Owned by Discord but synced to the DB to make it easier to
@@ -81,18 +123,44 @@ export const doraProvidedValues = {
    */
   roles: {
     name: "roles",
+    optIn: false,
+    dependsOn: undefined,
+  },
+  /**
+   * Owned by discord and simply presented by Dora
+   */
+  joinedServer: {
+    name: "joinedServer",
+    optIn: false,
+    dependsOn: undefined,
+  },
+  accountCreation: {
+    name: "accountCreation",
+    optIn: false,
+    dependsOn: undefined,
   },
 } as const satisfies MemberFieldsConfig
 
-export const allMemberFieldsConfig = {
-  ...memberProvidedFieldsConfig,
-  ...memberDiscordProvidedFieldsConfig,
-  ...doraProvidedValues,
-} as const satisfies MemberFieldsConfig
+export const getActiveMemberFieldsMap = (guildConfig: StaticGuildConfig) => {
+  type ActiveMemberFieldConfig = Partial<
+    Record<MemberFields, MemberFieldConfig>
+  >
+  const activeMemberFields: ActiveMemberFieldConfig = {}
+  guildConfig.optInMemberFields.forEach((fieldName) => {
+    activeMemberFields[fieldName] = memberFieldsConfig[fieldName]
+  })
 
-export type DoraMemberFields =
-  (typeof allMemberFieldsConfig)[keyof typeof allMemberFieldsConfig]["name"]
+  Object.values(memberFieldsConfig).forEach((field) => {
+    if (field.optIn) return // Already taken care of above
+    if (field.dependsOn && !activeMemberFields[field.dependsOn]) {
+      return // The field this one depends on has not been activated above
+    }
+    activeMemberFields[field.name] = field
+  })
 
-/** Fiels the member has to provide themselves through e.g. /pii modal */
-export type DoraMemberProvidedFields =
-  (typeof memberProvidedFieldsConfig)[keyof typeof memberProvidedFieldsConfig]["name"]
+  return activeMemberFields
+}
+
+export const getActiveMemberFields = (guildConfig: StaticGuildConfig) => {
+  return Object.values(getActiveMemberFieldsMap(guildConfig))
+}

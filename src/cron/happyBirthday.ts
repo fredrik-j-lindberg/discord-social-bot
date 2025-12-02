@@ -9,7 +9,7 @@ import { sendBirthdayWish } from "~/lib/discord/sendMessage"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { assertIsDefined } from "~/lib/validation"
 
-import { type GuildConfig, staticGuildConfigs } from "../../guildConfigs"
+import { type StaticGuildConfig, staticGuildConfigs } from "../../guildConfigs"
 
 export const happyBirthday = async () => {
   for (const guildConfig of Object.values(staticGuildConfigs)) {
@@ -62,7 +62,7 @@ export const happyBirthday = async () => {
 const resetBirthdayRole = async ({
   guildConfig,
 }: {
-  guildConfig: GuildConfig
+  guildConfig: StaticGuildConfig
 }) => {
   const guild = await getGuild(guildConfig.guildId)
   const roleId = guildConfig.birthdays.roleId

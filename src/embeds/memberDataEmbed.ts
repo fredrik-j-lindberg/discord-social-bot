@@ -1,6 +1,9 @@
 import { type APIEmbedField, EmbedBuilder, GuildMember } from "discord.js"
 
-import type { DoraMemberFields } from "~/configs/memberFieldsConfig"
+import {
+  getActiveMemberFields,
+  type MemberFields,
+} from "~/configs/memberFieldsConfig"
 import type { MemberData } from "~/lib/database/memberDataService"
 import type { EmojiCount } from "~/lib/database/memberEmojisService"
 import {
@@ -23,106 +26,109 @@ const getFieldsRelevantForGuilds = ({
   memberData?: MemberData
   emojiCounts: EmojiCount[]
 }): APIEmbedField[] => {
-  const optInEmbedFields: Partial<Record<DoraMemberFields, APIEmbedField>> = {
-    firstName: {
-      name: "First Name",
-      value: createCopyableText(memberData?.firstName) || "-",
-      inline: true,
-    },
-    age: {
-      name: "Age",
-      value: createCopyableText(memberData?.age?.toString()) || "-",
-      inline: true,
-    },
-    nextBirthday: {
-      name: "Next Birthday",
-      value: createDiscordTimestamp(memberData?.nextBirthday) || "-",
-      inline: true,
-    },
-    switchFriendCode: {
-      name: "Switch Friend Code",
-      value: createCopyableText(memberData?.switchFriendCode) || "-",
-      inline: true,
-    },
-    pokemonTcgpFriendCode: {
-      name: "Pokémon TCGP",
-      value: createCopyableText(memberData?.pokemonTcgpFriendCode) || "-",
-      inline: true,
-    },
-    email: {
-      name: "Email",
-      value: createCopyableText(memberData?.email) || "-",
-      inline: true,
-    },
-    phoneNumber: {
-      name: "Phone Number",
-      value: createCopyableText(memberData?.phoneNumber) || "-",
-      inline: true,
-    },
-    dietaryPreferences: {
-      name: "Dietary Preferences",
-      value: createCopyableText(memberData?.dietaryPreferences) || "-",
-      inline: true,
-    },
-    joinedServer: {
-      name: "Joined Server",
-      value: createDiscordTimestamp(guildMember.joinedTimestamp) || "-",
-      inline: true,
-    },
-    accountCreation: {
-      name: "Account Creation",
-      value: createDiscordTimestamp(guildMember.user.createdTimestamp) || "-",
-      inline: true,
-    },
-    messageCount: {
-      name: "Message Count",
-      value: createCopyableText(memberData?.messageCount.toString()) || "-",
-      inline: true,
-    },
-    latestMessageAt: {
-      name: "Latest Message",
-      value: createDiscordTimestamp(memberData?.latestMessageAt) || "-",
-      inline: true,
-    },
-    reactionCount: {
-      name: "Reaction Count",
-      value: createCopyableText(memberData?.reactionCount.toString()) || "-",
-      inline: true,
-    },
-    favoriteEmojis: {
-      name: "Favorite Emojis",
-      value:
-        emojiCounts
-          .slice(0, 5)
-          .map(({ emojiId, emojiName, isAnimated }) =>
-            createEmojiMention({
-              id: emojiId,
-              name: emojiName,
-              isAnimated,
-            }),
-          )
-          .join(" ") || "-",
-      inline: true,
-    },
-    latestReactionAt: {
-      name: "Latest Reaction",
-      value: createDiscordTimestamp(memberData?.latestReactionAt) || "-",
-      inline: true,
-    },
-    roles: {
-      name: "Roles",
-      value:
-        memberData?.roleIds
-          .filter((roleId) => roleId !== guildId) // Remove the irrelevant @everyone role
-          .map((roleId) => createRoleMention(roleId))
-          .join(" ") || "-",
-      inline: true,
-    },
-  }
-  const guildConfig = getStaticGuildConfigById(guildId)
-  const relevantFields = Object.entries(optInEmbedFields)
+  const allAvailableEmbedFields: Partial<Record<MemberFields, APIEmbedField>> =
+    {
+      firstName: {
+        name: "First Name",
+        value: createCopyableText(memberData?.firstName) || "-",
+        inline: true,
+      },
+      age: {
+        name: "Age",
+        value: createCopyableText(memberData?.age?.toString()) || "-",
+        inline: true,
+      },
+      nextBirthday: {
+        name: "Next Birthday",
+        value: createDiscordTimestamp(memberData?.nextBirthday) || "-",
+        inline: true,
+      },
+      switchFriendCode: {
+        name: "Switch Friend Code",
+        value: createCopyableText(memberData?.switchFriendCode) || "-",
+        inline: true,
+      },
+      pokemonTcgpFriendCode: {
+        name: "Pokémon TCGP",
+        value: createCopyableText(memberData?.pokemonTcgpFriendCode) || "-",
+        inline: true,
+      },
+      email: {
+        name: "Email",
+        value: createCopyableText(memberData?.email) || "-",
+        inline: true,
+      },
+      phoneNumber: {
+        name: "Phone Number",
+        value: createCopyableText(memberData?.phoneNumber) || "-",
+        inline: true,
+      },
+      dietaryPreferences: {
+        name: "Dietary Preferences",
+        value: createCopyableText(memberData?.dietaryPreferences) || "-",
+        inline: true,
+      },
+      joinedServer: {
+        name: "Joined Server",
+        value: createDiscordTimestamp(guildMember.joinedTimestamp) || "-",
+        inline: true,
+      },
+      accountCreation: {
+        name: "Account Creation",
+        value: createDiscordTimestamp(guildMember.user.createdTimestamp) || "-",
+        inline: true,
+      },
+      messageCount: {
+        name: "Message Count",
+        value: createCopyableText(memberData?.messageCount.toString()) || "-",
+        inline: true,
+      },
+      latestMessageAt: {
+        name: "Latest Message",
+        value: createDiscordTimestamp(memberData?.latestMessageAt) || "-",
+        inline: true,
+      },
+      reactionCount: {
+        name: "Reaction Count",
+        value: createCopyableText(memberData?.reactionCount.toString()) || "-",
+        inline: true,
+      },
+      favoriteEmojis: {
+        name: "Favorite Emojis",
+        value:
+          emojiCounts
+            .slice(0, 5)
+            .map(({ emojiId, emojiName, isAnimated }) =>
+              createEmojiMention({
+                id: emojiId,
+                name: emojiName,
+                isAnimated,
+              }),
+            )
+            .join(" ") || "-",
+        inline: true,
+      },
+      latestReactionAt: {
+        name: "Latest Reaction",
+        value: createDiscordTimestamp(memberData?.latestReactionAt) || "-",
+        inline: true,
+      },
+      roles: {
+        name: "Roles",
+        value:
+          memberData?.roleIds
+            .filter((roleId) => roleId !== guildId) // Remove the irrelevant @everyone role
+            .map((roleId) => createRoleMention(roleId))
+            .join(" ") || "-",
+        inline: true,
+      },
+    }
+
+  const activeFields = getActiveMemberFields(getStaticGuildConfigById(guildId))
+
+  const relevantFields = Object.entries(allAvailableEmbedFields)
     .map(([key, value]) => {
-      if (!guildConfig.optInMemberFields.some((field) => field === key)) {
+      if (!activeFields.some((field) => field.name === key)) {
         return null
       }
       return value

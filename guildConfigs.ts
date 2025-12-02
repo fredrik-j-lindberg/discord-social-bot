@@ -1,14 +1,14 @@
 import {
-  allMemberFieldsConfig,
-  type DoraMemberFields,
+  type MemberFields,
+  memberFieldsConfig,
 } from "~/configs/memberFieldsConfig"
 import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
 
-export interface GuildConfig {
+export interface StaticGuildConfig {
   guildId: string
   /** Fields that guilds need to opt in to use, as these fields might not be relevant for all guilds */
-  optInMemberFields: DoraMemberFields[]
+  optInMemberFields: MemberFields[]
   birthdays: {
     /** Channel to send birthday wishes in */
     channelId?: string
@@ -18,7 +18,7 @@ export interface GuildConfig {
 }
 
 interface GuildConfigs {
-  [guildId: string]: GuildConfig
+  [guildId: string]: StaticGuildConfig
 }
 
 // Configurations for guilds that the local bot is in, to avoid trying to fetch data from production guilds etc
@@ -27,21 +27,11 @@ const devGuildConfigs: GuildConfigs = {
   "1211309484811485264": {
     guildId: "1211309484811485264",
     optInMemberFields: [
-      allMemberFieldsConfig.birthday.name,
-      allMemberFieldsConfig.firstName.name,
-      allMemberFieldsConfig.phoneNumber.name,
-      allMemberFieldsConfig.dietaryPreferences.name,
-      allMemberFieldsConfig.pokemonTcgpFriendCode.name,
-      allMemberFieldsConfig.joinedServer.name,
-      allMemberFieldsConfig.accountCreation.name,
-      allMemberFieldsConfig.messageCount.name,
-      allMemberFieldsConfig.latestMessageAt.name,
-      allMemberFieldsConfig.reactionCount.name,
-      allMemberFieldsConfig.latestReactionAt.name,
-      allMemberFieldsConfig.roles.name,
-      allMemberFieldsConfig.favoriteEmojis.name,
-      allMemberFieldsConfig.age.name,
-      allMemberFieldsConfig.nextBirthday.name,
+      memberFieldsConfig.birthday.name,
+      memberFieldsConfig.firstName.name,
+      memberFieldsConfig.phoneNumber.name,
+      memberFieldsConfig.dietaryPreferences.name,
+      memberFieldsConfig.pokemonTcgpFriendCode.name,
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
@@ -55,15 +45,10 @@ const prodGuildConfigs: GuildConfigs = {
   "1193809867232772126": {
     guildId: "1193809867232772126",
     optInMemberFields: [
-      allMemberFieldsConfig.birthday.name,
-      allMemberFieldsConfig.phoneNumber.name,
-      allMemberFieldsConfig.email.name,
-      allMemberFieldsConfig.dietaryPreferences.name,
-      allMemberFieldsConfig.joinedServer.name,
-      allMemberFieldsConfig.accountCreation.name,
-      allMemberFieldsConfig.favoriteEmojis.name,
-      allMemberFieldsConfig.age.name,
-      allMemberFieldsConfig.nextBirthday.name,
+      memberFieldsConfig.birthday.name,
+      memberFieldsConfig.phoneNumber.name,
+      memberFieldsConfig.email.name,
+      memberFieldsConfig.dietaryPreferences.name,
     ],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
@@ -74,17 +59,10 @@ const prodGuildConfigs: GuildConfigs = {
   "106099890320330752": {
     guildId: "106099890320330752",
     optInMemberFields: [
-      allMemberFieldsConfig.birthday.name,
-      allMemberFieldsConfig.firstName.name,
-      allMemberFieldsConfig.switchFriendCode.name,
-      allMemberFieldsConfig.pokemonTcgpFriendCode.name,
-      allMemberFieldsConfig.joinedServer.name,
-      allMemberFieldsConfig.accountCreation.name,
-      allMemberFieldsConfig.messageCount.name,
-      allMemberFieldsConfig.reactionCount.name,
-      allMemberFieldsConfig.favoriteEmojis.name,
-      allMemberFieldsConfig.age.name,
-      allMemberFieldsConfig.nextBirthday.name,
+      memberFieldsConfig.birthday.name,
+      memberFieldsConfig.firstName.name,
+      memberFieldsConfig.switchFriendCode.name,
+      memberFieldsConfig.pokemonTcgpFriendCode.name,
     ],
     birthdays: {
       channelId: "106099890320330752", // #general
