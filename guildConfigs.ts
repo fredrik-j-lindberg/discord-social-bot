@@ -40,6 +40,8 @@ const devGuildConfigs: GuildConfigs = {
       allMemberFieldsConfig.latestReactionAt.name,
       allMemberFieldsConfig.roles.name,
       allMemberFieldsConfig.favoriteEmojis.name,
+      allMemberFieldsConfig.age.name,
+      allMemberFieldsConfig.nextBirthday.name,
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
@@ -60,6 +62,8 @@ const prodGuildConfigs: GuildConfigs = {
       allMemberFieldsConfig.joinedServer.name,
       allMemberFieldsConfig.accountCreation.name,
       allMemberFieldsConfig.favoriteEmojis.name,
+      allMemberFieldsConfig.age.name,
+      allMemberFieldsConfig.nextBirthday.name,
     ],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
@@ -79,6 +83,8 @@ const prodGuildConfigs: GuildConfigs = {
       allMemberFieldsConfig.messageCount.name,
       allMemberFieldsConfig.reactionCount.name,
       allMemberFieldsConfig.favoriteEmojis.name,
+      allMemberFieldsConfig.age.name,
+      allMemberFieldsConfig.nextBirthday.name,
     ],
     birthdays: {
       channelId: "106099890320330752", // #general

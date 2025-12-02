@@ -47,10 +47,9 @@ export const memberDiscordProvidedFieldsConfig = {
 } as const satisfies MemberFieldsConfig
 
 /**
- * Fields related to member activity that are tracked by the bot
- * and stored in the DB
+ * Fields that are collected by and fetched via Dora
  */
-export const memberDataActivityFieldsConfig = {
+export const doraProvidedValues = {
   messageCount: {
     name: "messageCount",
   },
@@ -66,16 +65,29 @@ export const memberDataActivityFieldsConfig = {
   favoriteEmojis: {
     name: "favoriteEmojis",
   },
+  /**
+   * Based on the "birthday" input that we get from the user, but
+   * calculated by Dora
+   */
+  nextBirthday: {
+    name: "nextBirthday",
+  },
+  age: {
+    name: "age",
+  },
+  /**
+   * Owned by Discord but synced to the DB to make it easier to
+   * query/filter members based on roles
+   */
+  roles: {
+    name: "roles",
+  },
 } as const satisfies MemberFieldsConfig
 
 export const allMemberFieldsConfig = {
   ...memberProvidedFieldsConfig,
   ...memberDiscordProvidedFieldsConfig,
-  ...memberDataActivityFieldsConfig,
-  // Values owned by Discord but synced to DB
-  roles: {
-    name: "roles",
-  },
+  ...doraProvidedValues,
 } as const satisfies MemberFieldsConfig
 
 export type DoraMemberFields =
