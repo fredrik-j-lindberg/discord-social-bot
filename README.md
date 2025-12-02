@@ -193,32 +193,30 @@ There are also some helpful scripts for this:
   - ~~Consider if we should have a way to exempt users from the inactivity check~~
   - ~~Consider adding an "inactive" role to users who have received the warning~~
 
+- Improvements to /pii
+  - Add silent mode (see silent mode handling for /whois)
+  - Cache form data for a short while (e.g. 10 minutes)? This would allow you to not lose all the data when failing the validation. Should this be done for all modals?
 - Smhi integration?
 - Instead of below, perhaps an integration with Cloudflare R2 to simply host images for us
-- Add image scraping capabilities (scraping a google photos album).
-  Update: [POC branch here](https://github.com/fredrik-j-lindberg/discord-social-bot/tree/poc/web-scraper) - Failed to find a reliable dates in shared google photos album url. The date found in the html proved to be the photo data rather than the upload date. A relative time stamp was found in the "comment section" of the album, so that is a potential next test. But then we would need to be able to parse the relative text and figure out whether it warrants an announcement or not.
+- Add google photos integration. Edit: Turns out google photos is no longer possible to integrate with for the type of functionality I want, so to accomplish this we would need some sort of image scraping capabilities (scraping a google photos album).
+  - Update: [POC branch here](https://github.com/fredrik-j-lindberg/discord-social-bot/tree/poc/web-scraper) - Failed to find a reliable dates in shared google photos album url. The date found in the html proved to be the photo data rather than the upload date. A relative time stamp was found in the "comment section" of the album, so that is a potential next test. But then we would need to be able to parse the relative text and figure out whether it warrants an announcement or not.
 - Add mcp capabilities (being able to ask the bot for a specific piece of member info etc)
   - Note that as long as we use an API for the LLM we need to make this opt in
-- Guild config improvements
-  - Move guildconfigs to database?
-  - Make it configurable via commands
+- Move remaining guildconfigs to database (see how it was done for inactivity and logs config in the /config command)
 - Event gcal syncing?
 
 ### Improved devx
 
-- Look into linting improvements
-  - unnecessary conditionals?
+- Refactor the modals to be aligned and mostly config generated to make it easier to add and change modals and have them behave the same way
+- Refactor /memberdata and /whois to have more aligned handling for the fields to make it easier to add fields
+- Add an actual monitoring tool, e.g. grafana logs?
 
 ### Misc
 
-- Refactor /memberdata register list subcommands semi-dynamically. Setup individual listeners with a proper name, cmd and action.
 - Align action wrapper usage around database methods (e.g. the new services)
-- Cache the /pii data for a short while (e.g. 10 minutes)? This would allow you to not lose all the data when failing the validation
-- Fetch wrapper
-- Write docs
+- Write docs for new "features"
   - Inactivity monitoring
   - File uploads
   - Guild config
 - Look through inline TODO comments in code
 - Look at guild config permission and context filtering, apply the same for other commands where relevant
-- Add an actual monitoring tool, e.g. grafana logs?
