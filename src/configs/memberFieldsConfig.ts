@@ -1,38 +1,41 @@
+import {
+  createCopyableText,
+  createDiscordTimestamp,
+  createEmojiMention,
+  createRoleMention,
+} from "~/lib/discord/message"
+import { formatDate } from "~/lib/helpers/date"
+import type { MemberFields, MemberFieldsIds } from "~/lib/helpers/member"
+
 import type { StaticGuildConfig } from "../../guildConfigs"
 
-export type MemberOptInFields =
-  | "birthday"
-  | "firstName"
-  | "phoneNumber"
-  | "email"
-  | "dietaryPreferences"
-  | "switchFriendCode"
-  | "pokemonTcgpFriendCode"
-
-type MemberDoraProvidedFields =
-  | "messageCount"
-  | "latestMessageAt"
-  | "reactionCount"
-  | "latestReactionAt"
-  | "favoriteEmojis"
-  | "nextBirthday"
-  | "age"
-  | "roles"
-  | "joinedServer"
-  | "accountCreation"
-
-export type MemberFields = MemberOptInFields | MemberDoraProvidedFields
-
-interface MemberFieldConfig {
-  name: MemberFields
+export interface MemberFieldConfig<
+  TId extends MemberFieldsIds = MemberFieldsIds,
+> {
+  /** Display name of the field (e.g. for the /whois command) */
+  name: string
+  /** Unique identifier for the field, used for referencing the field internally for e.g. commands and modals */
+  id: TId
+  /** Whether the user has to opt in to provide this data (e.g. via the /pii modal) */
   optIn?: boolean
   /** If this field depends on another being enabled, for this field to be valid */
-  dependsOn?: MemberFields
+  dependsOn?: MemberFieldsIds
+  /** How to format the field for display (e.g. for the /whois command) */
+  formatter?: (
+    memberFields: MemberFields,
+    mode?: "compact" | "long",
+  ) => string | undefined
+  /** How the user can provide this data */
+  provideGuidance?: string
 }
 
-type MemberFieldsConfig = Record<MemberFields, MemberFieldConfig>
+type MemberFieldsConfig = { [Key in MemberFieldsIds]: MemberFieldConfig<Key> }
 
-export const memberFieldsConfig = {
+const provideGuidanceCopy = {
+  pii: "Can be added or changed via the `/pii` command.",
+}
+
+export const memberFieldsConfig: MemberFieldsConfig = {
   // TODO: Can we group these fields into different modals to avoid running into the 5 fields limitation?
   // Then the different modals could be triggered like we handle it for /config
   /**
@@ -42,112 +45,176 @@ export const memberFieldsConfig = {
    * is limited to 5 fields (discord limitation).
    */
   birthday: {
-    name: "birthday",
+    name: "Birthday",
+    id: "birthday",
     optIn: true,
     dependsOn: undefined,
+    formatter: ({ birthday }) =>
+      createCopyableText(formatDate(birthday, { dateStyle: "short" })),
+    provideGuidance: provideGuidanceCopy.pii,
   },
   firstName: {
-    name: "firstName",
+    name: "First name",
+    id: "firstName",
     optIn: true,
     dependsOn: undefined,
+    formatter: ({ firstName }) => createCopyableText(firstName),
+    provideGuidance: provideGuidanceCopy.pii,
   },
   phoneNumber: {
-    name: "phoneNumber",
+    name: "Phone number",
+    id: "phoneNumber",
     optIn: true,
     dependsOn: undefined,
+    formatter: ({ phoneNumber }) => createCopyableText(phoneNumber),
+    provideGuidance: provideGuidanceCopy.pii,
   },
   email: {
-    name: "email",
+    name: "Email",
+    id: "email",
     optIn: true,
     dependsOn: undefined,
+    formatter: ({ email }) => createCopyableText(email),
+    provideGuidance: provideGuidanceCopy.pii,
   },
   dietaryPreferences: {
-    name: "dietaryPreferences",
+    name: "Dietary preferences",
+    id: "dietaryPreferences",
     optIn: true,
     dependsOn: undefined,
+    formatter: ({ dietaryPreferences }) =>
+      createCopyableText(dietaryPreferences),
+    provideGuidance: provideGuidanceCopy.pii,
   },
   switchFriendCode: {
-    name: "switchFriendCode",
+    name: "Switch Friend Code",
+    id: "switchFriendCode",
     optIn: true,
     dependsOn: undefined,
+    formatter: ({ switchFriendCode }) => createCopyableText(switchFriendCode),
+    provideGuidance: provideGuidanceCopy.pii,
   },
   pokemonTcgpFriendCode: {
-    name: "pokemonTcgpFriendCode",
+    name: "Pokémon TCGP",
+    id: "pokemonTcgpFriendCode",
     optIn: true,
     dependsOn: undefined,
+    formatter: ({ pokemonTcgpFriendCode }) =>
+      createCopyableText(pokemonTcgpFriendCode),
+    provideGuidance: provideGuidanceCopy.pii,
   },
   // opt in fields above
 
   messageCount: {
-    name: "messageCount",
+    name: "Message Count",
+    id: "messageCount",
     optIn: false,
     dependsOn: undefined,
+    formatter: ({ messageCount }) =>
+      createCopyableText(messageCount?.toString()),
   },
   latestMessageAt: {
-    name: "latestMessageAt",
+    name: "Latest Message At",
+    id: "latestMessageAt",
     optIn: false,
     dependsOn: undefined,
+    formatter: ({ latestMessageAt }) => createDiscordTimestamp(latestMessageAt),
   },
   reactionCount: {
-    name: "reactionCount",
+    name: "Reaction Count",
+    id: "reactionCount",
     optIn: false,
     dependsOn: undefined,
+    formatter: ({ reactionCount }) =>
+      createCopyableText(reactionCount?.toString()),
   },
   latestReactionAt: {
-    name: "latestReactionAt",
+    name: "Latest Reaction At",
+    id: "latestReactionAt",
     optIn: false,
     dependsOn: undefined,
+    formatter: ({ latestReactionAt }) =>
+      createDiscordTimestamp(latestReactionAt),
   },
   favoriteEmojis: {
-    name: "favoriteEmojis",
+    name: "Favorite Emojis",
+    id: "favoriteEmojis",
     optIn: false,
     dependsOn: undefined,
+    formatter: ({ favoriteEmojis }, mode) =>
+      favoriteEmojis
+        ?.slice(0, mode === "compact" ? 5 : favoriteEmojis.length)
+        .map(({ emojiId, emojiName, isAnimated, count }) =>
+          mode === "compact"
+            ? createEmojiMention({
+                id: emojiId,
+                name: emojiName,
+                isAnimated,
+              })
+            : `${createEmojiMention({ id: emojiId, name: emojiName, isAnimated })} (${count})`,
+        )
+        .join(" "),
   },
   /**
    * Based on the "birthday" input that we get from the user, but
    * calculated by Dora
    */
   nextBirthday: {
-    name: "nextBirthday",
+    name: "Next Birthday",
+    id: "nextBirthday",
     optIn: false,
     dependsOn: "birthday",
+    formatter: ({ nextBirthday }) => createDiscordTimestamp(nextBirthday),
+    get provideGuidance() {
+      return `Requires the ${this.dependsOn} field to be set.`
+    },
   },
   age: {
-    name: "age",
+    name: "Age",
+    id: "age",
     optIn: false,
     dependsOn: "birthday",
+    formatter: ({ age }) => createCopyableText(age?.toString()),
+    get provideGuidance() {
+      return `Requires the ${this.dependsOn} field to be set.`
+    },
   },
   /**
    * Owned by Discord but synced to the DB to make it easier to
    * query/filter members based on roles
    */
   roles: {
-    name: "roles",
+    name: "Roles",
+    id: "roles",
     optIn: false,
     dependsOn: undefined,
+    formatter: ({ roles }) =>
+      roles?.map((roleId) => createRoleMention(roleId)).join(" "),
   },
   /**
    * Owned by discord and simply presented by Dora
    */
   joinedServer: {
-    name: "joinedServer",
+    name: "Joined Server",
+    id: "joinedServer",
     optIn: false,
     dependsOn: undefined,
+    formatter: ({ joinedServer }) => createDiscordTimestamp(joinedServer),
   },
   accountCreation: {
-    name: "accountCreation",
+    name: "Account Creation",
+    id: "accountCreation",
     optIn: false,
     dependsOn: undefined,
+    formatter: ({ accountCreation }) => createDiscordTimestamp(accountCreation),
   },
-} as const satisfies MemberFieldsConfig
+}
 
 export const getActiveMemberFieldsMap = (guildConfig: StaticGuildConfig) => {
-  type ActiveMemberFieldConfig = Partial<
-    Record<MemberFields, MemberFieldConfig>
-  >
-  const activeMemberFields: ActiveMemberFieldConfig = {}
-  guildConfig.optInMemberFields.forEach((fieldName) => {
-    activeMemberFields[fieldName] = memberFieldsConfig[fieldName]
+  const activeMemberFields: Partial<MemberFieldsConfig> = {}
+  guildConfig.optInMemberFields.forEach((fieldId) => {
+    const fieldConfig = memberFieldsConfig[fieldId]
+    ;(activeMemberFields as Record<string, unknown>)[fieldId] = fieldConfig
   })
 
   Object.values(memberFieldsConfig).forEach((field) => {
@@ -155,7 +222,7 @@ export const getActiveMemberFieldsMap = (guildConfig: StaticGuildConfig) => {
     if (field.dependsOn && !activeMemberFields[field.dependsOn]) {
       return // The field this one depends on has not been activated above
     }
-    activeMemberFields[field.name] = field
+    ;(activeMemberFields as Record<string, unknown>)[field.id] = field
   })
 
   return activeMemberFields

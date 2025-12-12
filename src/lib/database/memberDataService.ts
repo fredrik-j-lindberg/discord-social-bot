@@ -29,6 +29,10 @@ type MemberRecordSelectWithExtras = MemberDataRecord & {
   roles: MemberRoleRecord[]
 }
 
+export type MemberDataDbKeysWithExtras =
+  | MemberDataDbKeys
+  | keyof MemberRecordSelectWithExtras
+
 const getMemberFilter = (userId: string, guildId: string) => [
   eq(membersTable.userId, userId),
   eq(membersTable.guildId, guildId),
@@ -306,30 +310,6 @@ export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
   return memberRecords.map(mapSelectedMemberData)
 }
 
-export const getMembersWithUpcomingBirthday = async ({
-  guildId,
-  roleIds,
-}: {
-  guildId: string
-  /** Pass if it should filter based on these roleIds */
-  roleIds?: string[]
-}): Promise<MemberData[]> => {
-  const memberRecords: MemberRecordSelectWithExtras[] =
-    await db.query.membersTable.findMany({
-      extras: getSharedExtras(),
-      where: and(
-        eq(membersTable.guildId, guildId),
-        isNotNull(membersTable.birthday),
-        ...getRoleFilter(roleIds),
-      ),
-      orderBy: sql`next_birthday`,
-      with: { roles: true },
-      limit: 10,
-    })
-
-  return memberRecords.map(mapSelectedMemberData)
-}
-
 /** Get members that has a specific member data field */
 export const getMembersWithField = async ({
   guildId,
@@ -349,6 +329,7 @@ export const getMembersWithField = async ({
         isNotNull(membersTable[field]),
         ...getRoleFilter(roleIds),
       ),
+      // TODO: Make ordering dynamic based on field
       orderBy: sql`next_birthday`,
       with: { roles: true },
       limit: 50,

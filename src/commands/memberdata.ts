@@ -2,20 +2,35 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
 import {
   getActiveMemberFields,
-  type MemberFields,
+  getActiveMemberFieldsMap,
+  type MemberFieldConfig,
 } from "~/configs/memberFieldsConfig"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
   getMembersWithField,
-  getMembersWithUpcomingBirthday,
   type MemberData,
 } from "~/lib/database/memberDataService"
 import type { MemberDataDbKeys } from "~/lib/database/schema"
-import { createDiscordTimestamp } from "~/lib/discord/message"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
+import type { MemberFieldsIds } from "~/lib/helpers/member"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
 import { getStaticGuildConfigById } from "../../guildConfigs"
+
+// Fields backed by the member data table (simple aggregation)
+const dbSupportedFields = [
+  "firstName",
+  "birthday",
+  "phoneNumber",
+  "email",
+  "switchFriendCode",
+  "pokemonTcgpFriendCode",
+  "dietaryPreferences",
+  "messageCount",
+  "latestMessageAt",
+  "reactionCount",
+  "latestReactionAt",
+] as const satisfies MemberDataDbKeys[]
 
 const memberDataOptionName = "memberdata"
 const roleOptionName = "role"
@@ -50,7 +65,7 @@ export default {
     const guildConfig = getStaticGuildConfigById(interaction.guild.id)
     return Object.values(getActiveMemberFields(guildConfig)).map((field) => ({
       name: field.name,
-      value: field.name,
+      value: field.id,
     }))
   },
   execute: async (interaction) => {
@@ -69,7 +84,7 @@ export default {
 
     const validChoices = getActiveMemberFields(
       getStaticGuildConfigById(interaction.guild.id),
-    ).map((validField) => validField.name)
+    ).map((validField) => validField.id)
 
     if (!isOneOf(field, validChoices)) {
       throw new DoraUserException(
@@ -95,30 +110,30 @@ const handleFieldChoice = async ({
   field,
 }: {
   interaction: CommandInteractionWithGuild
-  field: MemberFields
+  field: MemberFieldsIds
   role?: { id: string } | null
 }) => {
   const role = interaction.options.getRole(roleOptionName)
   const guildId = interaction.guild.id
-  const commonOptions = { interaction, role, guildId }
 
-  if (field === "birthday") {
-    return await handleBirthdayFieldChoice({ ...commonOptions })
+  const activeFieldsConfig = getActiveMemberFieldsMap(
+    getStaticGuildConfigById(guildId),
+  )
+  const fieldConfig = activeFieldsConfig[field]
+
+  if (!fieldConfig) {
+    throw new DoraUserException(
+      `The '${field}' field is not active for this guild or has no configuration.`,
+    )
   }
 
-  if (field === "pokemonTcgpFriendCode") {
+  if (isOneOf(field, dbSupportedFields)) {
     return await handleGenericDbFieldChoice({
-      ...commonOptions,
       field,
-      title: "Pokemon TCGP Friend Codes",
-    })
-  }
-
-  if (field === "dietaryPreferences") {
-    return await handleGenericDbFieldChoice({
-      ...commonOptions,
-      field,
-      title: "Dietary Preferences",
+      fieldConfig,
+      guildId,
+      role: role ? { id: role.id, name: role.name } : null,
+      title: fieldConfig.name,
     })
   }
 
@@ -137,7 +152,9 @@ const composeMemberDataList = ({
   valueSetter: (memberData: MemberData) => string | null | undefined
 }) => {
   if (membersData.length === 0) {
-    throw new DoraUserException("No data found")
+    throw new DoraUserException("No data found", {
+      severity: DoraUserException.Severity.Info,
+    })
   }
 
   const list = membersData
@@ -151,11 +168,13 @@ const composeMemberDataList = ({
 /** Generic handling for fields that can be selected from the DB */
 const handleGenericDbFieldChoice = async ({
   field,
+  fieldConfig,
   guildId,
   title,
   role,
 }: {
-  field: MemberDataDbKeys
+  field: (typeof dbSupportedFields)[number]
+  fieldConfig: MemberFieldConfig
   guildId: string
   title: string
   role: { id: string; name: string } | null
@@ -169,27 +188,9 @@ const handleGenericDbFieldChoice = async ({
   return composeMemberDataList({
     title: role ? `${title} in role '${role.name}'` : title,
     membersData: filteredMembers,
-    valueSetter: (memberData) => memberData[field]?.toString(),
-  })
-}
-
-const handleBirthdayFieldChoice = async ({
-  interaction,
-  role,
-}: {
-  interaction: CommandInteractionWithGuild
-  /** Role to filter on */
-  role: { id: string; name: string } | null
-}): Promise<string> => {
-  const membersWithUpcomingBirthday = await getMembersWithUpcomingBirthday({
-    guildId: interaction.guild.id,
-    roleIds: role ? [role.id] : undefined,
-  })
-
-  return composeMemberDataList({
-    title: "Upcoming Birthdays",
-    membersData: membersWithUpcomingBirthday,
-    valueSetter: (memberData) =>
-      createDiscordTimestamp(memberData.nextBirthday),
+    valueSetter: (memberData) => {
+      const value = memberData[field]
+      return fieldConfig.formatter?.({ [field]: value }) || "-"
+    },
   })
 }

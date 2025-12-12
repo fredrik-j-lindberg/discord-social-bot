@@ -1,6 +1,9 @@
 import { type Interaction, SlashCommandBuilder } from "discord.js"
 
-import { getActiveMemberFields } from "~/configs/memberFieldsConfig"
+import {
+  getActiveMemberFields,
+  memberFieldsConfig,
+} from "~/configs/memberFieldsConfig"
 import { getMemberDataEmbed } from "~/embeds/memberDataEmbed"
 import {
   type Command,
@@ -9,15 +12,9 @@ import {
 import { getMemberData } from "~/lib/database/memberDataService"
 import { getMemberEmojiCounts } from "~/lib/database/memberEmojisService"
 import type { DoraReply } from "~/lib/discord/interaction"
-import {
-  createDiscordTimestamp,
-  createEmojiMention,
-  createList,
-  createRoleMention,
-} from "~/lib/discord/message"
 import { getMember } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import { formatDate } from "~/lib/helpers/date"
+import { mapToMemberFields } from "~/lib/helpers/member"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
 import { getStaticGuildConfigById } from "../../guildConfigs"
@@ -61,7 +58,7 @@ export default {
     const guildConfig = getStaticGuildConfigById(interaction.guild.id)
     return Object.values(getActiveMemberFields(guildConfig)).map((field) => ({
       name: field.name,
-      value: field.name,
+      value: field.id,
     }))
   },
   execute: async (interaction) => {
@@ -130,7 +127,7 @@ export const handleWhoIs = async ({
 
   const validChoices = getActiveMemberFields(
     getStaticGuildConfigById(interaction.guild.id),
-  ).map((validField) => validField.name)
+  ).map((validField) => validField.id)
 
   if (!isOneOf(specificMemberData, validChoices)) {
     throw new DoraUserException(
@@ -140,58 +137,16 @@ export const handleWhoIs = async ({
     )
   }
 
-  // If the field should have special handling, add an if here. Otherwise it defaults to the value below
-  if (specificMemberData === "joinedServer") {
-    return (
-      createDiscordTimestamp(guildMember.joinedTimestamp) ||
-      `No server join date was found for ${guildMember.displayName}`
-    )
-  }
-  if (specificMemberData === "accountCreation") {
-    return (
-      createDiscordTimestamp(guildMember.user.createdTimestamp) ||
-      `No account creation date was found for ${guildMember.displayName}`
-    )
-  }
-  if (specificMemberData === "birthday") {
-    return memberData.birthday
-      ? `${formatDate(memberData[specificMemberData])}, ${createDiscordTimestamp(memberData.nextBirthday)}`
-      : `No birthday was found for ${guildMember.displayName}. They can add it via the /pii command`
-  }
-  if (specificMemberData === "latestMessageAt") {
-    return (
-      createDiscordTimestamp(memberData[specificMemberData]) ||
-      `No latest message date found for ${guildMember.displayName}`
-    )
-  }
-  if (specificMemberData === "latestReactionAt") {
-    return (
-      createDiscordTimestamp(memberData[specificMemberData]) ||
-      `No latest reaction date found for ${guildMember.displayName}`
-    )
-  }
-  if (specificMemberData === "roles") {
-    return createList({
-      items: memberData.roleIds
-        .filter((roleId) => roleId !== guildMember.guild.id) // Remove the irrelevant @everyone role
-        .map((roleId) => createRoleMention(roleId)),
-      header: `Roles for ${guildMember.displayName}`,
-      fallback: `No roles found for ${guildMember.displayName}`,
-    })
-  }
-  if (specificMemberData === "favoriteEmojis") {
-    return createList({
-      items: emojiCounts.map(
-        ({ emojiId, emojiName, isAnimated, count }) =>
-          `${createEmojiMention({ id: emojiId, name: emojiName, isAnimated })} (${count})`,
-      ),
-      header: `Favorite emojis for ${guildMember.displayName}`,
-      fallback: `No favorite emojis found for ${guildMember.displayName}`,
-    })
-  }
+  const mappedMemberFields = mapToMemberFields({
+    guildMember,
+    memberData,
+    emojiCounts,
+  })
 
-  return (
-    memberData[specificMemberData]?.toString() ||
-    `No ${specificMemberData} found for ${guildMember.displayName}`
-  )
+  const memberFieldConfig = memberFieldsConfig[specificMemberData]
+  const header = `*${memberFieldConfig.name}* for *${guildMember.displayName}*:`
+  const value =
+    memberFieldConfig.formatter?.(mappedMemberFields, "long") ||
+    `No *${memberFieldConfig.name}* data was found for ${guildMember.displayName}.${memberFieldConfig.provideGuidance ? ` *Hint: ${memberFieldConfig.provideGuidance}*` : ""}`
+  return `${header}\n${value}`
 }

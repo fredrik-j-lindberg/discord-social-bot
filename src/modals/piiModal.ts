@@ -1,10 +1,6 @@
 import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
-import type {
-  MemberFields,
-  MemberOptInFields,
-} from "~/configs/memberFieldsConfig"
 import { memberFieldsConfig } from "~/configs/memberFieldsConfig"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import {
@@ -12,6 +8,7 @@ import {
   setMemberData,
 } from "~/lib/database/memberDataService"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
+import type { MemberFieldsIds, MemberOptInFieldIds } from "~/lib/helpers/member"
 import {
   composeModalInputs,
   extractAndValidateModalValues,
@@ -23,14 +20,14 @@ import { assertHasDefinedProperty } from "~/lib/validation"
 import { getStaticGuildConfigById } from "../../guildConfigs"
 
 type PiiModalInputConfig = ModalInputConfig<
-  MemberFields,
+  MemberFieldsIds,
   MemberData | undefined
 >
 
 const modalInputsMap = {
-  [memberFieldsConfig.firstName.name]: {
+  [memberFieldsConfig.firstName.id]: {
     type: "text",
-    id: memberFieldsConfig.firstName.name,
+    id: memberFieldsConfig.firstName.id,
     label: "First name",
     getPrefilledValue: (memberData) => memberData?.firstName || "",
     style: TextInputStyle.Short,
@@ -42,9 +39,9 @@ const modalInputsMap = {
     placeholder: "John",
     isRequired: false,
   },
-  [memberFieldsConfig.birthday.name]: {
+  [memberFieldsConfig.birthday.id]: {
     type: "text",
-    id: memberFieldsConfig.birthday.name,
+    id: memberFieldsConfig.birthday.id,
     label: "Birthday (DD/MM/YYYY)",
     description:
       "Feel free to set a random year if you prefer not to share your age",
@@ -60,9 +57,9 @@ const modalInputsMap = {
       .nullable(),
     isRequired: false,
   },
-  [memberFieldsConfig.switchFriendCode.name]: {
+  [memberFieldsConfig.switchFriendCode.id]: {
     type: "text",
-    id: memberFieldsConfig.switchFriendCode.name,
+    id: memberFieldsConfig.switchFriendCode.id,
     label: "Nintendo Switch friend code",
     getPrefilledValue: (memberData) => memberData?.switchFriendCode || "",
     style: TextInputStyle.Short,
@@ -74,9 +71,9 @@ const modalInputsMap = {
       .nullable(),
     isRequired: false,
   },
-  [memberFieldsConfig.pokemonTcgpFriendCode.name]: {
+  [memberFieldsConfig.pokemonTcgpFriendCode.id]: {
     type: "text",
-    id: memberFieldsConfig.pokemonTcgpFriendCode.name,
+    id: memberFieldsConfig.pokemonTcgpFriendCode.id,
     label: "Pokémon TCGP friend code",
     getPrefilledValue: (memberData) => memberData?.pokemonTcgpFriendCode || "",
     style: TextInputStyle.Short,
@@ -95,9 +92,9 @@ const modalInputsMap = {
       .nullable(),
     isRequired: false,
   },
-  [memberFieldsConfig.phoneNumber.name]: {
+  [memberFieldsConfig.phoneNumber.id]: {
     type: "text",
-    id: memberFieldsConfig.phoneNumber.name,
+    id: memberFieldsConfig.phoneNumber.id,
     label: "Phone number",
     getPrefilledValue: (memberData) => memberData?.phoneNumber,
     placeholder: "+46712345673",
@@ -106,9 +103,9 @@ const modalInputsMap = {
     maxLength: 15,
     isRequired: false,
   },
-  [memberFieldsConfig.email.name]: {
+  [memberFieldsConfig.email.id]: {
     type: "text",
-    id: memberFieldsConfig.email.name,
+    id: memberFieldsConfig.email.id,
     label: "Email",
     getPrefilledValue: (memberData) => memberData?.email,
     style: TextInputStyle.Short,
@@ -124,9 +121,9 @@ const modalInputsMap = {
       .nullable(),
     isRequired: false,
   },
-  [memberFieldsConfig.dietaryPreferences.name]: {
+  [memberFieldsConfig.dietaryPreferences.id]: {
     type: "text",
-    id: memberFieldsConfig.dietaryPreferences.name,
+    id: memberFieldsConfig.dietaryPreferences.id,
     label: "Dietary preferences",
     getPrefilledValue: (memberData) => memberData?.dietaryPreferences,
     style: TextInputStyle.Short,
@@ -135,7 +132,7 @@ const modalInputsMap = {
     maxLength: 50,
     isRequired: false,
   },
-} as const satisfies Record<MemberOptInFields, PiiModalInputConfig>
+} as const satisfies Record<MemberOptInFieldIds, PiiModalInputConfig>
 
 const modalInputsConfig = Object.values(modalInputsMap)
 const inputSchema = generateModalSchema(modalInputsMap)

@@ -1,14 +1,12 @@
-import {
-  type MemberFields,
-  memberFieldsConfig,
-} from "~/configs/memberFieldsConfig"
+import { memberFieldsConfig } from "~/configs/memberFieldsConfig"
 import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
+import type { MemberOptInFieldIds } from "~/lib/helpers/member"
 
 export interface StaticGuildConfig {
   guildId: string
   /** Fields that guilds need to opt in to use, as these fields might not be relevant for all guilds */
-  optInMemberFields: MemberFields[]
+  optInMemberFields: MemberOptInFieldIds[]
   birthdays: {
     /** Channel to send birthday wishes in */
     channelId?: string
@@ -27,11 +25,11 @@ const devGuildConfigs: GuildConfigs = {
   "1211309484811485264": {
     guildId: "1211309484811485264",
     optInMemberFields: [
-      memberFieldsConfig.birthday.name,
-      memberFieldsConfig.firstName.name,
-      memberFieldsConfig.phoneNumber.name,
-      memberFieldsConfig.dietaryPreferences.name,
-      memberFieldsConfig.pokemonTcgpFriendCode.name,
+      memberFieldsConfig.birthday.id,
+      memberFieldsConfig.firstName.id,
+      memberFieldsConfig.phoneNumber.id,
+      memberFieldsConfig.email.id,
+      memberFieldsConfig.pokemonTcgpFriendCode.id,
     ],
     birthdays: {
       channelId: "1216485497501908992", // #dora-test
@@ -45,10 +43,10 @@ const prodGuildConfigs: GuildConfigs = {
   "1193809867232772126": {
     guildId: "1193809867232772126",
     optInMemberFields: [
-      memberFieldsConfig.birthday.name,
-      memberFieldsConfig.phoneNumber.name,
-      memberFieldsConfig.email.name,
-      memberFieldsConfig.dietaryPreferences.name,
+      memberFieldsConfig.birthday.id,
+      memberFieldsConfig.phoneNumber.id,
+      memberFieldsConfig.email.id,
+      memberFieldsConfig.dietaryPreferences.id,
     ],
     birthdays: {
       channelId: "1193989101599326259", // #all-chat
@@ -59,10 +57,10 @@ const prodGuildConfigs: GuildConfigs = {
   "106099890320330752": {
     guildId: "106099890320330752",
     optInMemberFields: [
-      memberFieldsConfig.birthday.name,
-      memberFieldsConfig.firstName.name,
-      memberFieldsConfig.switchFriendCode.name,
-      memberFieldsConfig.pokemonTcgpFriendCode.name,
+      memberFieldsConfig.birthday.id,
+      memberFieldsConfig.firstName.id,
+      memberFieldsConfig.switchFriendCode.id,
+      memberFieldsConfig.pokemonTcgpFriendCode.id,
     ],
     birthdays: {
       channelId: "106099890320330752", // #general
