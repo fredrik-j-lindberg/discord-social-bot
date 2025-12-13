@@ -43,9 +43,9 @@ const handleAutocomplete = async (
   }
 
   const choices = await command.autocomplete(interaction)
-  const focusedValue = interaction.options.getFocused()
+  const focusedValue = interaction.options.getFocused().toLowerCase()
   const filteredChoices = choices.filter((choice) =>
-    choice.name.startsWith(focusedValue),
+    choice.name.toLowerCase().startsWith(focusedValue),
   )
 
   await interaction.respond(filteredChoices)
