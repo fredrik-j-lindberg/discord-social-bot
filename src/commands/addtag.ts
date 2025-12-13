@@ -9,6 +9,7 @@ const command = new SlashCommandBuilder()
   .setDescription(
     "Adds a tag to the bot database that can be used for categorizing items such as photos",
   )
+  .setContexts(0) // Guild only
 
 export default {
   type: "chat",

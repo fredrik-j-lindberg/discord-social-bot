@@ -219,4 +219,3 @@ There are also some helpful scripts for this:
   - File uploads
   - Guild config
 - Look through inline TODO comments in code
-- Look at guild config permission and context filtering, apply the same for other commands where relevant

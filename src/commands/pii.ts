@@ -9,6 +9,7 @@ import piiModal from "../modals/piiModal"
 const command = new SlashCommandBuilder()
   .setName("pii")
   .setDescription("Triggers form for adding member data about yourself")
+  .setContexts(0) // Guild only
 
 export default {
   type: "chat",

@@ -5,6 +5,7 @@ import type { Command } from "~/events/interactionCreate/listeners/commandRouter
 const command = new SlashCommandBuilder()
   .setName("botinfo")
   .setDescription("Shows basic info about the bot")
+  .setContexts(0) // Guild only
 
 export default {
   type: "chat",

@@ -26,6 +26,7 @@ type DataOption =
 const command = new SlashCommandBuilder()
   .setName("serverdata")
   .setDescription("Lists server data")
+  .setContexts(0) // Guild only
   .addStringOption((option) =>
     option
       .setName(dataOption.name)

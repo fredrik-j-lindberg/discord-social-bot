@@ -24,6 +24,7 @@ const memberDataOptionName = "memberdata"
 const command = new SlashCommandBuilder()
   .setName("whois")
   .setDescription("Get info about a member")
+  .setContexts(0) // Guild only
   .addUserOption((option) =>
     option
       .setName(memberOptionName)

@@ -39,6 +39,7 @@ const roleOptionName = "role"
 const command = new SlashCommandBuilder()
   .setName("memberdata")
   .setDescription("Lists member data by field")
+  .setContexts(0) // Guild only
   .addStringOption((option) =>
     option
       .setName(memberDataOptionName)

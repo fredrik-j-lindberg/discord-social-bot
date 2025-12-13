@@ -8,6 +8,7 @@ import { handleWhoIs } from "./whois"
 const command = new ContextMenuCommandBuilder()
   .setName("Whois")
   .setType(ApplicationCommandType.User)
+  .setContexts(0) // Guild only
 
 export default {
   type: "user",

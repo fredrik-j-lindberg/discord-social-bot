@@ -14,6 +14,7 @@ const tagOptionName = "tag"
 const command = new SlashCommandBuilder()
   .setName("photo")
   .setDescription("Adds a photo to the channel")
+  .setContexts(0) // Guild only
   .addSubcommand((subcommand) =>
     subcommand.setName(uploadChoiceOptionName).setDescription("Upload a photo"),
   )
