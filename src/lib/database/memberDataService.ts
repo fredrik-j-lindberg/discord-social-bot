@@ -2,11 +2,9 @@ import { and, eq, inArray, isNotNull, sql } from "drizzle-orm"
 
 import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
-import { calculateAge } from "../helpers/date"
 import { db } from "./client"
 import { setMemberRoles } from "./memberRolesService"
 import {
-  type MemberDataDbKeys,
   type MemberDataRecord,
   type MemberDataRecordInsert,
   type MemberDataRecordPostCoreValues,
@@ -23,15 +21,17 @@ const composeMemberMetaData = (memberData: Partial<MemberData>) => ({
 })
 
 type MemberRecordSelectWithExtras = MemberDataRecord & {
-  /** Computed field during select */
-  nextBirthday: Date
+  /** Computed on select based on "birthday" column */
+  nextBirthday: Date | null
+  /** Computed on select based on "birthday" column */
+  age: number | null
+}
+type MemberRecordSelectWithRelations = MemberRecordSelectWithExtras & {
   /** Member roles from the roles table */
   roles: MemberRoleRecord[]
 }
 
-export type MemberDataDbKeysWithExtras =
-  | MemberDataDbKeys
-  | keyof MemberRecordSelectWithExtras
+export type MemberDataDbKeysWithExtras = keyof MemberRecordSelectWithExtras
 
 const getMemberFilter = (userId: string, guildId: string) => [
   eq(membersTable.userId, userId),
@@ -48,9 +48,8 @@ const getRoleFilter = (roleIds?: string[]) => [
       )
     : undefined,
 ]
-
 // Function to calculate the next birthday SQL expression
-const calculateNextBirthday = () => {
+const getComputedNextBirthday = () => {
   return sql`
   CASE 
     -- Check if birthday is NULL or not
@@ -71,24 +70,38 @@ const calculateNextBirthday = () => {
         (EXTRACT(DAY FROM ${membersTable.birthday}) - 1) * INTERVAL '1 day'
   END`
     .mapWith(membersTable.birthday)
-    .as("next_birthday")
+    .as("nextBirthday")
 }
 
-const getSharedExtras = () => ({ nextBirthday: calculateNextBirthday() })
+/** Shared extras for computed birthday-related fields */
+export const getComputedAge = () =>
+  sql`CASE
+    WHEN ${membersTable.birthday} IS NULL THEN NULL
+    ELSE EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM ${membersTable.birthday})
+      - CASE
+          WHEN (EXTRACT(MONTH FROM CURRENT_DATE), EXTRACT(DAY FROM CURRENT_DATE)) < (EXTRACT(MONTH FROM ${membersTable.birthday}), EXTRACT(DAY FROM ${membersTable.birthday}))
+          THEN 1
+          ELSE 0
+        END
+  END`
+    .mapWith(Number)
+    .as("age")
 
-export type MemberData = Omit<MemberRecordSelectWithExtras, "roles"> & {
-  /** Computed post-select based on birthday field */
-  age: number | null
+const getSharedExtras = () => ({
+  nextBirthday: getComputedNextBirthday(),
+  age: getComputedAge(),
+})
+
+export type MemberData = Omit<MemberRecordSelectWithRelations, "roles"> & {
   roleIds: string[]
 }
 
 const mapSelectedMemberData = ({
   roles,
   ...memberData
-}: MemberRecordSelectWithExtras): MemberData => ({
+}: MemberRecordSelectWithRelations): MemberData => ({
   ...memberData,
-  nextBirthday: new Date(memberData.nextBirthday), // This seems to be a bug in drizzle where the query + extra syntax returns it as string instead of date
-  age: calculateAge(memberData.birthday),
+  nextBirthday: memberData.nextBirthday && new Date(memberData.nextBirthday), // This seems to be a bug in drizzle where the query + extra syntax returns it as string instead of date
   roleIds: roles.map((role) => role.roleId),
 })
 
@@ -99,7 +112,7 @@ export const getMemberData = async ({
   userId: string
   guildId: string
 }): Promise<MemberData | undefined> => {
-  const memberRecords: MemberRecordSelectWithExtras[] =
+  const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
       where: and(...getMemberFilter(userId, guildId)),
@@ -296,7 +309,7 @@ export const removeMemberReactionFromStats = async ({
 export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
   MemberData[]
 > => {
-  const memberRecords: MemberRecordSelectWithExtras[] =
+  const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
       where: and(
@@ -310,6 +323,21 @@ export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
   return memberRecords.map(mapSelectedMemberData)
 }
 
+// TODO: When drizzle supports virtual generated columns we can move nextBirthday and age to that setup,
+// and not have to have unique handling here
+// https://github.com/drizzle-team/drizzle-orm/issues/4074
+const getFieldOrderBy = (field: MemberDataDbKeysWithExtras) => {
+  if (field === "nextBirthday") return sql`"nextBirthday"`
+  if (field === "age") return sql`"age"`
+  return membersTable[field]
+}
+// See above TODO
+const getRelatedMemberDataField = (field: MemberDataDbKeysWithExtras) => {
+  if (field === "nextBirthday") return membersTable.birthday
+  if (field === "age") return membersTable.birthday
+  return membersTable[field]
+}
+
 /** Get members that has a specific member data field */
 export const getMembersWithField = async ({
   guildId,
@@ -317,20 +345,19 @@ export const getMembersWithField = async ({
   roleIds,
 }: {
   guildId: string
-  field: MemberDataDbKeys
+  field: Exclude<MemberDataDbKeysWithExtras, "roles">
   /** Pass if it should filter based on these roleIds */
   roleIds?: string[]
 }): Promise<MemberData[]> => {
-  const memberRecords: MemberRecordSelectWithExtras[] =
+  const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
       where: and(
         eq(membersTable.guildId, guildId),
-        isNotNull(membersTable[field]),
+        isNotNull(getRelatedMemberDataField(field)),
         ...getRoleFilter(roleIds),
       ),
-      // TODO: Make ordering dynamic based on field
-      orderBy: sql`next_birthday`,
+      orderBy: getFieldOrderBy(field),
       with: { roles: true },
       limit: 50,
     })
@@ -344,7 +371,7 @@ export const getMembersWithField = async ({
 export const getAllGuildMemberData = async (
   guildId: string,
 ): Promise<MemberData[]> => {
-  const memberRecords: MemberRecordSelectWithExtras[] =
+  const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
       where: eq(membersTable.guildId, guildId),

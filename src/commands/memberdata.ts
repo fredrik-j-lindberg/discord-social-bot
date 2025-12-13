@@ -9,8 +9,8 @@ import type { Command } from "~/events/interactionCreate/listeners/commandRouter
 import {
   getMembersWithField,
   type MemberData,
+  type MemberDataDbKeysWithExtras,
 } from "~/lib/database/memberDataService"
-import type { MemberDataDbKeys } from "~/lib/database/schema"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import type { MemberFieldsIds } from "~/lib/helpers/member"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
@@ -21,6 +21,8 @@ import { getStaticGuildConfigById } from "../../guildConfigs"
 const dbSupportedFields = [
   "firstName",
   "birthday",
+  "age",
+  "nextBirthday",
   "phoneNumber",
   "email",
   "switchFriendCode",
@@ -30,7 +32,7 @@ const dbSupportedFields = [
   "latestMessageAt",
   "reactionCount",
   "latestReactionAt",
-] as const satisfies MemberDataDbKeys[]
+] as const satisfies MemberDataDbKeysWithExtras[]
 
 const memberDataOptionName = "memberdata"
 const roleOptionName = "role"
