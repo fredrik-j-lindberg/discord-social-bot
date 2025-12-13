@@ -14,15 +14,15 @@ const logError = (err: unknown, actionLogger: Logger) => {
 
   switch (err.severity) {
     case DoraException.Severity.Info:
-      actionLogger.info(infoContext, `Skipped action`)
+      actionLogger.info(infoContext, `Early exited action`)
       break
     case DoraException.Severity.Debug:
-      actionLogger.debug(infoContext, `Skipped action`)
+      actionLogger.debug(infoContext, `Early exited action`)
       break
     case DoraException.Severity.Warn:
       actionLogger.warn(
         { reason: err.message, error: err },
-        `Skipped action with warning`,
+        `Early exited action with warning`,
       )
       break
     default:
