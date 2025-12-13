@@ -1,5 +1,6 @@
 import { loginBot } from "./client"
 import { registerCronJobs } from "./cron/cronJobs"
+import { env } from "./env"
 import { registerEvents } from "./events"
 import { initCommands } from "./events/interactionCreate/listeners/commandRouter"
 import { initModals } from "./events/interactionCreate/listeners/modalSubmitRouter"
@@ -13,7 +14,9 @@ const initDiscordFeatures = async () => {
   await loginBot()
   const logConfigs = await setDiscordLoggers()
   logConfigs.forEach(({ guildId, levelThreshold }) => {
-    logger.info(
+    // On development environment, set log level to debug to avoid spamming the channel while developing
+    const level = env.APP_ENV === "development" ? "debug" : "info"
+    logger[level](
       { guildId },
       `Bot started and logging is enabled for guild \`${guildId}\` with level threshold \`${levelThreshold}\``,
     )

@@ -10,6 +10,7 @@ const booleanSchema = z
 
 export const env = createEnv({
   server: {
+    APP_ENV: z.enum(["development", "production"]),
     DISCORD_BOT_TOKEN: z.string(),
     DISCORD_BOT_CLIENT_ID: z.string(),
     DATABASE_URL: z.string(),
