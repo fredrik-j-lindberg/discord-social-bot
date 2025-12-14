@@ -2,6 +2,7 @@ import type { GuildMember } from "discord.js"
 
 import type { MemberData } from "../database/memberDataService"
 import type { EmojiCount } from "../database/memberEmojisService"
+import { DoraException } from "../exceptions/DoraException"
 import { getValidDate } from "./date"
 
 interface MemberOptInFields {
@@ -16,6 +17,9 @@ interface MemberOptInFields {
 export type MemberOptInFieldIds = keyof MemberOptInFields
 
 interface MemberDoraProvidedFields {
+  username: string
+  /** Picked from Discord guild member data or the dora member database. Defaults to username if for some reason neither of those are set */
+  displayName: string
   messageCount?: number | null
   latestMessageAt?: Date | null
   reactionCount?: number | null
@@ -43,7 +47,18 @@ export const mapToMemberFields = ({
   memberData?: MemberData | null
   emojiCounts?: EmojiCount[]
 }): MemberFields => {
+  const username = guildMember?.user.username || memberData?.username
+  if (!username) {
+    throw new DoraException(
+      "Cannot map to member fields: Missing mandatory username",
+    )
+  }
+  const displayName =
+    guildMember?.displayName || memberData?.displayName || username
+
   return {
+    username,
+    displayName,
     firstName: memberData?.firstName,
     phoneNumber: memberData?.phoneNumber,
     email: memberData?.email,

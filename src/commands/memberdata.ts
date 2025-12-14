@@ -3,16 +3,15 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 import {
   getActiveMemberFields,
   getActiveMemberFieldsMap,
-  type MemberFieldConfig,
 } from "~/configs/memberFieldsConfig"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
   getMembersWithField,
-  type MemberData,
   type MemberDataDbKeysWithExtras,
 } from "~/lib/database/memberDataService"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import type { MemberFieldsIds } from "~/lib/helpers/member"
+import type { MemberFields, MemberFieldsIds } from "~/lib/helpers/member"
+import { mapToMemberFields } from "~/lib/helpers/member"
 import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
 
 import { getStaticGuildConfigById } from "../../guildConfigs"
@@ -39,7 +38,6 @@ const roleOptionName = "role"
 const command = new SlashCommandBuilder()
   .setName("memberdata")
   .setDescription("Lists member data by field")
-  .setContexts(0) // Guild only
   .addStringOption((option) =>
     option
       .setName(memberDataOptionName)
@@ -130,70 +128,61 @@ const handleFieldChoice = async ({
     )
   }
 
-  if (isOneOf(field, dbSupportedFields)) {
-    return await handleGenericDbFieldChoice({
-      field,
-      fieldConfig,
-      guildId,
-      role: role ? { id: role.id, name: role.name } : null,
-      title: fieldConfig.name,
-    })
-  }
+  const memberFieldsList = await fetchRelevantMemberData({
+    interaction,
+    guildId,
+    field,
+    role: role ? { id: role.id } : null,
+  })
 
-  throw new DoraUserException(
-    `The '${field}' field does not have an aggregate view yet, ask the Dora team to implement it!`,
-  )
-}
-
-const composeMemberDataList = ({
-  title,
-  membersData,
-  valueSetter,
-}: {
-  title: string
-  membersData: MemberData[]
-  valueSetter: (memberData: MemberData) => string | null | undefined
-}) => {
-  if (membersData.length === 0) {
-    throw new DoraUserException("No data found", {
+  if (!memberFieldsList?.length) {
+    throw new DoraUserException("No member data found", {
       severity: DoraUserException.Severity.Info,
     })
   }
 
-  const list = membersData
-    .map((memberData) => {
-      return `- **${memberData.displayName || memberData.username}**: ${valueSetter(memberData) || "-"}`
+  const title = `Members with *${fieldConfig.name}* data`
+  const titleWithRole = role ? `${title} in role \`${role.name}\`` : title
+
+  const list = memberFieldsList
+    .map((memberFields) => {
+      return `- **${memberFields.displayName || memberFields.username}**: ${fieldConfig.formatter?.(memberFields) || "-"}`
     })
     .join("\n")
-  return `*${title}*\n${list}`
+  return `${titleWithRole}\n${list}`
 }
 
-/** Generic handling for fields that can be selected from the DB */
-const handleGenericDbFieldChoice = async ({
-  field,
-  fieldConfig,
+const fetchRelevantMemberData = async ({
+  interaction,
   guildId,
-  title,
+  field,
   role,
 }: {
-  field: (typeof dbSupportedFields)[number]
-  fieldConfig: MemberFieldConfig
+  interaction: CommandInteractionWithGuild
   guildId: string
-  title: string
-  role: { id: string; name: string } | null
-}) => {
-  const filteredMembers = await getMembersWithField({
-    guildId,
-    field,
-    roleIds: role ? [role.id] : undefined,
-  })
+  field: MemberFieldsIds
+  role: { id: string } | null
+}): Promise<MemberFields[] | undefined> => {
+  // Handling for fields stored in the DB
+  if (isOneOf(field, dbSupportedFields)) {
+    const membersDbData = await getMembersWithField({
+      guildId,
+      field,
+      roleIds: role ? [role.id] : undefined,
+    })
+    return membersDbData.map((memberData) => mapToMemberFields({ memberData }))
+  }
 
-  return composeMemberDataList({
-    title: role ? `${title} in role '${role.name}'` : title,
-    membersData: filteredMembers,
-    valueSetter: (memberData) => {
-      const value = memberData[field]
-      return fieldConfig.formatter?.({ [field]: value }) || "-"
-    },
-  })
+  // Handling for fields not stored in the DB (computed at runtime)
+  const guildMembers = await interaction.guild.members.fetch()
+  const members = Array.from(guildMembers.values())
+  const roleFiltered = role
+    ? members.filter((m) => m.roles.cache.has(role.id))
+    : members
+  if (field === "favoriteEmojis") {
+    throw new DoraUserException(
+      "This command does not support listing favorite emojis at this time. Note that /whois or /serverdata does support fetching favorite emoji data.",
+    )
+  }
+  return roleFiltered.map((guildMember) => mapToMemberFields({ guildMember }))
 }
