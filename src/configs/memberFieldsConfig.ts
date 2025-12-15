@@ -7,8 +7,6 @@ import {
 import { formatDate } from "~/lib/helpers/date"
 import type { MemberFields, MemberFieldsIds } from "~/lib/helpers/member"
 
-import type { StaticGuildConfig } from "../../guildConfigs"
-
 export interface MemberFieldConfig<
   TId extends MemberFieldsIds = MemberFieldsIds,
 > {
@@ -224,9 +222,12 @@ export const memberFieldsConfig: MemberFieldsConfig = {
   },
 }
 
-export const getActiveMemberFieldsMap = (guildConfig: StaticGuildConfig) => {
+export const getActiveMemberFieldsMap = (
+  /** Which fields out of the opt in fields that are active */
+  activeOptInFields: MemberFieldsIds[],
+) => {
   const activeMemberFields: Partial<MemberFieldsConfig> = {}
-  guildConfig.optInMemberFields.forEach((fieldId) => {
+  activeOptInFields.forEach((fieldId) => {
     const fieldConfig = memberFieldsConfig[fieldId]
     ;(activeMemberFields as Record<string, unknown>)[fieldId] = fieldConfig
   })
@@ -242,6 +243,9 @@ export const getActiveMemberFieldsMap = (guildConfig: StaticGuildConfig) => {
   return activeMemberFields
 }
 
-export const getActiveMemberFields = (guildConfig: StaticGuildConfig) => {
-  return Object.values(getActiveMemberFieldsMap(guildConfig))
+export const getActiveMemberFields = (
+  /** Which fields out of the opt in fields that are active */
+  activeOptInFields: MemberFieldsIds[],
+) => {
+  return Object.values(getActiveMemberFieldsMap(activeOptInFields))
 }

@@ -74,9 +74,7 @@ export const staticGuildConfigs: GuildConfigs = env.USE_DEV_GUILD_CONFIGS
   : prodGuildConfigs
 
 export const getStaticGuildConfigById = (guildId: string) => {
-  const guildConfig = Object.values(staticGuildConfigs).find(
-    (config) => config.guildId === guildId,
-  )
+  const guildConfig = staticGuildConfigs[guildId]
   if (!guildConfig) {
     throw new DoraException(
       `Guild config not found for guildId`,

@@ -64,10 +64,12 @@ export default {
       "Command autocomplete issued without associated guild",
     )
     const guildConfig = getStaticGuildConfigById(interaction.guild.id)
-    return Object.values(getActiveMemberFields(guildConfig)).map((field) => ({
-      name: field.name,
-      value: field.id,
-    }))
+    return getActiveMemberFields(guildConfig.optInMemberFields).map(
+      (field) => ({
+        name: field.name,
+        value: field.id,
+      }),
+    )
   },
   execute: async (interaction) => {
     assertHasDefinedProperty(
@@ -84,7 +86,7 @@ export default {
     }
 
     const validChoices = getActiveMemberFields(
-      getStaticGuildConfigById(interaction.guild.id),
+      getStaticGuildConfigById(interaction.guild.id).optInMemberFields,
     ).map((validField) => validField.id)
 
     if (!isOneOf(field, validChoices)) {
@@ -118,7 +120,7 @@ const handleFieldChoice = async ({
   const guildId = interaction.guild.id
 
   const activeFieldsConfig = getActiveMemberFieldsMap(
-    getStaticGuildConfigById(guildId),
+    getStaticGuildConfigById(guildId).optInMemberFields,
   )
   const fieldConfig = activeFieldsConfig[field]
 

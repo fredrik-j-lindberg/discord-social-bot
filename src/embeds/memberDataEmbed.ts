@@ -50,7 +50,7 @@ const getFieldsRelevantForGuilds = ({
   })
 
   const activeFieldsConfig = getActiveMemberFieldsMap(
-    getStaticGuildConfigById(guildId),
+    getStaticGuildConfigById(guildId).optInMemberFields,
   )
   const filteredEmbedOrder = embedOrder
     .map((fieldId) => activeFieldsConfig[fieldId])
