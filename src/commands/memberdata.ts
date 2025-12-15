@@ -12,7 +12,11 @@ import {
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import type { MemberFields, MemberFieldsIds } from "~/lib/helpers/member"
 import { mapToMemberFields } from "~/lib/helpers/member"
-import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
+import {
+  assertHasDefinedProperty,
+  assertValidMemberField,
+  isOneOf,
+} from "~/lib/validation"
 
 import { getStaticGuildConfigById } from "../../guildConfigs"
 
@@ -85,17 +89,10 @@ export default {
       )
     }
 
-    const validChoices = getActiveMemberFields(
+    assertValidMemberField(
+      field,
       getStaticGuildConfigById(interaction.guild.id).optInMemberFields,
-    ).map((validField) => validField.id)
-
-    if (!isOneOf(field, validChoices)) {
-      throw new DoraUserException(
-        `Invalid field '${field}' provided. Valid fields are: ${validChoices.join(
-          ", ",
-        )}`,
-      )
-    }
+    )
 
     return await handleFieldChoice({ interaction, field })
   },

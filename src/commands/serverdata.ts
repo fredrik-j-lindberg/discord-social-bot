@@ -58,7 +58,7 @@ export default {
       ({ value }) => value,
     )
     if (!isOneOf(dataChoice, validDataChoices)) {
-      throw new DoraUserException(
+      throw new DoraException(
         `Invalid data option choice '${dataChoice}' provided. Valid choices are: ${validDataChoices.join(
           ", ",
         )}`,

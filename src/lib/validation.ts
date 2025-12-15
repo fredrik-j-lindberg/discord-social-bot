@@ -1,6 +1,9 @@
 import { type GuildBasedChannel, TextChannel } from "discord.js"
 
+import { getActiveMemberFields } from "~/configs/memberFieldsConfig"
+
 import { DoraException, type Severity } from "./exceptions/DoraException"
+import type { MemberFieldsIds } from "./helpers/member"
 
 export const isDefined = <T>(value: T): value is NonNullable<T> =>
   value !== undefined && value !== null
@@ -95,3 +98,21 @@ export const isOneOf = <T extends string>(
   value: string,
   validValues: T[],
 ): value is T => validValues.includes(value as T)
+
+export function assertValidMemberField(
+  value: string,
+  /** The active opt-in fields */
+  activeOptInFields: MemberFieldsIds[],
+): asserts value is MemberFieldsIds {
+  const validChoices = getActiveMemberFields(activeOptInFields).map(
+    (validField) => validField.id,
+  )
+
+  if (!isOneOf(value, validChoices)) {
+    throw new DoraException(
+      `Invalid field '${value}' provided. Valid fields are: ${validChoices.join(
+        ", ",
+      )}`,
+    )
+  }
+}

@@ -15,7 +15,10 @@ import type { DoraReply } from "~/lib/discord/interaction"
 import { getMember } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import { mapToMemberFields } from "~/lib/helpers/member"
-import { assertHasDefinedProperty, isOneOf } from "~/lib/validation"
+import {
+  assertHasDefinedProperty,
+  assertValidMemberField,
+} from "~/lib/validation"
 
 import { getStaticGuildConfigById } from "../../guildConfigs"
 
@@ -128,17 +131,10 @@ export const handleWhoIs = async ({
     return { embeds: [embed] }
   }
 
-  const validChoices = getActiveMemberFields(
+  assertValidMemberField(
+    specificMemberData,
     getStaticGuildConfigById(interaction.guild.id).optInMemberFields,
-  ).map((validField) => validField.id)
-
-  if (!isOneOf(specificMemberData, validChoices)) {
-    throw new DoraUserException(
-      `Invalid field for ${memberDataOptionName} specified ('${specificMemberData}'). Valid fields are: ${validChoices.join(
-        ", ",
-      )}`,
-    )
-  }
+  )
 
   const mappedMemberFields = mapToMemberFields({
     guildMember,
