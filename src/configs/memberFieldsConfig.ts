@@ -181,20 +181,6 @@ export const memberFieldsConfig: MemberFieldsConfig = {
    * Owned by Discord but synced to the DB to make it easier to
    * query/filter members based on these values
    */
-  username: {
-    name: "Username",
-    id: "username",
-    optIn: false,
-    dependsOn: undefined,
-    formatter: ({ username }) => createCopyableText(username),
-  },
-  displayName: {
-    name: "Display Name",
-    id: "displayName",
-    optIn: false,
-    dependsOn: undefined,
-    formatter: ({ displayName }) => createCopyableText(displayName),
-  },
   roles: {
     name: "Roles",
     id: "roles",

@@ -10,8 +10,8 @@ import {
   type MemberDataDbKeysWithExtras,
 } from "~/lib/database/memberDataService"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import type { MemberFields, MemberFieldsIds } from "~/lib/helpers/member"
-import { mapToMemberFields } from "~/lib/helpers/member"
+import type { DoraMember, MemberFieldsIds } from "~/lib/helpers/member"
+import { mapToDoraMember } from "~/lib/helpers/member"
 import {
   assertHasDefinedProperty,
   assertValidMemberField,
@@ -127,14 +127,14 @@ const handleFieldChoice = async ({
     )
   }
 
-  const memberFieldsList = await fetchRelevantMemberData({
+  const doraMembers = await fetchDoraMembersWithRelevantData({
     interaction,
     guildId,
     field,
     role: role ? { id: role.id } : null,
   })
 
-  if (!memberFieldsList?.length) {
+  if (!doraMembers?.length) {
     throw new DoraUserException("No member data found", {
       severity: DoraUserException.Severity.Info,
     })
@@ -143,15 +143,16 @@ const handleFieldChoice = async ({
   const title = `Members with *${fieldConfig.name}* data`
   const titleWithRole = role ? `${title} in role \`${role.name}\`` : title
 
-  const list = memberFieldsList
-    .map((memberFields) => {
-      return `- **${memberFields.displayName || memberFields.username}**: ${fieldConfig.formatter?.(memberFields) || "-"}`
+  const list = doraMembers
+    .map((doraMember) => {
+      return `- **${doraMember.displayName || doraMember.username}**: ${fieldConfig.formatter?.(doraMember.fields) || "-"}`
     })
     .join("\n")
   return `${titleWithRole}\n${list}`
 }
 
-const fetchRelevantMemberData = async ({
+/** This will return a list of partly hydrated DoraMember depending on what data is relevant  */
+const fetchDoraMembersWithRelevantData = async ({
   interaction,
   guildId,
   field,
@@ -161,7 +162,7 @@ const fetchRelevantMemberData = async ({
   guildId: string
   field: MemberFieldsIds
   role: { id: string } | null
-}): Promise<MemberFields[] | undefined> => {
+}): Promise<DoraMember[] | undefined> => {
   // Handling for fields stored in the DB
   if (isOneOf(field, dbSupportedFields)) {
     const membersDbData = await getMembersWithField({
@@ -169,10 +170,10 @@ const fetchRelevantMemberData = async ({
       field,
       roleIds: role ? [role.id] : undefined,
     })
-    return membersDbData.map((memberData) => mapToMemberFields({ memberData }))
+    return membersDbData.map((memberData) => mapToDoraMember({ memberData }))
   }
 
-  // Handling for fields not stored in the DB (computed at runtime)
+  // Handling for fields not stored in the DB
   const guildMembers = await interaction.guild.members.fetch()
   const members = Array.from(guildMembers.values())
   const roleFiltered = role
@@ -183,5 +184,5 @@ const fetchRelevantMemberData = async ({
       "This command does not support listing favorite emojis at this time. Note that /whois or /serverdata does support fetching favorite emoji data.",
     )
   }
-  return roleFiltered.map((guildMember) => mapToMemberFields({ guildMember }))
+  return roleFiltered.map((guildMember) => mapToDoraMember({ guildMember }))
 }

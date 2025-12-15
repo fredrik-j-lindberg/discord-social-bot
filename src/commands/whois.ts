@@ -9,12 +9,9 @@ import {
   type Command,
   ephemeralOptionName,
 } from "~/events/interactionCreate/listeners/commandRouter"
-import { getMemberData } from "~/lib/database/memberDataService"
-import { getMemberEmojiCounts } from "~/lib/database/memberEmojisService"
 import type { DoraReply } from "~/lib/discord/interaction"
-import { getMember } from "~/lib/discord/user"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import { mapToMemberFields } from "~/lib/helpers/member"
+import { getDoraMember } from "~/lib/helpers/member"
 import {
   assertHasDefinedProperty,
   assertValidMemberField,
@@ -100,33 +97,13 @@ export const handleWhoIs = async ({
     "Command issued without associated guild",
   )
 
-  const guildMember = await getMember({
-    guild: interaction.guild,
-    userId,
-  })
-
-  const memberData = await getMemberData({
-    userId: guildMember.id,
-    guildId: interaction.guild.id,
-  })
-
-  if (!memberData) {
-    return `No member data was found for ${guildMember.displayName}`
-  }
-
-  const emojiCounts = await getMemberEmojiCounts({
-    memberId: memberData.id,
-    sortBy: "mostUsed",
-    limit: 15,
-  })
+  const doraMember = await getDoraMember({ guild: interaction.guild, userId })
 
   // If we don't have a specific field requested, return the default embed
   if (!specificMemberData) {
     const embed = getMemberDataEmbed({
       guildId: interaction.guild.id,
-      guildMember,
-      memberData,
-      emojiCounts,
+      doraMember,
     })
     return { embeds: [embed] }
   }
@@ -136,16 +113,10 @@ export const handleWhoIs = async ({
     getStaticGuildConfigById(interaction.guild.id).optInMemberFields,
   )
 
-  const mappedMemberFields = mapToMemberFields({
-    guildMember,
-    memberData,
-    emojiCounts,
-  })
-
   const memberFieldConfig = memberFieldsConfig[specificMemberData]
-  const header = `*${memberFieldConfig.name}* for *${guildMember.displayName}*:`
+  const header = `*${memberFieldConfig.name}* for *${doraMember.displayName}*:`
   const value =
-    memberFieldConfig.formatter?.(mappedMemberFields, "long") ||
-    `No *${memberFieldConfig.name}* data was found for ${guildMember.displayName}.${memberFieldConfig.provideGuidance ? ` *Hint: ${memberFieldConfig.provideGuidance}*` : ""}`
+    memberFieldConfig.formatter?.(doraMember.fields, "long") ||
+    `No *${memberFieldConfig.name}* data was found for ${doraMember.displayName}.${memberFieldConfig.provideGuidance ? ` *Hint: ${memberFieldConfig.provideGuidance}*` : ""}`
   return `${header}\n${value}`
 }
