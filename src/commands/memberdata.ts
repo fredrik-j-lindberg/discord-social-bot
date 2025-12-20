@@ -145,7 +145,7 @@ const handleFieldChoice = async ({
 
   const list = doraMembers
     .map((doraMember) => {
-      return `- **${doraMember.displayName || doraMember.username}**: ${fieldConfig.formatter?.(doraMember.fields) || "-"}`
+      return `- **${doraMember.displayName || doraMember.username}**: ${fieldConfig.formatter?.(doraMember) || "-"}`
     })
     .join("\n")
   return `${titleWithRole}\n${list}`

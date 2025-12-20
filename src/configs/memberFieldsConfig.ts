@@ -5,7 +5,7 @@ import {
   createRoleMention,
 } from "~/lib/discord/message"
 import { formatDate } from "~/lib/helpers/date"
-import type { MemberFields, MemberFieldsIds } from "~/lib/helpers/member"
+import type { DoraMember, MemberFieldsIds } from "~/lib/helpers/member"
 
 export interface MemberFieldConfig<
   TId extends MemberFieldsIds = MemberFieldsIds,
@@ -20,7 +20,7 @@ export interface MemberFieldConfig<
   dependsOn?: MemberFieldsIds
   /** How to format the field for display (e.g. for the /whois command) */
   formatter?: (
-    memberFields: MemberFields,
+    doraMember: DoraMember,
     mode?: "compact" | "long",
   ) => string | undefined
   /** How the user can provide this data */
@@ -47,8 +47,10 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "birthday",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ birthday }) =>
-      createCopyableText(formatDate(birthday, { dateStyle: "short" })),
+    formatter: ({ personalInfo }) =>
+      createCopyableText(
+        formatDate(personalInfo.birthday, { dateStyle: "short" }),
+      ),
     provideGuidance: provideGuidanceCopy.pii,
   },
   firstName: {
@@ -56,7 +58,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "firstName",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ firstName }) => createCopyableText(firstName),
+    formatter: ({ personalInfo }) => createCopyableText(personalInfo.firstName),
     provideGuidance: provideGuidanceCopy.pii,
   },
   phoneNumber: {
@@ -64,7 +66,8 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "phoneNumber",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ phoneNumber }) => createCopyableText(phoneNumber),
+    formatter: ({ personalInfo }) =>
+      createCopyableText(personalInfo.phoneNumber),
     provideGuidance: provideGuidanceCopy.pii,
   },
   email: {
@@ -72,7 +75,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "email",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ email }) => createCopyableText(email),
+    formatter: ({ personalInfo }) => createCopyableText(personalInfo.email),
     provideGuidance: provideGuidanceCopy.pii,
   },
   dietaryPreferences: {
@@ -80,8 +83,8 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "dietaryPreferences",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ dietaryPreferences }) =>
-      createCopyableText(dietaryPreferences),
+    formatter: ({ personalInfo }) =>
+      createCopyableText(personalInfo.dietaryPreferences),
     provideGuidance: provideGuidanceCopy.pii,
   },
   switchFriendCode: {
@@ -89,7 +92,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "switchFriendCode",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ switchFriendCode }) => createCopyableText(switchFriendCode),
+    formatter: ({ friendCodes }) => createCopyableText(friendCodes.switch),
     provideGuidance: provideGuidanceCopy.pii,
   },
   pokemonTcgpFriendCode: {
@@ -97,8 +100,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "pokemonTcgpFriendCode",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ pokemonTcgpFriendCode }) =>
-      createCopyableText(pokemonTcgpFriendCode),
+    formatter: ({ friendCodes }) => createCopyableText(friendCodes.pokemonTcgp),
     provideGuidance: provideGuidanceCopy.pii,
   },
   // opt in fields above
@@ -108,40 +110,39 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "messageCount",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ messageCount }) =>
-      createCopyableText(messageCount?.toString()),
+    formatter: ({ stats }) =>
+      createCopyableText(stats.messageCount?.toString()),
   },
   latestMessageAt: {
     name: "Latest Message At",
     id: "latestMessageAt",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ latestMessageAt }) => createDiscordTimestamp(latestMessageAt),
+    formatter: ({ stats }) => createDiscordTimestamp(stats.latestMessageAt),
   },
   reactionCount: {
     name: "Reaction Count",
     id: "reactionCount",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ reactionCount }) =>
-      createCopyableText(reactionCount?.toString()),
+    formatter: ({ stats }) =>
+      createCopyableText(stats.reactionCount?.toString()),
   },
   latestReactionAt: {
     name: "Latest Reaction At",
     id: "latestReactionAt",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ latestReactionAt }) =>
-      createDiscordTimestamp(latestReactionAt),
+    formatter: ({ stats }) => createDiscordTimestamp(stats.latestReactionAt),
   },
   favoriteEmojis: {
     name: "Favorite Emojis",
     id: "favoriteEmojis",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ favoriteEmojis }, mode) =>
-      favoriteEmojis
-        ?.slice(0, mode === "compact" ? 5 : favoriteEmojis.length)
+    formatter: ({ stats }, mode) =>
+      stats.favoriteEmojis
+        ?.slice(0, mode === "compact" ? 5 : stats.favoriteEmojis.length)
         .map(({ emojiId, emojiName, isAnimated, count }) =>
           mode === "compact"
             ? createEmojiMention({
@@ -162,7 +163,8 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "nextBirthday",
     optIn: false,
     dependsOn: "birthday",
-    formatter: ({ nextBirthday }) => createDiscordTimestamp(nextBirthday),
+    formatter: ({ personalInfo }) =>
+      createDiscordTimestamp(personalInfo.nextBirthday),
     get provideGuidance() {
       return `Requires the ${this.dependsOn} field to be set.`
     },
@@ -172,7 +174,8 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "age",
     optIn: false,
     dependsOn: "birthday",
-    formatter: ({ age }) => createCopyableText(age?.toString()),
+    formatter: ({ personalInfo }) =>
+      createCopyableText(personalInfo.age?.toString()),
     get provideGuidance() {
       return `Requires the ${this.dependsOn} field to be set.`
     },
@@ -186,8 +189,8 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "roles",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ roles }) =>
-      roles?.map((roleId) => createRoleMention(roleId)).join(" "),
+    formatter: ({ roleIds }) =>
+      roleIds.map((roleId) => createRoleMention(roleId)).join(" "),
   },
   /**
    * Owned by discord and simply presented by Dora
@@ -197,14 +200,14 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "joinedServer",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ joinedServer }) => createDiscordTimestamp(joinedServer),
+    formatter: ({ stats }) => createDiscordTimestamp(stats.joinedServer),
   },
   accountCreation: {
     name: "Account Creation",
     id: "accountCreation",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ accountCreation }) => createDiscordTimestamp(accountCreation),
+    formatter: ({ stats }) => createDiscordTimestamp(stats.accountCreation),
   },
 }
 

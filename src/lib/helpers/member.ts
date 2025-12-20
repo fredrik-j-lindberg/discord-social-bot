@@ -44,9 +44,35 @@ export interface DoraMember {
   username: string
   /** Picked from Discord guild member data or the dora member database. Defaults to username if for some reason neither of those are set */
   displayName: string
+  /** Role IDs assigned to the member in the guild */
+  roleIds: string[]
+  /** Various statistics about the member */
+  stats: {
+    messageCount?: number | null
+    latestMessageAt?: Date | null
+    reactionCount?: number | null
+    latestReactionAt?: Date | null
+    favoriteEmojis?: EmojiCount[] | null
+    joinedServer?: Date | null
+    accountCreation?: Date | null
+  }
+  /** Personal info provided by the member themself */
+  personalInfo: {
+    birthday?: Date | null
+    nextBirthday?: Date | null
+    age?: number | null
+    firstName?: string | null
+    phoneNumber?: string | null
+    email?: string | null
+    dietaryPreferences?: string | null
+  }
+  /** Friend codes provided by the member themself */
+  friendCodes: {
+    switch?: string | null
+    pokemonTcgp?: string | null
+  }
+  /** The original guild member object from Discord, if available */
   guildMember?: GuildMember
-  /** The fields that automatically maps to functionality used for e.g. /whois and /memberdata together with the memberFieldsConfig */
-  fields: MemberFields
 }
 
 export const mapToDoraMember = ({
@@ -67,30 +93,37 @@ export const mapToDoraMember = ({
   const displayName =
     guildMember?.displayName || memberData?.displayName || username
 
+  const memberDataRoleIds = memberData?.roleIds.filter(
+    (roleId) => roleId !== guildMember?.guild.id, // Remove the irrelevant @everyone role
+  )
+
   return {
     username,
     displayName,
-    fields: {
-      firstName: memberData?.firstName,
-      phoneNumber: memberData?.phoneNumber,
-      email: memberData?.email,
-      dietaryPreferences: memberData?.dietaryPreferences,
-      switchFriendCode: memberData?.switchFriendCode,
-      pokemonTcgpFriendCode: memberData?.pokemonTcgpFriendCode,
-      birthday: memberData?.birthday,
+    roleIds: memberDataRoleIds || [],
+    stats: {
       messageCount: memberData?.messageCount,
       latestMessageAt: memberData?.latestMessageAt,
       reactionCount: memberData?.reactionCount,
       latestReactionAt: memberData?.latestReactionAt,
       favoriteEmojis: emojiCounts,
-      nextBirthday: memberData?.nextBirthday,
-      age: memberData?.age,
-      roles: memberData?.roleIds.filter(
-        (roleId) => roleId !== guildMember?.guild.id, // Remove the irrelevant @everyone role
-      ),
       joinedServer: getValidDate(guildMember?.joinedTimestamp),
       accountCreation: getValidDate(guildMember?.user.createdTimestamp),
     },
+    personalInfo: {
+      birthday: memberData?.birthday,
+      nextBirthday: memberData?.nextBirthday,
+      age: memberData?.age,
+      firstName: memberData?.firstName,
+      phoneNumber: memberData?.phoneNumber,
+      email: memberData?.email,
+      dietaryPreferences: memberData?.dietaryPreferences,
+    },
+    friendCodes: {
+      switch: memberData?.switchFriendCode,
+      pokemonTcgp: memberData?.pokemonTcgpFriendCode,
+    },
+    guildMember,
   }
 }
 

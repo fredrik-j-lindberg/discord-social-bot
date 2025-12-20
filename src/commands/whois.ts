@@ -116,7 +116,7 @@ export const handleWhoIs = async ({
   const memberFieldConfig = memberFieldsConfig[specificMemberData]
   const header = `*${memberFieldConfig.name}* for *${doraMember.displayName}*:`
   const value =
-    memberFieldConfig.formatter?.(doraMember.fields, "long") ||
+    memberFieldConfig.formatter?.(doraMember, "long") ||
     `No *${memberFieldConfig.name}* data was found for ${doraMember.displayName}.${memberFieldConfig.provideGuidance ? ` *Hint: ${memberFieldConfig.provideGuidance}*` : ""}`
   return `${header}\n${value}`
 }
