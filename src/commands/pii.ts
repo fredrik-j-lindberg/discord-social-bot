@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "discord.js"
 
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
-import { getMemberData } from "~/lib/database/memberDataService"
+import { getDoraDatabaseMember } from "~/lib/helpers/member"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 import piiModal from "../modals/piiModal"
@@ -23,13 +23,14 @@ export default {
       "Command issued without associated guild",
     )
 
-    const memberData = await getMemberData({
+    const doraMember = await getDoraDatabaseMember({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
+      withEmojiCounts: false,
     })
     const modal = await piiModal.createModal({
       guildId: interaction.guild.id,
-      memberData,
+      doraMember,
     })
     await interaction.showModal(modal)
     return undefined // Modal submission will handle response

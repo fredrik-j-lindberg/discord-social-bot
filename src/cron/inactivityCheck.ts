@@ -66,6 +66,7 @@ const handleInactivityCheck = async ({
 
   const guild = await getGuild(guildId)
   const members = await guild.members.fetch()
+  // TODO: Get all inactive dora members via a query instead of fetching all and then filtering in code
   const membersData = await getAllGuildMemberData(guild.id)
 
   const memberDataById = new Map(membersData.map((data) => [data.userId, data]))

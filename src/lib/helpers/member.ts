@@ -173,9 +173,11 @@ export const getDoraDiscordMember = async ({
 export const getDoraDatabaseMember = async ({
   guildId,
   userId,
+  withEmojiCounts = true,
 }: {
   guildId: string
   userId: string
+  withEmojiCounts?: boolean
 }): Promise<DoraDatabaseMember | undefined> => {
   const memberData = await getMemberData({
     userId,
@@ -184,6 +186,10 @@ export const getDoraDatabaseMember = async ({
 
   if (!memberData) {
     return undefined
+  }
+
+  if (!withEmojiCounts) {
+    return mapToDoraDatabaseMember(memberData)
   }
 
   const emojiCounts = await getMemberEmojiCounts({

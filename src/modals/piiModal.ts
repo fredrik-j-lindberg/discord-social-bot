@@ -7,11 +7,9 @@ import {
   type MemberOptInFieldIds,
 } from "~/configs/memberFieldsConfig"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
-import {
-  type MemberData,
-  setMemberData,
-} from "~/lib/database/memberDataService"
+import { setMemberData } from "~/lib/database/memberDataService"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
+import type { DoraDatabaseMember } from "~/lib/helpers/member"
 import {
   composeModalInputs,
   extractAndValidateModalValues,
@@ -24,7 +22,7 @@ import { getStaticGuildConfigById } from "../../guildConfigs"
 
 type PiiModalInputConfig = ModalInputConfig<
   MemberFieldsIds,
-  MemberData | undefined
+  DoraDatabaseMember | undefined
 >
 
 const modalInputsMap = {
@@ -32,7 +30,7 @@ const modalInputsMap = {
     type: "text",
     id: memberFieldsConfig.firstName.id,
     label: "First name",
-    getPrefilledValue: (memberData) => memberData?.firstName || "",
+    getPrefilledValue: (doraMember) => doraMember?.personalInfo?.firstName,
     style: TextInputStyle.Short,
     validation: z
       .string()
@@ -48,8 +46,8 @@ const modalInputsMap = {
     label: "Birthday (DD/MM/YYYY)",
     description:
       "Feel free to set a random year if you prefer not to share your age",
-    getPrefilledValue: (memberData) =>
-      formatDate(memberData?.birthday, { dateStyle: "short" }),
+    getPrefilledValue: (doraMember) =>
+      formatDate(doraMember?.personalInfo?.birthday, { dateStyle: "short" }),
     style: TextInputStyle.Short,
     placeholder: "23/11/1998",
     validation: z
@@ -64,7 +62,7 @@ const modalInputsMap = {
     type: "text",
     id: memberFieldsConfig.switchFriendCode.id,
     label: "Nintendo Switch friend code",
-    getPrefilledValue: (memberData) => memberData?.switchFriendCode || "",
+    getPrefilledValue: (doraMember) => doraMember?.friendCodes?.switch,
     style: TextInputStyle.Short,
     placeholder: "SW-1234-5678-9012",
     validation: z
@@ -78,7 +76,7 @@ const modalInputsMap = {
     type: "text",
     id: memberFieldsConfig.pokemonTcgpFriendCode.id,
     label: "Pokémon TCGP friend code",
-    getPrefilledValue: (memberData) => memberData?.pokemonTcgpFriendCode || "",
+    getPrefilledValue: (doraMember) => doraMember?.friendCodes?.pokemonTcgp,
     style: TextInputStyle.Short,
     placeholder: "1234-5678-9012-3456",
     validation: z
@@ -99,7 +97,7 @@ const modalInputsMap = {
     type: "text",
     id: memberFieldsConfig.phoneNumber.id,
     label: "Phone number",
-    getPrefilledValue: (memberData) => memberData?.phoneNumber,
+    getPrefilledValue: (doraMember) => doraMember?.personalInfo?.phoneNumber,
     placeholder: "+46712345673",
     style: TextInputStyle.Short,
     validation: z.string().max(15).optional().nullable(),
@@ -110,7 +108,7 @@ const modalInputsMap = {
     type: "text",
     id: memberFieldsConfig.email.id,
     label: "Email",
-    getPrefilledValue: (memberData) => memberData?.email,
+    getPrefilledValue: (doraMember) => doraMember?.personalInfo?.email,
     style: TextInputStyle.Short,
     placeholder: "example@example.com",
     validation: z
@@ -128,7 +126,8 @@ const modalInputsMap = {
     type: "text",
     id: memberFieldsConfig.dietaryPreferences.id,
     label: "Dietary preferences",
-    getPrefilledValue: (memberData) => memberData?.dietaryPreferences,
+    getPrefilledValue: (doraMember) =>
+      doraMember?.personalInfo?.dietaryPreferences,
     style: TextInputStyle.Short,
     placeholder: "Gluten-free, Vegan, No pork",
     validation: z.string().max(50).optional().nullable(),
@@ -142,11 +141,11 @@ const inputSchema = generateModalSchema(modalInputsMap)
 
 interface CreateModalProps {
   guildId: string
-  memberData: MemberData | undefined
+  doraMember: DoraDatabaseMember | undefined
 }
 export default {
   data: { name: "memberDataModal" },
-  async createModal({ guildId, memberData }: CreateModalProps) {
+  async createModal({ guildId, doraMember }: CreateModalProps) {
     const modal = new ModalBuilder()
       .setCustomId(this.data.name)
       .setTitle("Member data form. Optional!")
@@ -161,7 +160,7 @@ export default {
 
     const composedInputs = await composeModalInputs(
       inputsToGenerateConfig,
-      memberData,
+      doraMember,
     )
     modal.addLabelComponents(...composedInputs)
 

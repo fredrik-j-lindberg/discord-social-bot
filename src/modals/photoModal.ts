@@ -2,13 +2,13 @@ import { ModalBuilder } from "discord.js"
 import { z } from "zod"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
-import { getMemberData } from "~/lib/database/memberDataService"
 import { storeFiles } from "~/lib/database/memberFileService"
 import { getTags } from "~/lib/database/tagService"
 import {
   createMediaGalleryContainer,
   createUserMention,
 } from "~/lib/discord/message"
+import { getDoraDatabaseMember } from "~/lib/helpers/member"
 import {
   composeModalInputs,
   extractAndValidateModalValues,
@@ -104,15 +104,16 @@ export default {
       prefix: interaction.guild.id,
     })
 
-    const memberData = await getMemberData({
+    const memberData = await getDoraDatabaseMember({
       userId: interaction.user.id,
       guildId: interaction.guild.id,
+      withEmojiCounts: false,
     })
     if (!memberData) {
       return `No member data found for user ${interaction.user.username}. Unable to store files.`
     }
     await storeFiles({
-      memberId: memberData.id,
+      memberId: memberData.databaseId,
       guildId: interaction.guild.id,
       files: uploadResults.map((result) => ({
         name: result.originalName,
