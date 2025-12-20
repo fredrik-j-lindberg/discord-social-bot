@@ -1,14 +1,17 @@
 import { ModalBuilder, TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
-import { memberFieldsConfig } from "~/configs/memberFieldsConfig"
+import {
+  memberFieldsConfig,
+  type MemberFieldsIds,
+  type MemberOptInFieldIds,
+} from "~/configs/memberFieldsConfig"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import {
   type MemberData,
   setMemberData,
 } from "~/lib/database/memberDataService"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
-import type { MemberFieldsIds, MemberOptInFieldIds } from "~/lib/helpers/member"
 import {
   composeModalInputs,
   extractAndValidateModalValues,

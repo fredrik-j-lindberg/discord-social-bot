@@ -1,9 +1,11 @@
 import { type GuildBasedChannel, TextChannel } from "discord.js"
 
-import { getActiveMemberFields } from "~/configs/memberFieldsConfig"
+import {
+  getActiveMemberFields,
+  type MemberFieldsIds,
+} from "~/configs/memberFieldsConfig"
 
 import { DoraException, type Severity } from "./exceptions/DoraException"
-import type { MemberFieldsIds } from "./helpers/member"
 
 export const isDefined = <T>(value: T): value is NonNullable<T> =>
   value !== undefined && value !== null

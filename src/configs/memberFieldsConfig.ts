@@ -5,7 +5,30 @@ import {
   createRoleMention,
 } from "~/lib/discord/message"
 import { formatDate } from "~/lib/helpers/date"
-import type { DoraMember, MemberFieldsIds } from "~/lib/helpers/member"
+import type { DoraMember } from "~/lib/helpers/member"
+
+export type MemberOptInFieldIds =
+  | "birthday"
+  | "firstName"
+  | "phoneNumber"
+  | "email"
+  | "dietaryPreferences"
+  | "switchFriendCode"
+  | "pokemonTcgpFriendCode"
+
+type MemberDoraProvidedFieldIds =
+  | "messageCount"
+  | "latestMessageAt"
+  | "reactionCount"
+  | "latestReactionAt"
+  | "favoriteEmojis"
+  | "nextBirthday"
+  | "age"
+  | "roles"
+  | "joinedServer"
+  | "accountCreation"
+
+export type MemberFieldsIds = MemberOptInFieldIds | MemberDoraProvidedFieldIds
 
 export interface MemberFieldConfig<
   TId extends MemberFieldsIds = MemberFieldsIds,

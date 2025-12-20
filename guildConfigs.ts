@@ -1,7 +1,9 @@
-import { memberFieldsConfig } from "~/configs/memberFieldsConfig"
+import {
+  memberFieldsConfig,
+  type MemberOptInFieldIds,
+} from "~/configs/memberFieldsConfig"
 import { env } from "~/env"
 import { DoraException } from "~/lib/exceptions/DoraException"
-import type { MemberOptInFieldIds } from "~/lib/helpers/member"
 
 export interface StaticGuildConfig {
   guildId: string

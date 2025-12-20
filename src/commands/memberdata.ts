@@ -3,6 +3,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 import {
   getActiveMemberFields,
   getActiveMemberFieldsMap,
+  type MemberFieldsIds,
 } from "~/configs/memberFieldsConfig"
 import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
 import {
@@ -10,8 +11,7 @@ import {
   type MemberDataDbKeysWithExtras,
 } from "~/lib/database/memberDataService"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import type { DoraMember, MemberFieldsIds } from "~/lib/helpers/member"
-import { mapToDoraMember } from "~/lib/helpers/member"
+import { type DoraMember, mapToDoraMember } from "~/lib/helpers/member"
 import {
   assertHasDefinedProperty,
   assertValidMemberField,

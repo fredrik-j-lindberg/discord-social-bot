@@ -1,7 +1,10 @@
 import { type APIEmbedField, EmbedBuilder } from "discord.js"
 
-import { getActiveMemberFieldsMap } from "~/configs/memberFieldsConfig"
-import { type DoraMember, type MemberFieldsIds } from "~/lib/helpers/member"
+import {
+  getActiveMemberFieldsMap,
+  type MemberFieldsIds,
+} from "~/configs/memberFieldsConfig"
+import type { DoraMember } from "~/lib/helpers/member"
 
 import { getStaticGuildConfigById } from "../../guildConfigs"
 

@@ -9,36 +9,6 @@ import { getMember } from "../discord/user"
 import { DoraException } from "../exceptions/DoraException"
 import { getValidDate } from "./date"
 
-interface MemberOptInFields {
-  birthday?: Date | null
-  firstName?: string | null
-  phoneNumber?: string | null
-  email?: string | null
-  dietaryPreferences?: string | null
-  switchFriendCode?: string | null
-  pokemonTcgpFriendCode?: string | null
-}
-export type MemberOptInFieldIds = keyof MemberOptInFields
-
-interface MemberDoraProvidedFields {
-  messageCount?: number | null
-  latestMessageAt?: Date | null
-  reactionCount?: number | null
-  latestReactionAt?: Date | null
-  favoriteEmojis?: EmojiCount[] | null
-  nextBirthday?: Date | null
-  age?: number | null
-  roles?: string[] | null
-  joinedServer?: Date | null
-  accountCreation?: Date | null
-}
-
-type MemberDoraProvidedFieldIds = keyof MemberDoraProvidedFields
-
-export type MemberFields = MemberOptInFields & MemberDoraProvidedFields
-
-export type MemberFieldsIds = MemberOptInFieldIds | MemberDoraProvidedFieldIds
-
 /** The official Dora member representation, combining data from both discord and Dora member database */
 export interface DoraMember {
   username: string
