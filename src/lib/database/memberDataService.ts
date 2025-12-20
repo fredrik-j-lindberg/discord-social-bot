@@ -2,6 +2,7 @@ import { and, eq, inArray, isNotNull, sql } from "drizzle-orm"
 
 import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
+import type { DoraDatabaseMember } from "../helpers/member"
 import { db } from "./client"
 import { setMemberRoles } from "./memberRolesService"
 import {
@@ -96,14 +97,51 @@ export type MemberData = Omit<MemberRecordSelectWithRelations, "roles"> & {
   roleIds: string[]
 }
 
-const mapSelectedMemberData = ({
+const mapMemberDataToDoraMember = ({
   roles,
   ...memberData
-}: MemberRecordSelectWithRelations): MemberData => ({
-  ...memberData,
-  nextBirthday: memberData.nextBirthday && new Date(memberData.nextBirthday), // This seems to be a bug in drizzle where the query + extra syntax returns it as string instead of date
-  roleIds: roles.map((role) => role.roleId),
-})
+}: MemberRecordSelectWithRelations): DoraDatabaseMember => {
+  const username = memberData.username
+  const displayName = memberData.displayName || username
+
+  const nextBirthday =
+    memberData.nextBirthday && new Date(memberData.nextBirthday) // This seems to be a bug in drizzle where the query + extra syntax returns it as string instead of date
+  const roleIds = roles
+    .map((role) => role.roleId)
+    .filter(
+      (roleId) => roleId !== memberData.guildId, // Remove the irrelevant @everyone role
+    )
+
+  return {
+    databaseId: memberData.id,
+    userId: memberData.userId,
+    username,
+    displayName,
+    guildId: memberData.guildId,
+    roleIds,
+    stats: {
+      latestActivityAt: memberData.latestActivityAt,
+      inactiveSince: memberData.inactiveSince,
+      messageCount: memberData.messageCount,
+      latestMessageAt: memberData.latestMessageAt,
+      reactionCount: memberData.reactionCount,
+      latestReactionAt: memberData.latestReactionAt,
+    },
+    personalInfo: {
+      birthday: memberData.birthday,
+      age: memberData.age,
+      nextBirthday,
+      firstName: memberData.firstName,
+      phoneNumber: memberData.phoneNumber,
+      email: memberData.email,
+      dietaryPreferences: memberData.dietaryPreferences,
+    },
+    friendCodes: {
+      switch: memberData.switchFriendCode,
+      pokemonTcgp: memberData.pokemonTcgpFriendCode,
+    },
+  }
+}
 
 export const getMemberData = async ({
   userId,
@@ -111,7 +149,7 @@ export const getMemberData = async ({
 }: {
   userId: string
   guildId: string
-}): Promise<MemberData | undefined> => {
+}): Promise<DoraDatabaseMember | undefined> => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
@@ -128,7 +166,7 @@ export const getMemberData = async ({
   }
   const memberRecord = memberRecords[0]
   if (!memberRecord) return
-  return mapSelectedMemberData(memberRecord)
+  return mapMemberDataToDoraMember(memberRecord)
 }
 
 /** Creates member or updates member with all the data sent */
@@ -307,7 +345,7 @@ export const removeMemberReactionFromStats = async ({
 }
 
 export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
-  MemberData[]
+  DoraDatabaseMember[]
 > => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
@@ -320,7 +358,7 @@ export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
       with: { roles: true },
     })
 
-  return memberRecords.map(mapSelectedMemberData)
+  return memberRecords.map(mapMemberDataToDoraMember)
 }
 
 // TODO: When drizzle supports virtual generated columns we can move nextBirthday and age to that setup,
@@ -348,7 +386,7 @@ export const getMembersWithField = async ({
   field: Exclude<MemberDataDbKeysWithExtras, "roles">
   /** Pass if it should filter based on these roleIds */
   roleIds?: string[]
-}): Promise<MemberData[]> => {
+}): Promise<DoraDatabaseMember[]> => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
@@ -362,7 +400,7 @@ export const getMembersWithField = async ({
       limit: 50,
     })
 
-  return memberRecords.map(mapSelectedMemberData)
+  return memberRecords.map(mapMemberDataToDoraMember)
 }
 
 /**
@@ -370,7 +408,7 @@ export const getMembersWithField = async ({
  */
 export const getAllGuildMemberData = async (
   guildId: string,
-): Promise<MemberData[]> => {
+): Promise<DoraDatabaseMember[]> => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
@@ -379,5 +417,5 @@ export const getAllGuildMemberData = async (
       with: { roles: true },
     })
 
-  return memberRecords.map(mapSelectedMemberData)
+  return memberRecords.map(mapMemberDataToDoraMember)
 }

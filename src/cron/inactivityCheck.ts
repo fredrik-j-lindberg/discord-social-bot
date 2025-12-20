@@ -67,18 +67,18 @@ const handleInactivityCheck = async ({
   const guild = await getGuild(guildId)
   const members = await guild.members.fetch()
   // TODO: Get all inactive dora members via a query instead of fetching all and then filtering in code
-  const membersData = await getAllGuildMemberData(guild.id)
+  const doraMembers = await getAllGuildMemberData(guild.id)
 
-  const memberDataById = new Map(membersData.map((data) => [data.userId, data]))
+  const memberDataById = new Map(doraMembers.map((data) => [data.userId, data]))
 
   const inactiveMembers = new Map<string, InactivityMemberData>()
   for (const member of members.values()) {
     if (member.user.bot) {
       continue // Ignore bots
     }
-    const memberData = memberDataById.get(member.id)
+    const doraMember = memberDataById.get(member.id)
 
-    const latestActivity = memberData?.latestActivityAt
+    const latestActivity = doraMember?.stats.latestActivityAt
     if (latestActivity && latestActivity > inactiveThresholdDate) {
       continue // Active member, disregard
     }
@@ -88,8 +88,8 @@ const handleInactivityCheck = async ({
       userId: member.id,
       username: member.user.username,
       displayName: member.displayName,
-      latestActivityAt: memberData?.latestActivityAt,
-      inactiveSince: memberData?.inactiveSince,
+      latestActivityAt: doraMember?.stats.latestActivityAt,
+      inactiveSince: doraMember?.stats.inactiveSince,
     })
   }
 

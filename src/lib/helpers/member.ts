@@ -1,6 +1,6 @@
 import type { Guild, GuildMember } from "discord.js"
 
-import { getMemberData, type MemberData } from "../database/memberDataService"
+import { getMemberData } from "../database/memberDataService"
 import {
   type EmojiCount,
   getMemberEmojiCounts,
@@ -11,6 +11,7 @@ import { getValidDate } from "./date"
 
 interface DoraMemberStats {
   latestActivityAt?: Date | null
+  inactiveSince?: Date | null
   messageCount?: number | null
   latestMessageAt?: Date | null
   reactionCount?: number | null
@@ -40,6 +41,8 @@ interface DoraMemberFriendCodes {
 export interface DoraMember {
   /** The unique ID of the member data record in the database. Optional as some members may not have a database record */
   databaseId?: string
+  /** The Discord user ID of the user */
+  userId: string
   /** The Discord username of the user */
   username: string
   /** The Discord display name of the user (within the guild). Defaults to username if for some reason neither of those are set */
@@ -91,48 +94,6 @@ export const mapToCompleteDoraMember = ({
   }
 }
 
-/** Maps member database data into DoraDatabaseMember object, which is a partial type of the DoraMember type */
-export const mapToDoraDatabaseMember = (
-  memberData: MemberData,
-  emojiCounts?: EmojiCount[],
-): DoraDatabaseMember => {
-  const username = memberData.username
-  const displayName = memberData.displayName || username
-
-  const memberDataRoleIds = memberData.roleIds.filter(
-    (roleId) => roleId !== memberData.guildId, // Remove the irrelevant @everyone role
-  )
-
-  return {
-    databaseId: memberData.id,
-    username,
-    displayName,
-    guildId: memberData.guildId,
-    roleIds: memberDataRoleIds,
-    stats: {
-      latestActivityAt: memberData.latestActivityAt,
-      messageCount: memberData.messageCount,
-      latestMessageAt: memberData.latestMessageAt,
-      reactionCount: memberData.reactionCount,
-      latestReactionAt: memberData.latestReactionAt,
-      favoriteEmojis: emojiCounts,
-    },
-    personalInfo: {
-      birthday: memberData.birthday,
-      age: memberData.age,
-      nextBirthday: memberData.nextBirthday,
-      firstName: memberData.firstName,
-      phoneNumber: memberData.phoneNumber,
-      email: memberData.email,
-      dietaryPreferences: memberData.dietaryPreferences,
-    },
-    friendCodes: {
-      switch: memberData.switchFriendCode,
-      pokemonTcgp: memberData.pokemonTcgpFriendCode,
-    },
-  }
-}
-
 /** Maps Discord guild member data into DoraDiscordMember object, which is a partial type of the DoraMember type */
 export const mapToDoraDiscordMember = (
   guildMember: GuildMember,
@@ -141,6 +102,7 @@ export const mapToDoraDiscordMember = (
   const displayName = guildMember.displayName || username
 
   return {
+    userId: guildMember.user.id,
     username,
     displayName,
     guildId: guildMember.guild.id,
@@ -179,26 +141,27 @@ export const getDoraDatabaseMember = async ({
   userId: string
   withEmojiCounts?: boolean
 }): Promise<DoraDatabaseMember | undefined> => {
-  const memberData = await getMemberData({
+  const doraDatabaseMember = await getMemberData({
     userId,
     guildId,
   })
 
-  if (!memberData) {
-    return undefined
-  }
-
-  if (!withEmojiCounts) {
-    return mapToDoraDatabaseMember(memberData)
-  }
+  if (!doraDatabaseMember) return doraDatabaseMember
+  if (!withEmojiCounts) return doraDatabaseMember
 
   const emojiCounts = await getMemberEmojiCounts({
-    memberId: memberData.id,
+    memberId: doraDatabaseMember.databaseId,
     sortBy: "mostUsed",
     limit: 15,
   })
 
-  return mapToDoraDatabaseMember(memberData, emojiCounts)
+  return {
+    ...doraDatabaseMember,
+    stats: {
+      ...doraDatabaseMember.stats,
+      favoriteEmojis: emojiCounts,
+    },
+  }
 }
 
 /**

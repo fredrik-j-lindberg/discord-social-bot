@@ -14,7 +14,6 @@ import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import {
   type DoraDatabaseMember,
   type DoraMember,
-  mapToDoraDatabaseMember,
   mapToDoraDiscordMember,
 } from "~/lib/helpers/member"
 import {
@@ -168,16 +167,20 @@ const fetchDoraMembersWithRelevantData = async ({
   field: MemberFieldsIds
   role: { id: string } | null
 }): Promise<(DoraDatabaseMember | DoraMember)[] | undefined> => {
+  // TODO: Add some kind of handling for favorite emojis field
+  if (field === "favoriteEmojis") {
+    throw new DoraUserException(
+      "This command does not support listing favorite emojis at this time. Note that /whois or /serverdata does support fetching favorite emoji data.",
+    )
+  }
+
   // Handling for fields stored in the DB
   if (isOneOf(field, dbSupportedFields)) {
-    const membersDbData = await getMembersWithField({
+    return await getMembersWithField({
       guildId,
       field,
       roleIds: role ? [role.id] : undefined,
     })
-    return membersDbData.map((memberData) =>
-      mapToDoraDatabaseMember(memberData),
-    )
   }
 
   // Handling for fields not stored in the DB
@@ -186,10 +189,5 @@ const fetchDoraMembersWithRelevantData = async ({
   const roleFiltered = role
     ? members.filter((m) => m.roles.cache.has(role.id))
     : members
-  if (field === "favoriteEmojis") {
-    throw new DoraUserException(
-      "This command does not support listing favorite emojis at this time. Note that /whois or /serverdata does support fetching favorite emoji data.",
-    )
-  }
   return roleFiltered.map((guildMember) => mapToDoraDiscordMember(guildMember))
 }

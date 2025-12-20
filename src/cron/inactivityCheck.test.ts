@@ -214,7 +214,7 @@ describe("inactivityMonitor", () => {
       inactivityConfig: mockGuildConfig.inactivity,
     })
     expect(mockKickFn).toHaveBeenCalledWith(
-      `Automatically kicked due to inactivity. Last seen ${mockToKickMemberData.latestActivityAt?.toISOString() || "N/A"}`,
+      `Automatically kicked due to inactivity. Last seen ${mockToKickMemberData.stats.latestActivityAt?.toISOString() || "N/A"}`,
     )
     expect(mockSetMemberData).toHaveBeenCalledWith({
       memberData: expect.objectContaining({
@@ -228,14 +228,14 @@ describe("inactivityMonitor", () => {
         userId: mockToMarkAsInactiveMember.id,
         guildId: mockGuildId,
       },
-      `Set member ${mockToMarkAsInactiveMember.displayName} as inactive in guild as their latest activity was ${mockToMarkInactiveMemberData.latestActivityAt?.toISOString() || "N/A"} and the guild inactivity threshold is ${mockDaysUntilInactive} days`,
+      `Set member ${mockToMarkAsInactiveMember.displayName} as inactive in guild as their latest activity was ${mockToMarkInactiveMemberData.stats.latestActivityAt?.toISOString() || "N/A"} and the guild inactivity threshold is ${mockDaysUntilInactive} days`,
     )
     expect(mockLogger.info).toHaveBeenCalledWith(
       {
         userId: mockMemberToKick.id,
         guildId: mockGuildId,
       },
-      `Kicked inactive member ${mockMemberToKick.displayName} from guild as their latest activity was ${mockToKickMemberData.latestActivityAt?.toISOString() || "N/A"}`,
+      `Kicked inactive member ${mockMemberToKick.displayName} from guild as their latest activity was ${mockToKickMemberData.stats.latestActivityAt?.toISOString() || "N/A"}`,
     )
     expect(mockLogger.info).toHaveBeenCalledTimes(2) // Make sure we don't log more than expected
   })

@@ -21,9 +21,9 @@ export const happyBirthday = async () => {
     })
   }
 
-  const membersData = await getMembersWithBirthdayTodayForAllGuilds()
-  for (const memberData of membersData) {
-    const guild = await getGuild(memberData.guildId)
+  const doraMembers = await getMembersWithBirthdayTodayForAllGuilds()
+  for (const doraMember of doraMembers) {
+    const guild = await getGuild(doraMember.guildId)
     const guildConfig = staticGuildConfigs[guild.id]
     if (!guildConfig) {
       throw new DoraException(
@@ -32,7 +32,7 @@ export const happyBirthday = async () => {
         { metadata: { guildId: guild.id } },
       )
     }
-    const member = await guild.members.fetch(memberData.userId)
+    const member = await guild.members.fetch(doraMember.userId)
     await actionWrapper({
       action: () =>
         handleBirthdayRole({
@@ -41,7 +41,7 @@ export const happyBirthday = async () => {
           member,
         }),
       actionDescription: "Add birthday role",
-      meta: { userId: memberData.userId, guildId: guild.id },
+      meta: { userId: doraMember.userId, guildId: guild.id },
       swallowError: true,
     })
 
@@ -53,7 +53,7 @@ export const happyBirthday = async () => {
           member,
         }),
       actionDescription: "Send birthday wish",
-      meta: { userId: memberData.userId, guildId: guild.id },
+      meta: { userId: doraMember.userId, guildId: guild.id },
       swallowError: true,
     })
   }
