@@ -47,7 +47,7 @@ const getFieldsRelevantForGuilds = ({
     (field) =>
       ({
         name: field.name,
-        value: field.formatter?.(doraMember, "compact") || "-",
+        value: field.selector?.(doraMember, "compact") || "-",
         inline: true,
       }) satisfies APIEmbedField,
   )
