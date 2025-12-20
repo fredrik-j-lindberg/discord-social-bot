@@ -143,6 +143,46 @@ const mapMemberDataToDoraMember = ({
   }
 }
 
+/**
+ * This is a partial of the DoraDatabaseMember specifically for updating or inserting.
+ * For example it excludes the databaseId since that is auto generated.
+ *
+ * It can also be used for upserting member data where not all fields are required.
+ */
+type DoraDatabaseMemberUpsert = Partial<
+  Omit<DoraDatabaseMember, "databaseId">
+> &
+  Pick<DoraDatabaseMember, "guildId" | "userId" | "username" | "displayName">
+
+/**
+ * Maps a DoraDatabaseMember back into a MemberDataRecordInsert payload
+ * including optional roleIds for convenience when calling setMemberData.
+ */
+export const mapDoraDatabaseMemberToMemberDataInsert = (
+  doraMemberUpsert: DoraDatabaseMemberUpsert,
+): MemberDataRecordInsert & { roleIds?: string[] } => {
+  return {
+    guildId: doraMemberUpsert.guildId,
+    userId: doraMemberUpsert.userId,
+    username: doraMemberUpsert.username,
+    displayName: doraMemberUpsert.displayName,
+    messageCount: doraMemberUpsert.stats?.messageCount,
+    latestMessageAt: doraMemberUpsert.stats?.latestMessageAt,
+    reactionCount: doraMemberUpsert.stats?.reactionCount,
+    latestReactionAt: doraMemberUpsert.stats?.latestReactionAt,
+    latestActivityAt: doraMemberUpsert.stats?.latestActivityAt,
+    inactiveSince: doraMemberUpsert.stats?.inactiveSince,
+    firstName: doraMemberUpsert.personalInfo?.firstName,
+    birthday: doraMemberUpsert.personalInfo?.birthday,
+    phoneNumber: doraMemberUpsert.personalInfo?.phoneNumber,
+    email: doraMemberUpsert.personalInfo?.email,
+    switchFriendCode: doraMemberUpsert.friendCodes?.switch,
+    pokemonTcgpFriendCode: doraMemberUpsert.friendCodes?.pokemonTcgp,
+    dietaryPreferences: doraMemberUpsert.personalInfo?.dietaryPreferences,
+    roleIds: doraMemberUpsert.roleIds,
+  }
+}
+
 export const getMemberData = async ({
   userId,
   guildId,
@@ -171,10 +211,13 @@ export const getMemberData = async ({
 
 /** Creates member or updates member with all the data sent */
 export const setMemberData = async ({
-  memberData: { roleIds, ...memberData },
+  doraMember,
 }: {
-  memberData: MemberDataRecordInsert & { roleIds?: string[] }
+  doraMember: DoraDatabaseMemberUpsert
 }): Promise<void> => {
+  const { roleIds, ...memberData } =
+    mapDoraDatabaseMemberToMemberDataInsert(doraMember)
+
   await actionWrapper({
     actionDescription: "Set member data",
     meta: composeMemberMetaData(memberData),

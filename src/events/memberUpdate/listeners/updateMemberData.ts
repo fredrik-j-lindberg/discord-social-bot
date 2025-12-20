@@ -8,7 +8,7 @@ export default {
   execute: (_oldMember, newMember) => {
     const roleIds = newMember.roles.cache.map((role) => role.id)
     void setMemberData({
-      memberData: {
+      doraMember: {
         guildId: newMember.guild.id,
         userId: newMember.user.id,
         username: newMember.user.username,

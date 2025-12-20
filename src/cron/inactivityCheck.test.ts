@@ -189,9 +189,11 @@ describe("inactivityMonitor", () => {
     })
 
     expect(mockSetMemberData).toHaveBeenCalledWith({
-      memberData: expect.objectContaining({
+      doraMember: expect.objectContaining({
         userId: mockToMarkInactiveMemberData.userId,
-        inactiveSince: mockNowTime,
+        stats: {
+          inactiveSince: mockNowTime,
+        },
       }) as unknown as MemberData,
     })
 
@@ -217,9 +219,11 @@ describe("inactivityMonitor", () => {
       `Automatically kicked due to inactivity. Last seen ${mockToKickMemberData.stats.latestActivityAt?.toISOString() || "N/A"}`,
     )
     expect(mockSetMemberData).toHaveBeenCalledWith({
-      memberData: expect.objectContaining({
+      doraMember: expect.objectContaining({
         userId: mockToKickMemberData.userId,
-        inactiveSince: null, // After kicking, the inactivity status should be reset
+        stats: {
+          inactiveSince: null, // After kicking, the inactivity status should be reset
+        },
       }) as unknown as MemberData,
     })
 

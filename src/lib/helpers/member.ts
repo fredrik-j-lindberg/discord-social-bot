@@ -12,9 +12,9 @@ import { getValidDate } from "./date"
 interface DoraMemberStats {
   latestActivityAt?: Date | null
   inactiveSince?: Date | null
-  messageCount?: number | null
+  messageCount?: number
   latestMessageAt?: Date | null
-  reactionCount?: number | null
+  reactionCount?: number
   latestReactionAt?: Date | null
   /** Fetched additionally from the emoji counts service. Sometimes this is skipped in favor of performance, so note that if it is undefined it has likely just not been included on purpose */
   favoriteEmojis?: EmojiCount[] | null

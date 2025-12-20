@@ -178,12 +178,12 @@ const handleKickingInactiveMemberIfRelevant = async ({
   )
 
   await setMemberData({
-    memberData: {
+    doraMember: {
       guildId: guild.id,
       userId: memberData.userId,
       username: memberData.username,
       displayName: memberData.displayName,
-      inactiveSince: null,
+      stats: { inactiveSince: null },
     },
   })
 
@@ -218,12 +218,12 @@ const handleSetMemberAsInactive = async ({
 
   // Set inactive status
   await setMemberData({
-    memberData: {
+    doraMember: {
       guildId: guild.id,
       userId: memberData.userId,
       username: memberData.username,
       displayName: memberData.displayName,
-      inactiveSince: new Date(),
+      stats: { inactiveSince: new Date() },
     },
   })
   await sendInactivityNotice({

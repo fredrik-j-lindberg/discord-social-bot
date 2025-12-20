@@ -187,18 +187,22 @@ export default {
     })
 
     await setMemberData({
-      memberData: {
+      doraMember: {
         userId: interaction.user.id,
         guildId: interaction.guild.id,
         username: interaction.user.username,
-        displayName,
-        firstName: validatedInput.firstName,
-        birthday: validatedInput.birthday,
-        phoneNumber: validatedInput.phoneNumber,
-        email: validatedInput.email,
-        switchFriendCode: validatedInput.switchFriendCode,
-        pokemonTcgpFriendCode: validatedInput.pokemonTcgpFriendCode,
-        dietaryPreferences: validatedInput.dietaryPreferences,
+        displayName: displayName ?? interaction.user.username,
+        personalInfo: {
+          firstName: validatedInput.firstName,
+          birthday: validatedInput.birthday,
+          phoneNumber: validatedInput.phoneNumber,
+          email: validatedInput.email,
+          dietaryPreferences: validatedInput.dietaryPreferences,
+        },
+        friendCodes: {
+          switch: validatedInput.switchFriendCode,
+          pokemonTcgp: validatedInput.pokemonTcgpFriendCode,
+        },
       },
     })
     return "Your member data was submitted successfully!"
