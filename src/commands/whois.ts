@@ -97,7 +97,10 @@ export const handleWhoIs = async ({
     "Command issued without associated guild",
   )
 
-  const doraMember = await getDoraMember({ guild: interaction.guild, userId })
+  const doraMember = await getDoraMember({
+    guild: interaction.guild,
+    userId,
+  })
 
   // If we don't have a specific field requested, return the default embed
   if (!specificMemberData) {

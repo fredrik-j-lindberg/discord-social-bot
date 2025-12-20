@@ -63,7 +63,7 @@ export const getMemberDataEmbed = ({
   return new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle(doraMember.displayName)
-    .setThumbnail(doraMember.guildMember?.displayAvatarURL() || null)
+    .setThumbnail(doraMember.guildMember.displayAvatarURL() || null)
     .addFields(
       getFieldsRelevantForGuilds({
         guildId,

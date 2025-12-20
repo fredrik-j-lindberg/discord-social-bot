@@ -43,7 +43,7 @@ export interface MemberFieldConfig<
   dependsOn?: MemberFieldsIds
   /** How to format the field for display (e.g. for the /whois command) */
   formatter?: (
-    doraMember: DoraMember,
+    doraMember: Omit<DoraMember, "guildMember">, // guildMember should not be needed for formatting. If we have a use case for data on it, we can add it to the core DoraMember model
     mode?: "compact" | "long",
   ) => string | undefined
   /** How the user can provide this data */
@@ -72,7 +72,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     dependsOn: undefined,
     formatter: ({ personalInfo }) =>
       createCopyableText(
-        formatDate(personalInfo.birthday, { dateStyle: "short" }),
+        formatDate(personalInfo?.birthday, { dateStyle: "short" }),
       ),
     provideGuidance: provideGuidanceCopy.pii,
   },
@@ -81,7 +81,8 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "firstName",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ personalInfo }) => createCopyableText(personalInfo.firstName),
+    formatter: ({ personalInfo }) =>
+      createCopyableText(personalInfo?.firstName),
     provideGuidance: provideGuidanceCopy.pii,
   },
   phoneNumber: {
@@ -90,7 +91,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     optIn: true,
     dependsOn: undefined,
     formatter: ({ personalInfo }) =>
-      createCopyableText(personalInfo.phoneNumber),
+      createCopyableText(personalInfo?.phoneNumber),
     provideGuidance: provideGuidanceCopy.pii,
   },
   email: {
@@ -98,7 +99,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "email",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ personalInfo }) => createCopyableText(personalInfo.email),
+    formatter: ({ personalInfo }) => createCopyableText(personalInfo?.email),
     provideGuidance: provideGuidanceCopy.pii,
   },
   dietaryPreferences: {
@@ -107,7 +108,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     optIn: true,
     dependsOn: undefined,
     formatter: ({ personalInfo }) =>
-      createCopyableText(personalInfo.dietaryPreferences),
+      createCopyableText(personalInfo?.dietaryPreferences),
     provideGuidance: provideGuidanceCopy.pii,
   },
   switchFriendCode: {
@@ -115,7 +116,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "switchFriendCode",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ friendCodes }) => createCopyableText(friendCodes.switch),
+    formatter: ({ friendCodes }) => createCopyableText(friendCodes?.switch),
     provideGuidance: provideGuidanceCopy.pii,
   },
   pokemonTcgpFriendCode: {
@@ -123,7 +124,8 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "pokemonTcgpFriendCode",
     optIn: true,
     dependsOn: undefined,
-    formatter: ({ friendCodes }) => createCopyableText(friendCodes.pokemonTcgp),
+    formatter: ({ friendCodes }) =>
+      createCopyableText(friendCodes?.pokemonTcgp),
     provideGuidance: provideGuidanceCopy.pii,
   },
   // opt in fields above
@@ -185,7 +187,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     optIn: false,
     dependsOn: "birthday",
     formatter: ({ personalInfo }) =>
-      createDiscordTimestamp(personalInfo.nextBirthday),
+      createDiscordTimestamp(personalInfo?.nextBirthday),
     get provideGuidance() {
       return `Requires the ${this.dependsOn} field to be set.`
     },
@@ -195,7 +197,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "age",
     optIn: false,
     dependsOn: "birthday",
-    formatter: ({ personalInfo }) => createCopyableText(personalInfo.age),
+    formatter: ({ personalInfo }) => createCopyableText(personalInfo?.age),
     get provideGuidance() {
       return `Requires the ${this.dependsOn} field to be set.`
     },
