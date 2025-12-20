@@ -110,8 +110,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "messageCount",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ stats }) =>
-      createCopyableText(stats.messageCount?.toString()),
+    formatter: ({ stats }) => createCopyableText(stats.messageCount),
   },
   latestMessageAt: {
     name: "Latest Message At",
@@ -125,8 +124,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "reactionCount",
     optIn: false,
     dependsOn: undefined,
-    formatter: ({ stats }) =>
-      createCopyableText(stats.reactionCount?.toString()),
+    formatter: ({ stats }) => createCopyableText(stats.reactionCount),
   },
   latestReactionAt: {
     name: "Latest Reaction At",
@@ -174,8 +172,7 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     id: "age",
     optIn: false,
     dependsOn: "birthday",
-    formatter: ({ personalInfo }) =>
-      createCopyableText(personalInfo.age?.toString()),
+    formatter: ({ personalInfo }) => createCopyableText(personalInfo.age),
     get provideGuidance() {
       return `Requires the ${this.dependsOn} field to be set.`
     },
