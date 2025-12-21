@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, sql } from "drizzle-orm"
+import { and, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm"
 
 import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
@@ -456,6 +456,34 @@ export const getAllGuildMemberData = async (
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
       where: eq(membersTable.guildId, guildId),
+      orderBy: membersTable.latestActivityAt,
+      with: { roles: true },
+    })
+
+  return memberRecords.map(mapMemberDataToDoraMember)
+}
+
+/**
+ * Gets members in a guild whose latest activity is older than or equal to the provided threshold
+ * Also includes members with no recorded activity (NULL latestActivityAt)
+ */
+export const getInactiveGuildMemberData = async ({
+  guildId,
+  inactiveThresholdDate,
+}: {
+  guildId: string
+  inactiveThresholdDate: Date
+}): Promise<DoraDatabaseMember[]> => {
+  const memberRecords: MemberRecordSelectWithRelations[] =
+    await db.query.membersTable.findMany({
+      extras: getSharedExtras(),
+      where: and(
+        eq(membersTable.guildId, guildId),
+        or(
+          isNull(membersTable.latestActivityAt),
+          lte(membersTable.latestActivityAt, inactiveThresholdDate),
+        ),
+      ),
       orderBy: membersTable.latestActivityAt,
       with: { roles: true },
     })

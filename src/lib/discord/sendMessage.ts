@@ -1,16 +1,15 @@
 import {
   type GuildBasedChannel,
-  GuildMember,
   GuildScheduledEvent,
   type MessageCreateOptions,
   MessageFlags,
   User,
 } from "discord.js"
 
-import type { InactivityMemberData } from "~/cron/inactivityCheck"
 import type { GuildConfig } from "~/lib/database/guildConfigService"
 
 import { addDaysToDate } from "../helpers/date"
+import type { DoraMember } from "../helpers/member"
 import { assertChannelIsTextBased, assertIsDefined } from "../validation"
 import { createDiscordTimestamp, createUserMention } from "./message"
 
@@ -82,7 +81,7 @@ export const sendDebugInactivitySummaryToUser = async ({
   guildName,
   inactivityConfig,
 }: {
-  inactiveMembers: InactivityMemberData[]
+  inactiveMembers: DoraMember[]
   debugUser: User
   guildName: string
   inactivityConfig: NonNullable<GuildConfig["inactivity"]>
@@ -92,18 +91,18 @@ export const sendDebugInactivitySummaryToUser = async ({
   }
 
   const intro = `The following members have been inactive recently in **${guildName}**. They were last seen:`
-  const lines = inactiveMembers.map((memberData) => {
-    const lastSeenText = memberData.latestActivityAt
-      ? createDiscordTimestamp(memberData.latestActivityAt)
+  const lines = inactiveMembers.map((doraMember) => {
+    const lastSeenText = doraMember.stats.latestActivityAt
+      ? createDiscordTimestamp(doraMember.stats.latestActivityAt)
       : "N/A"
 
     const willBeKickedText = createDiscordTimestamp(
       addDaysToDate(
-        memberData.inactiveSince || new Date(),
+        doraMember.stats.inactiveSince || new Date(),
         inactivityConfig.daysAsInactiveBeforeKick,
       ),
     )
-    return `**${memberData.displayName}** (${memberData.userId}) - Last seen: ${lastSeenText}, will be kicked: ${willBeKickedText}`
+    return `**${doraMember.displayName}** (${doraMember.userId}) - Last seen: ${lastSeenText}, will be kicked: ${willBeKickedText}`
   })
 
   await debugUser.send({
@@ -112,49 +111,45 @@ export const sendDebugInactivitySummaryToUser = async ({
 }
 
 export const sendInactivityNotice = async ({
-  memberData,
-  member,
+  doraMember,
   guildName,
   inactivityConfig,
 }: {
-  memberData: InactivityMemberData
-  member: GuildMember
+  doraMember: DoraMember
   guildName: string
   inactivityConfig: NonNullable<GuildConfig["inactivity"]>
 }) => {
-  const lastSeenText = memberData.latestActivityAt
-    ? `were last seen ${createDiscordTimestamp(memberData.latestActivityAt)}`
+  const lastSeenText = doraMember.stats.latestActivityAt
+    ? `were last seen ${createDiscordTimestamp(doraMember.stats.latestActivityAt)}`
     : "have no recorded activity"
-  const intro = `Hello **${memberData.displayName}** :wave: You are now marked as inactive in the **${guildName}** server as you ${lastSeenText}`
+  const intro = `Hello **${doraMember.displayName}** :wave: You are now marked as inactive in the **${guildName}** server as you ${lastSeenText}`
   const info = `_${getInactivityInfoText({ inactivityConfig })}_`
 
-  await member.send({
+  await doraMember.guildMember.send({
     content: `${intro}\n\n${info}`,
   })
 }
 
 export const sendKickNotice = async ({
-  memberData,
   guildName,
-  member,
+  doraMember,
   inactivityConfig: { inviteLink },
 }: {
   guildName: string
-  memberData: InactivityMemberData
-  member: GuildMember
+  doraMember: DoraMember
   inactivityConfig: NonNullable<GuildConfig["inactivity"]>
 }) => {
-  const intro = `Hello **${memberData.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
+  const intro = `Hello **${doraMember.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
 
   if (!inviteLink) {
-    await member.send({
+    await doraMember.guildMember.send({
       content: intro,
     })
     return
   }
 
   const rejoinInfo = `_You can re-join the server at any time using the invite link:_ ${inviteLink}`
-  await member.send({
+  await doraMember.guildMember.send({
     content: `${intro}\n\n${rejoinInfo}`,
   })
 }

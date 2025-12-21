@@ -215,3 +215,46 @@ export const getFullDoraMember = async ({
 
   return doraMember
 }
+
+export const convertDatabaseMembersToDoraMembers = async ({
+  doraDatabaseMembers,
+  guild,
+  skipBots,
+}: {
+  doraDatabaseMembers: DoraDatabaseMember[]
+  guild: Guild
+  /** If true, any database members that are bots will be excluded from the conversion */
+  skipBots: boolean
+}): Promise<DoraMember[]> => {
+  const doraMembers: DoraMember[] = []
+  const discordMembers = await guild.members.fetch()
+
+  for (const doraDatabaseMember of doraDatabaseMembers) {
+    const guildMember = discordMembers.get(doraDatabaseMember.userId)
+    if (!guildMember) {
+      throw new DoraException(
+        "Member not found in guild when converting database members to DoraMembers. Are they part of the guild?",
+        DoraException.Type.NotFound,
+        {
+          metadata: {
+            userId: doraDatabaseMember.userId,
+            guildId: guild.id,
+          },
+        },
+      )
+    }
+
+    if (skipBots && guildMember.user.bot) {
+      continue // Skip bots if configured to do so
+    }
+
+    const doraDiscordMember = mapToDoraDiscordMember(guildMember)
+    const fullDoraMember = mapToCompleteDoraMember({
+      doraDiscordMember,
+      doraDatabaseMember,
+    })
+    doraMembers.push(fullDoraMember)
+  }
+
+  return doraMembers
+}

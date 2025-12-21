@@ -7,7 +7,7 @@ import {
   type GuildConfig,
 } from "~/lib/database/guildConfigService"
 import {
-  getAllGuildMemberData,
+  getInactiveGuildMemberData,
   type MemberData,
   setMemberData,
 } from "~/lib/database/memberDataService"
@@ -76,14 +76,6 @@ const mockMemberToKick = mockMember({
   kick: mockKickFn,
 })
 
-/** Member that is active (no action taken) */
-const mockActiveMemberData = mockMemberData({
-  guildMember: mockActiveMember,
-  latestActivityAt: subtractDaysFromDate(
-    mockNowTime,
-    mockDaysUntilInactive - 1,
-  ),
-})
 /** Member that should be marked as inactive */
 const mockToMarkInactiveMemberData = mockMemberData({
   guildMember: mockToMarkAsInactiveMember,
@@ -118,7 +110,7 @@ const mockToKickMemberData = mockMemberData({
 
 describe("inactivityMonitor", () => {
   const mockGetAllGuildConfigs = vi.mocked(getAllGuildConfigs)
-  const mockGetAllGuildMemberData = vi.mocked(getAllGuildMemberData)
+  const mockGetInactiveGuildMemberData = vi.mocked(getInactiveGuildMemberData)
   const mockSetMemberData = vi.mocked(setMemberData)
   const mockGetGuild = vi.mocked(getGuild)
   const mockAddRole = vi.mocked(addRole)
@@ -145,8 +137,7 @@ describe("inactivityMonitor", () => {
     } as unknown as Guild
     mockGetGuild.mockResolvedValue(mockGuild)
 
-    mockGetAllGuildMemberData.mockResolvedValue([
-      mockActiveMemberData,
+    mockGetInactiveGuildMemberData.mockResolvedValue([
       mockToMarkInactiveMemberData,
       mockAlreadyInactiveMemberData,
       mockToKickMemberData,
@@ -198,21 +189,19 @@ describe("inactivityMonitor", () => {
     })
 
     expect(mockSendInactivityNotice).toHaveBeenCalledExactlyOnceWith({
-      memberData: expect.objectContaining({
+      doraMember: expect.objectContaining({
         userId: mockToMarkInactiveMemberData.userId,
       }) as unknown as MemberData,
       guildName: mockGuild.name,
-      member: mockToMarkAsInactiveMember,
       inactivityConfig: mockGuildConfig.inactivity,
     })
 
     // Kick relevant member
     expect(mockSendKickNotice).toHaveBeenCalledExactlyOnceWith({
-      memberData: expect.objectContaining({
+      doraMember: expect.objectContaining({
         userId: mockToKickMemberData.userId,
       }) as unknown as MemberData,
       guildName: mockGuild.name,
-      member: mockMemberToKick,
       inactivityConfig: mockGuildConfig.inactivity,
     })
     expect(mockKickFn).toHaveBeenCalledWith(

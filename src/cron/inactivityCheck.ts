@@ -1,12 +1,10 @@
-import type { GuildMember } from "discord.js"
-
 import { actionWrapper } from "~/lib/actionWrapper"
 import {
   getAllGuildConfigs,
   type GuildConfig,
 } from "~/lib/database/guildConfigService"
 import {
-  getAllGuildMemberData,
+  getInactiveGuildMemberData,
   setMemberData,
 } from "~/lib/database/memberDataService"
 import { getGuild } from "~/lib/discord/guilds"
@@ -16,18 +14,13 @@ import {
   sendInactivityNotice,
   sendKickNotice,
 } from "~/lib/discord/sendMessage"
-import { DoraException } from "~/lib/exceptions/DoraException"
+import { getMember } from "~/lib/discord/user"
 import { subtractDaysFromDate } from "~/lib/helpers/date"
+import {
+  convertDatabaseMembersToDoraMembers,
+  type DoraMember,
+} from "~/lib/helpers/member"
 import { logger } from "~/lib/logger"
-
-export interface InactivityMemberData {
-  guildId: string
-  userId: string
-  username: string
-  displayName: string
-  latestActivityAt?: Date | null
-  inactiveSince?: Date | null
-}
 
 export const inactivityMonitor = async () => {
   const guildConfigs = await getAllGuildConfigs()
@@ -65,71 +58,39 @@ const handleInactivityCheck = async ({
   )
 
   const guild = await getGuild(guildId)
-  const members = await guild.members.fetch()
-  // TODO: Get all inactive dora members via a query instead of fetching all and then filtering in code
-  const doraMembers = await getAllGuildMemberData(guild.id)
+  // Fetch only the potentially inactive members directly from the database
+  const doraDatabaseMembers = await getInactiveGuildMemberData({
+    guildId: guild.id,
+    inactiveThresholdDate,
+  })
 
-  const memberDataById = new Map(doraMembers.map((data) => [data.userId, data]))
+  const doraMembers = await convertDatabaseMembersToDoraMembers({
+    doraDatabaseMembers,
+    guild,
+    skipBots: true,
+  })
 
-  const inactiveMembers = new Map<string, InactivityMemberData>()
-  for (const member of members.values()) {
-    if (member.user.bot) {
-      continue // Ignore bots
-    }
-    const doraMember = memberDataById.get(member.id)
-
-    const latestActivity = doraMember?.stats.latestActivityAt
-    if (latestActivity && latestActivity > inactiveThresholdDate) {
-      continue // Active member, disregard
-    }
-
-    inactiveMembers.set(member.id, {
-      guildId: guild.id,
-      userId: member.id,
-      username: member.user.username,
-      displayName: member.displayName,
-      latestActivityAt: doraMember?.stats.latestActivityAt,
-      inactiveSince: doraMember?.stats.inactiveSince,
-    })
-  }
-
-  for (const memberData of inactiveMembers.values()) {
-    const member = members.get(memberData.userId)
-    if (!member) {
-      throw new DoraException(
-        "Inactive member not found, are they part of the guild?",
-        DoraException.Type.NotFound,
-        { metadata: { userId: memberData.userId, guildId: guild.id } },
-      )
-    }
-
-    if (memberData.inactiveSince) {
+  for (const doraMember of doraMembers) {
+    if (doraMember.stats.inactiveSince) {
       await handleKickingInactiveMemberIfRelevant({
-        memberData: { ...memberData, inactiveSince: memberData.inactiveSince },
+        doraMember,
         guild,
         inactivityConfig,
-        member,
       })
     } else {
       await handleSetMemberAsInactive({
-        memberData,
+        doraMember,
         guild,
         inactivityConfig,
-        member,
         inactiveThresholdDate,
       })
     }
   }
 
   // TODO: Handle the summary differently
-  const debugMember = members.find(
-    (member) => member.id === "106098921985556480", // Neylion
-  )
-  if (!debugMember) {
-    return
-  }
+  const debugMember = await getMember({ guild, userId: "106098921985556480" }) // Neylion
   await sendDebugInactivitySummaryToUser({
-    inactiveMembers: Array.from(inactiveMembers.values()),
+    inactiveMembers: doraMembers,
     debugUser: debugMember.user,
     guildName: guild.name,
     inactivityConfig,
@@ -138,27 +99,28 @@ const handleInactivityCheck = async ({
 
 /** Kicks the member if it has been inactive for too enough, based on the guild config */
 const handleKickingInactiveMemberIfRelevant = async ({
-  memberData,
+  doraMember,
   guild,
-  member,
   inactivityConfig,
 }: {
-  memberData: { inactiveSince: Date } & InactivityMemberData
+  doraMember: DoraMember
   guild: Awaited<ReturnType<typeof getGuild>>
-  member: GuildMember
   inactivityConfig: NonNullable<GuildConfig["inactivity"]>
 }) => {
   const kickThresholdDate = subtractDaysFromDate(
     new Date(),
     inactivityConfig.daysAsInactiveBeforeKick,
   )
-  if (memberData.inactiveSince > kickThresholdDate) {
+  if (
+    !doraMember.stats.inactiveSince ||
+    doraMember.stats.inactiveSince > kickThresholdDate
+  ) {
     logger.debug(
       {
-        userId: memberData.userId,
+        userId: doraMember.userId,
         guildId: guild.id,
         inactivityConfig,
-        inactiveSince: memberData.inactiveSince,
+        inactiveSince: doraMember.stats.inactiveSince,
         kickThresholdDate,
       },
       "Not yet time to kick inactive member",
@@ -167,51 +129,48 @@ const handleKickingInactiveMemberIfRelevant = async ({
   }
 
   await sendKickNotice({
-    memberData,
+    doraMember,
     guildName: guild.name,
-    member,
     inactivityConfig,
   })
 
-  await member.kick(
-    `Automatically kicked due to inactivity. Last seen ${memberData.latestActivityAt?.toISOString() || "N/A"}`,
+  await doraMember.guildMember.kick(
+    `Automatically kicked due to inactivity. Last seen ${doraMember.stats.latestActivityAt?.toISOString() || "N/A"}`,
   )
 
   await setMemberData({
     doraMember: {
       guildId: guild.id,
-      userId: memberData.userId,
-      username: memberData.username,
-      displayName: memberData.displayName,
+      userId: doraMember.userId,
+      username: doraMember.username,
+      displayName: doraMember.displayName,
       stats: { inactiveSince: null },
     },
   })
 
   logger.info(
     {
-      userId: memberData.userId,
+      userId: doraMember.userId,
       guildId: guild.id,
     },
-    `Kicked inactive member ${memberData.displayName} from guild as their latest activity was ${memberData.latestActivityAt?.toISOString() || "N/A"}`,
+    `Kicked inactive member ${doraMember.displayName} from guild as their latest activity was ${doraMember.stats.latestActivityAt?.toISOString() || "N/A"}`,
   )
 }
 
 const handleSetMemberAsInactive = async ({
-  memberData,
+  doraMember,
   guild,
-  member,
   inactivityConfig,
 }: {
-  memberData: InactivityMemberData
+  doraMember: DoraMember
   guild: Awaited<ReturnType<typeof getGuild>>
-  member: GuildMember
   inactivityConfig: NonNullable<GuildConfig["inactivity"]>
   inactiveThresholdDate: Date
 }) => {
   if (inactivityConfig.inactiveRoleId) {
     await addRole({
       guild,
-      member,
+      member: doraMember.guildMember,
       roleId: inactivityConfig.inactiveRoleId,
     })
   }
@@ -220,24 +179,23 @@ const handleSetMemberAsInactive = async ({
   await setMemberData({
     doraMember: {
       guildId: guild.id,
-      userId: memberData.userId,
-      username: memberData.username,
-      displayName: memberData.displayName,
+      userId: doraMember.userId,
+      username: doraMember.username,
+      displayName: doraMember.displayName,
       stats: { inactiveSince: new Date() },
     },
   })
   await sendInactivityNotice({
-    memberData,
+    doraMember,
     guildName: guild.name,
-    member,
     inactivityConfig,
   })
 
   logger.info(
     {
-      userId: memberData.userId,
+      userId: doraMember.userId,
       guildId: guild.id,
     },
-    `Set member ${memberData.displayName} as inactive in guild as their latest activity was ${memberData.latestActivityAt?.toISOString() || "N/A"} and the guild inactivity threshold is ${inactivityConfig.daysUntilInactive} days`,
+    `Set member ${doraMember.displayName} as inactive in guild as their latest activity was ${doraMember.stats.latestActivityAt?.toISOString() || "N/A"} and the guild inactivity threshold is ${inactivityConfig.daysUntilInactive} days`,
   )
 }
