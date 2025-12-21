@@ -8,6 +8,7 @@ import {
 } from "~/lib/discord/interaction"
 import { DoraException } from "~/lib/exceptions/DoraException"
 import { importFolderModules } from "~/lib/helpers/folder"
+import { consumeModalOptions } from "~/lib/helpers/modals"
 import { logger } from "~/lib/logger"
 
 export default {
@@ -66,9 +67,12 @@ export const modalRouter = async (interaction: ModalSubmitInteraction) => {
     })
   }
 
+  const options = consumeModalOptions(interaction.customId)
+
   await executeCmdOrModalMappedToInteraction({
     execute: modal.handleSubmit,
     deferReply: modal.deferReply,
+    ephemeral: options?.ephemeral,
     interaction,
     context: "modal",
   })

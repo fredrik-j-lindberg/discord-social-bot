@@ -1,4 +1,3 @@
-import { ModalBuilder } from "discord.js"
 import { z } from "zod"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
@@ -10,7 +9,7 @@ import {
 } from "~/lib/discord/message"
 import { getDoraDatabaseMember } from "~/lib/helpers/member"
 import {
-  composeModalInputs,
+  createDynamicModal,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalInputConfig,
@@ -73,16 +72,12 @@ const photoModalSchema = generateModalSchema(modalInputsMap)
 export default {
   data: { name: "photoUploadModal" },
   async createModal({ guildId }: { guildId: string }) {
-    const modal = new ModalBuilder()
-      .setCustomId(this.data.name)
-      .setTitle("Photo Upload")
-
-    const composedInputs = await composeModalInputs(modalInputsConfig, {
-      guildId,
+    return await createDynamicModal({
+      customId: this.data.name,
+      title: "Photo Upload",
+      inputConfigs: modalInputsConfig,
+      modalMetadata: { guildId },
     })
-    modal.addLabelComponents(...composedInputs)
-
-    return modal
   },
   deferReply: true,
   handleSubmit: async (interaction) => {

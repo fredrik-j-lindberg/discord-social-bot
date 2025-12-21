@@ -1,4 +1,4 @@
-import { ModalBuilder, TextInputStyle } from "discord.js"
+import { TextInputStyle } from "discord.js"
 import { z } from "zod"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
@@ -9,7 +9,7 @@ import {
   upsertGuildConfig,
 } from "~/lib/database/guildConfigService"
 import {
-  composeModalInputs,
+  createDynamicModal,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalInputConfig,
@@ -57,17 +57,12 @@ export default {
     name: "guildConfigLogsModal",
   },
   async createModal(currentConfig) {
-    const modal = new ModalBuilder()
-      .setCustomId("guildConfigLogsModal")
-      .setTitle("Update Guild Log Configuration")
-
-    const composedInputs = await composeModalInputs(
-      modalInputsConfig,
-      currentConfig,
-    )
-    modal.addLabelComponents(...composedInputs)
-
-    return modal
+    return await createDynamicModal({
+      customId: this.data.name,
+      title: "Guild Log Configuration",
+      inputConfigs: modalInputsConfig,
+      modalMetadata: currentConfig,
+    })
   },
   deferReply: true,
   handleSubmit: async (interaction) => {

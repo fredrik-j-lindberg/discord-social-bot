@@ -1,6 +1,7 @@
 import {
   FileUploadBuilder,
   LabelBuilder,
+  ModalBuilder,
   ModalSubmitInteraction,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
@@ -313,4 +314,59 @@ export const composeModalInputs = async (
   }
 
   return composedInputs
+}
+
+export interface ModalOptions {
+  /** Whether the modal submit reply should only be visible to the user or for all users */
+  ephemeral?: boolean
+}
+
+/** Discord has no way of passing info/params to modals, so we store them here temporarily */
+const modalInvocationStore = new Map<string, ModalOptions>()
+
+/** Add options for a modal invocation, identified by a customId */
+export const registerModalOptions = (
+  customId: string,
+  options: ModalOptions,
+) => {
+  modalInvocationStore.set(customId, options)
+}
+
+/** Consume options for a modal invocation, identified by a customId */
+export const consumeModalOptions = (
+  customId: string,
+): ModalOptions | undefined => {
+  const options = modalInvocationStore.get(customId)
+  if (options) modalInvocationStore.delete(customId)
+  return options
+}
+
+export const createDynamicModal = async ({
+  customId,
+  title,
+  modalOptions,
+  inputConfigs,
+  modalMetadata,
+}: {
+  /** Custom id of the modal */
+  customId: string
+  /** Title of the modal */
+  title: string
+  /** Options that will be passed to the modal */
+  modalOptions?: ModalOptions
+  /** Configs used to compose the modal inputs */
+  inputConfigs: ModalInputConfig[]
+  /** Metadata that will be passed to the modal inputs for e.g. prefilling */
+  modalMetadata?: unknown
+}) => {
+  if (modalOptions) {
+    registerModalOptions(customId, modalOptions)
+  }
+
+  const modal = new ModalBuilder().setCustomId(customId).setTitle(title)
+
+  const composedInputs = await composeModalInputs(inputConfigs, modalMetadata)
+  modal.addLabelComponents(...composedInputs)
+
+  return modal
 }

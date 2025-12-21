@@ -1,10 +1,10 @@
-import { ModalBuilder, TextInputStyle } from "discord.js"
+import { TextInputStyle } from "discord.js"
 import { z } from "zod"
 
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import { createTags } from "~/lib/database/tagService"
 import {
-  composeModalInputs,
+  createDynamicModal,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalInputConfig,
@@ -54,14 +54,11 @@ const tagModalSchema = generateModalSchema(modalInputsMap)
 export default {
   data: { name: "tagModal" },
   async createModal() {
-    const modal = new ModalBuilder()
-      .setCustomId(this.data.name)
-      .setTitle("Add a tag")
-
-    const composedInputs = await composeModalInputs(modalInputsConfig)
-    modal.addLabelComponents(...composedInputs)
-
-    return modal
+    return await createDynamicModal({
+      customId: this.data.name,
+      title: "Add a tag",
+      inputConfigs: modalInputsConfig,
+    })
   },
   deferReply: true,
   handleSubmit: async (interaction) => {

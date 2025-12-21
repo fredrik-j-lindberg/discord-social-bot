@@ -97,6 +97,7 @@ const reply = async ({
 interface ExecuteOptions<TInteraction extends ExecuteSupportedInteraction> {
   execute: InteractionExecute<TInteraction>
   deferReply: boolean
+  /** Whether the reply should only be visible to the user or for all users */
   ephemeral?: boolean | null
   interaction: TInteraction
   context: "command" | "modal"

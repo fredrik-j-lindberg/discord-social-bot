@@ -1,4 +1,4 @@
-import { ModalBuilder, TextInputStyle } from "discord.js"
+import { TextInputStyle } from "discord.js"
 import { z } from "zod/v4"
 
 import {
@@ -11,7 +11,7 @@ import { setMemberData } from "~/lib/database/memberDataService"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import type { DoraDatabaseMember } from "~/lib/helpers/member"
 import {
-  composeModalInputs,
+  createDynamicModal,
   extractAndValidateModalValues,
   generateModalSchema,
   type ModalInputConfig,
@@ -146,25 +146,20 @@ interface CreateModalProps {
 export default {
   data: { name: "memberDataModal" },
   async createModal({ guildId, doraMember }: CreateModalProps) {
-    const modal = new ModalBuilder()
-      .setCustomId(this.data.name)
-      .setTitle("Member data form. Optional!")
-
     const relevantFields = getStaticGuildConfigById(guildId).optInMemberFields
-    const inputsToGenerateConfig: ModalInputConfig[] = modalInputsConfig.filter(
+    const inputConfigs: ModalInputConfig[] = modalInputsConfig.filter(
       (inputConfig) =>
         relevantFields.some(
           (fieldToExtract) => inputConfig.id === fieldToExtract,
         ),
     )
 
-    const composedInputs = await composeModalInputs(
-      inputsToGenerateConfig,
-      doraMember,
-    )
-    modal.addLabelComponents(...composedInputs)
-
-    return modal
+    return createDynamicModal({
+      customId: this.data.name,
+      title: "Member data form. Optional!",
+      inputConfigs,
+      modalMetadata: doraMember,
+    })
   },
   deferReply: true,
   handleSubmit: async (interaction) => {
