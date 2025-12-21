@@ -142,10 +142,11 @@ const inputSchema = generateModalSchema(modalInputsMap)
 interface CreateModalProps {
   guildId: string
   doraMember: DoraDatabaseMember | undefined
+  ephemeral?: boolean
 }
 export default {
   data: { name: "memberDataModal" },
-  async createModal({ guildId, doraMember }: CreateModalProps) {
+  async createModal({ guildId, doraMember, ephemeral }: CreateModalProps) {
     const relevantFields = getStaticGuildConfigById(guildId).optInMemberFields
     const inputConfigs: ModalInputConfig[] = modalInputsConfig.filter(
       (inputConfig) =>
@@ -157,6 +158,7 @@ export default {
     return createDynamicModal({
       customId: this.data.name,
       title: "Member data form. Optional!",
+      modalOptions: { ephemeral },
       inputConfigs,
       modalMetadata: doraMember,
     })
