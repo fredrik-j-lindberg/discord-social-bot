@@ -10,6 +10,7 @@ import {
   getMembersWithField,
   type MemberDataDbKeysWithExtras,
 } from "~/lib/database/memberDataService"
+import { createPaginatedList } from "~/lib/discord/message"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import {
   type DoraDatabaseMember,
@@ -147,12 +148,17 @@ const handleFieldChoice = async ({
   const title = `Members with *${fieldConfig.name}* data`
   const titleWithRole = role ? `${title} in role \`${role.name}\`` : title
 
-  const list = doraMembers
-    .map((doraMember) => {
-      return `- **${doraMember.displayName}**: ${fieldConfig.selector?.(doraMember) || "-"}`
-    })
-    .join("\n")
-  return `${titleWithRole}\n${list}`
+  const items = doraMembers.map((doraMember) => {
+    const value = fieldConfig.selector?.(doraMember) ?? "-"
+    return `**${doraMember.displayName}**: ${value}`
+  })
+
+  return createPaginatedList({
+    items,
+    header: titleWithRole,
+    itemsPerPage: 10,
+    listType: "number",
+  })
 }
 
 /** This will return a list of partly hydrated DoraMember depending on what data is relevant  */
