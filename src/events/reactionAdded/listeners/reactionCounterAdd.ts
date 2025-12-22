@@ -6,6 +6,7 @@ import { addMemberEmojiUsage } from "~/lib/database/memberEmojisService"
 import type { EventListener } from "~/lib/discord/events/registerEvent"
 import { getGuild } from "~/lib/discord/guilds"
 import { removeRole } from "~/lib/discord/roles"
+import { getMember } from "~/lib/discord/user"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 const getFullMessage = async (message: Message | PartialMessage) => {
@@ -22,12 +23,6 @@ export default {
       message,
       "guild",
       "Reaction added for a message not linked to guild, can't be added to stats",
-    )
-
-    assertHasDefinedProperty(
-      message,
-      "member",
-      "Reaction to a message without member info, can't be added to stats",
     )
 
     assertHasDefinedProperty(
@@ -60,9 +55,13 @@ export default {
     const guildConfig = await getGuildConfig(guildId)
     const inactiveRoleId = guildConfig?.inactivity?.inactiveRoleId
     if (inactiveRoleId) {
+      const memberReacting = await getMember({
+        guild,
+        userId: user.id,
+      })
       await removeRole({
         guild,
-        member: message.member,
+        member: memberReacting,
         roleId: inactiveRoleId,
       })
     }
