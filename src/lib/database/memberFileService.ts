@@ -6,6 +6,7 @@ import {
   type MemberFileRecord,
   type MemberFileRecordInsert,
   memberFilesTable,
+  type TagRecord,
 } from "./schema"
 
 interface File {
@@ -65,6 +66,25 @@ export const storeFiles = async ({
   })
 }
 
+export type DoraMemberFile = MemberFileRecord & {
+  tags: TagRecord
+}
+
+const mapToDoraMemberFiles = ({
+  memberFileRecords,
+}: {
+  memberFileRecords: (MemberFileRecord & {
+    itemTags: { tag: TagRecord }[]
+  })[]
+}) => {
+  return memberFileRecords.map(({ itemTags, ...fileRecord }) => {
+    return {
+      ...fileRecord,
+      tags: itemTags.flatMap((itemTag) => itemTag.tag),
+    }
+  })
+}
+
 export const getMemberFiles = async ({
   memberId,
   guildId,
@@ -74,9 +94,13 @@ export const getMemberFiles = async ({
   guildId: string
   tagId?: string
 }) => {
-  return await db.query.memberFilesTable.findMany({
+  const memberFileRecords = await db.query.memberFilesTable.findMany({
     with: {
-      tags: true,
+      itemTags: {
+        with: {
+          tag: true,
+        },
+      },
     },
     where: and(
       eq(memberFilesTable.guildId, guildId),
@@ -93,4 +117,5 @@ export const getMemberFiles = async ({
     ),
     orderBy: (file) => desc(file.recordCreatedAt),
   })
+  return mapToDoraMemberFiles({ memberFileRecords })
 }

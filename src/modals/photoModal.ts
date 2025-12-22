@@ -34,7 +34,8 @@ const modalInputsMap = {
     id: "tags",
     label: "Select tag(s)",
     isRequired: false,
-    validation: z.string().optional().nullable(),
+    multiSelect: true,
+    validation: z.array(z.string()).optional().nullable(),
     getOptions: async ({ guildId }) => {
       const tags = await getTags({ guildId, type: "media" })
       return tags.map((tag) => ({
@@ -93,7 +94,7 @@ export default {
       validationSchema: photoModalSchema,
     })
     const uploadedFiles = validatedInput.fileUpload
-    const selectedTagIds = validatedInput.tags ? [validatedInput.tags] : []
+    const selectedTagIds = validatedInput.tags ?? []
 
     const uploadResults = await uploadMultipleFilesToR2(uploadedFiles, {
       prefix: interaction.guild.id,

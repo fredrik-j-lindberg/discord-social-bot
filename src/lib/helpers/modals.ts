@@ -231,8 +231,9 @@ export const composeSelectMenuInput = async (
           return optionBuilder
         }),
       )
-      // TODO: Support multiple values
-      .setMaxValues(1)
+      .setMaxValues(
+        selectInputConfig.multiSelect ? Math.min(25, options.length) : 1,
+      )
       .setRequired(selectInputConfig.isRequired),
   )
 }

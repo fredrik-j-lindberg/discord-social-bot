@@ -147,7 +147,7 @@ export const memberFilesTable = pgTable("member_files", {
 })
 
 export const memberFilesRelations = relations(memberFilesTable, ({ many }) => ({
-  tags: many(itemTagsTable),
+  itemTags: many(itemTagsTable),
 }))
 
 export type MemberFileRecord = typeof memberFilesTable.$inferSelect

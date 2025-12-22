@@ -66,9 +66,16 @@ export default {
         guildId: interaction.guild.id,
         tagId,
       })
+
+      // Unfortunately we cannot get the tag object that the user decided to filter on from the command itself,
+      // so we instead grab it from the list of photos returned
+      const filteredTagObject = tagId
+        ? photos[0]?.tags.find((tag) => tag.id === tagId)
+        : undefined
+
       return createMediaGalleryContainer({
         mediaItems: photos,
-        header: `Uploaded photo(s)${tagId ? ` with tag ${tagId}` : ""}`,
+        header: `Uploaded photo(s)${filteredTagObject ? ` with tag \`${filteredTagObject.name}\`` : ""}`,
       })
     }
 
