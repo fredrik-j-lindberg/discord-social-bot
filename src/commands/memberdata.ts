@@ -15,7 +15,7 @@ import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import {
   type DoraDatabaseMember,
   type DoraMember,
-  mapToDoraDiscordMember,
+  getDoraDiscordMembers,
 } from "~/lib/helpers/member"
 import {
   assertHasDefinedProperty,
@@ -190,10 +190,11 @@ const fetchDoraMembersWithRelevantData = async ({
   }
 
   // Handling for fields not stored in the DB
-  const guildMembers = await interaction.guild.members.fetch()
-  const members = Array.from(guildMembers.values())
-  const roleFiltered = role
-    ? members.filter((m) => m.roles.cache.has(role.id))
-    : members
-  return roleFiltered.map((guildMember) => mapToDoraDiscordMember(guildMember))
+  const doraDiscordMembers = await getDoraDiscordMembers({
+    guild: interaction.guild,
+    skipBots: false,
+  })
+  return role
+    ? doraDiscordMembers.filter((m) => m.guildMember.roles.cache.has(role.id))
+    : doraDiscordMembers
 }

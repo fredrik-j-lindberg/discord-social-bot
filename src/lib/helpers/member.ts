@@ -132,6 +132,21 @@ export const getDoraDiscordMember = async ({
   return mapToDoraDiscordMember(guildMember)
 }
 
+export const getDoraDiscordMembers = async ({
+  guild,
+  userIds,
+  skipBots,
+}: {
+  guild: Guild
+  userIds?: string[]
+  skipBots: boolean
+}): Promise<DoraDiscordMember[]> => {
+  const guildMembers = await guild.members.fetch({ user: userIds })
+  return Array.from(guildMembers.values())
+    .filter((member) => (skipBots ? !member.user.bot : true))
+    .map(mapToDoraDiscordMember)
+}
+
 export const getDoraDatabaseMember = async ({
   guildId,
   userId,
