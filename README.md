@@ -46,9 +46,25 @@ _Note: This requires the birthdayWishes channel to be set in the guild config an
 
 Via the /serverdata command you can access some information relating to the server. E.g. the most or least popular server emojis
 
+### Inactivity monitor
+
+Opt in functionality for all guilds is to enable inactivity monitoring. You opt in via `/config setting: Inactivity`, and can set:
+
+- Days until members are deemed inactive
+- Days as inactive before they are automatically kicked
+- Invite link to make it easy for kicked members to re-join
+- Inactive role id, which is added to the user when they are marked as inactive
+
+Members will receive a heads-up when they are marked as inactive and when they are kicked. When kicked the message will also contain the invite link if one has been set via the /config command
+
 ### Random stuff
 
 - If a message contains the text "christian server" the bot will respond with a cross, which is a reference to the legacy pg-13 status of the Eithon community
+- Via the /config command guild scoped configuration for the bot can be administered. For example it is possible to configure which channel log messages should end up in, as well as the [inactivity monitoring](#inactivity-monitor) configuration
+- Photo uploads
+  - /addtag - Add a tag that you can associate a photo with when uploading
+  - /photo upload - Upload photo(s)
+  - /photo view - View photos
 
 ## Getting Started
 
@@ -162,60 +178,34 @@ There are also some helpful scripts for this:
 
 - `pnpm lint` - make sure that eslint is happy
 - `pnpm check-types` - make sure typescript is happy
-- `pnpm verify` - convenience script for running the above two
+- `pnpm verify` - convenience script for running the above two (and tests)
 - `pnpm lint:fix` - auto fix what is possible to auto fix
+
+## Testing
+
+- `pnpm test` - run the Vitest test suite
 
 ## TODO
 
 ### Feats
 
-- Implement inactivity system:
-  - ~~Step 1: Send member activity list to e.g. 106098921985556480 (Neylion) to test sending dms and checking that the activity works as expected~~
-    - ~~Member activity should be based on latest message or latest reaction~~
-    - ~~This should be opt in via the the guild config~~
-  - ~~Step 2: Draft a message to send to inactive members. Send it initially to Neylion to see if it works~~
-    - ~~E.g. Once a week, send a message for those who haven't had any activity for the last 3 months or so~~
-    - ~~Once the message is sent, the memberdata for the those who haven't had any activity should be updated with a "inactivity warning" timestamp~~
-    - ~~If the user sends a message or adds a reaction, the inactivity warning timestamp should be removed~~
-  - ~~Step 3: Draft a message to send to kicked members. Send it initially to Neylion to see if it works~~
-    - ~~Should be sent 1 month after the inactivity warning timestamp was added~~
-    - ~~Should include a link back to the server they were kicked from, to make it easy to re-join~~
-
-  ~~Once the previous steps are confirmed to be working.~~
-  - ~~Step 4: Start sending the messages to actual members~~
-    - ~~When sending a message to a user, a message should also be sent to the admin(s)~~
-    - ~~When the admin message is implemented, remove the debug summary message thing as it will be redundant~~
-  - ~~Step 5: Implement the kick~~
-  - ~~Step 6: Add tests for the feature before production "release" (as a feature that handles kicking is a high impact area)~~
-
-  Extras:
+- Improvements to inactivity check
   - Post the inactivity summary in a server channel
-  - ~~Consider if we should have a way to exempt users from the inactivity check~~
-  - ~~Consider adding an "inactive" role to users who have received the warning~~
-
-- Improvements to /pii
-  - Add silent mode (see silent mode handling for /whois)
-  - Cache form data for a short while (e.g. 10 minutes)? This would allow you to not lose all the data when failing the validation. Should this be done for all modals?
+  - Consider if we should have a way to exempt users from the inactivity check
 - Smhi integration?
 - Instead of below, perhaps an integration with Cloudflare R2 to simply host images for us
 - Add google photos integration. Edit: Turns out google photos is no longer possible to integrate with for the type of functionality I want, so to accomplish this we would need some sort of image scraping capabilities (scraping a google photos album).
-  - Update: [POC branch here](https://github.com/fredrik-j-lindberg/discord-social-bot/tree/poc/web-scraper) - Failed to find a reliable dates in shared google photos album url. The date found in the html proved to be the photo data rather than the upload date. A relative time stamp was found in the "comment section" of the album, so that is a potential next test. But then we would need to be able to parse the relative text and figure out whether it warrants an announcement or not.
-- Add mcp capabilities (being able to ask the bot for a specific piece of member info etc)
+  - Update: [POC branch here](https://github.com/fredrik-j-lindberg/discord-social-bot/tree/poc/web-scraper) - Failed to find reliable dates in the shared Google Photos album URL. The date found in the HTML proved to be the photo date rather than the upload date. A relative timestamp was found in the "comment section" of the album, so that is a potential next test. But then we would need to parse the relative text and figure out whether it warrants an announcement or not.
+- Add MCP capabilities (being able to ask the bot for a specific piece of member info etc)
   - Note that as long as we use an API for the LLM we need to make this opt in
 - Move remaining guildconfigs to database (see how it was done for inactivity and logs config in the /config command)
 - Event gcal syncing?
 
 ### Improved devx
 
-- Refactor the modals to be aligned and mostly config generated to make it easier to add and change modals and have them behave the same way
-- Refactor /memberdata and /whois to have more aligned handling for the fields to make it easier to add fields
 - Add an actual monitoring tool, e.g. grafana logs?
 
 ### Misc
 
 - Align action wrapper usage around database methods (e.g. the new services)
-- Write docs for new "features"
-  - Inactivity monitoring
-  - File uploads
-  - Guild config
 - Look through inline TODO comments in code
