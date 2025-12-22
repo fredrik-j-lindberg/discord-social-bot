@@ -6,6 +6,7 @@ import { logger } from "../lib/logger"
 import { announceRelevantScheduledEventsForAllGuilds } from "./announceEvents"
 import { happyBirthday } from "./happyBirthday"
 import { inactivityMonitor } from "./inactivityCheck"
+import { syncDiscordMembersWithDb } from "./syncDiscordMembersWithDb"
 
 /**
  * Interval options for cron job. A scheduled job with the minute format
@@ -16,7 +17,7 @@ const CRON_INTERVAL = {
   HOUR: "0 * * * *",
   MIDNIGHT: "0 0 * * *", // 00.00 daily
   MIDDAY: "0 12 * * *", // 12.00 daily
-  WEEKLY: "0 8 * * 0", // 08.00 every Sunday
+  WEEKLY: "0 0 * * 0", // 00.00 every Sunday
 }
 
 export const registerCronJobs = () => {
@@ -41,6 +42,14 @@ export const registerCronJobs = () => {
     await actionWrapper({
       action: inactivityMonitor,
       actionDescription: "Handle inactivity monitor cron job",
+      swallowError: true,
+    })
+  })
+  schedule.scheduleJob(CRON_INTERVAL.WEEKLY, async () => {
+    logger.debug("Running weekly sync cron job")
+    await actionWrapper({
+      action: syncDiscordMembersWithDb,
+      actionDescription: "Sync discord members with database",
       swallowError: true,
     })
   })
