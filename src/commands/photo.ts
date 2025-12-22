@@ -33,7 +33,7 @@ const command = new SlashCommandBuilder()
 
 export default {
   type: "chat",
-  deferReply: false,
+  deferReply: false, // Since one of the subcommands is showing a modal, we unfortunately cannot defer on a command-wide basis. Each subcommand must handle deferring individually if needed.
   command,
   data: { name: command.name },
   autocomplete: async (interaction) => {
@@ -60,6 +60,7 @@ export default {
     )
 
     if (interaction.options.getSubcommand() === viewChoiceOptionName) {
+      await interaction.deferReply()
       const tagId = interaction.options.getString(tagOptionName) ?? undefined
       const photos = await getMemberFiles({
         guildId: interaction.guild.id,
