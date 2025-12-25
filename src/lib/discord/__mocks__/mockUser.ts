@@ -49,12 +49,14 @@ export const mockMember = ({
 export const mockUser = ({
   id,
   username,
+  bot = false,
 }: {
   id: string
   username: string
+  bot?: boolean
 }): User =>
   ({
     id,
     username,
-    bot: false,
+    bot,
   }) as User
