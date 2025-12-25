@@ -1,0 +1,681 @@
+{
+  "id": "9dc7a416-66cd-4108-8db0-27af9d817647",
+  "prevId": "73d9ca8e-7ec1-4de5-9807-b04a4a2f08b4",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.guild_configs": {
+      "name": "guild_configs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config": {
+          "name": "config",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recordUpdatedAt": {
+          "name": "recordUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "recordCreatedAt": {
+          "name": "recordCreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "guild_configs_id_unique": {
+          "name": "guild_configs_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        },
+        "guild_configs_guildId_unique": {
+          "name": "guild_configs_guildId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "guildId"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.item_tags": {
+      "name": "item_tags",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "itemId": {
+          "name": "itemId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tagId": {
+          "name": "tagId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recordUpdatedAt": {
+          "name": "recordUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "recordCreatedAt": {
+          "name": "recordCreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "item_tags_tagId_tags_id_fk": {
+          "name": "item_tags_tagId_tags_id_fk",
+          "tableFrom": "item_tags",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tagId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "item_tags_id_unique": {
+          "name": "item_tags_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.member_emojis": {
+      "name": "member_emojis",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "memberId": {
+          "name": "memberId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "emojiId": {
+          "name": "emojiId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emojiName": {
+          "name": "emojiName",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "isAnimated": {
+          "name": "isAnimated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "messageAuthorUserId": {
+          "name": "messageAuthorUserId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "messageId": {
+          "name": "messageId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "isGuildEmoji": {
+          "name": "isGuildEmoji",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "context": {
+          "name": "context",
+          "type": "context",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recordUpdatedAt": {
+          "name": "recordUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "recordCreatedAt": {
+          "name": "recordCreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "member_emojis_memberId_member_data_id_fk": {
+          "name": "member_emojis_memberId_member_data_id_fk",
+          "tableFrom": "member_emojis",
+          "tableTo": "member_data",
+          "columnsFrom": [
+            "memberId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "member_emojis_id_unique": {
+          "name": "member_emojis_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.member_files": {
+      "name": "member_files",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contentType": {
+          "name": "contentType",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "varchar(2048)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sizeInBytes": {
+          "name": "sizeInBytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "memberId": {
+          "name": "memberId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recordUpdatedAt": {
+          "name": "recordUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "recordCreatedAt": {
+          "name": "recordCreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "member_files_id_unique": {
+          "name": "member_files_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.member_role": {
+      "name": "member_role",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "memberId": {
+          "name": "memberId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "roleId": {
+          "name": "roleId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recordUpdatedAt": {
+          "name": "recordUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "recordCreatedAt": {
+          "name": "recordCreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "member_role_memberId_member_data_id_fk": {
+          "name": "member_role_memberId_member_data_id_fk",
+          "tableFrom": "member_role",
+          "tableTo": "member_data",
+          "columnsFrom": [
+            "memberId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "member_role_memberId_roleId_pk": {
+          "name": "member_role_memberId_roleId_pk",
+          "columns": [
+            "memberId",
+            "roleId"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "member_role_id_unique": {
+          "name": "member_role_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.member_data": {
+      "name": "member_data",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "messageCount": {
+          "name": "messageCount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "latestMessageAt": {
+          "name": "latestMessageAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reactionCount": {
+          "name": "reactionCount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "latestReactionAt": {
+          "name": "latestReactionAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "latestActivityAt": {
+          "name": "latestActivityAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inactiveSince": {
+          "name": "inactiveSince",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "firstName": {
+          "name": "firstName",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "birthday": {
+          "name": "birthday",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phoneNumber": {
+          "name": "phoneNumber",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "switchFriendCode": {
+          "name": "switchFriendCode",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pokemonTcgpFriendCode": {
+          "name": "pokemonTcgpFriendCode",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dietaryPreferences": {
+          "name": "dietaryPreferences",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "member_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "recordUpdatedAt": {
+          "name": "recordUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "recordCreatedAt": {
+          "name": "recordCreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "member_data_guildId_userId_pk": {
+          "name": "member_data_guildId_userId_pk",
+          "columns": [
+            "guildId",
+            "userId"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "member_data_id_unique": {
+          "name": "member_data_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tags": {
+      "name": "tags",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(4000)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recordUpdatedAt": {
+          "name": "recordUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "recordCreatedAt": {
+          "name": "recordCreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "tags_guildId_name_type_pk": {
+          "name": "tags_guildId_name_type_pk",
+          "columns": [
+            "guildId",
+            "name",
+            "type"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "tags_id_unique": {
+          "name": "tags_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.context": {
+      "name": "context",
+      "schema": "public",
+      "values": [
+        "reaction",
+        "message"
+      ]
+    },
+    "public.member_status": {
+      "name": "member_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive",
+        "departed"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

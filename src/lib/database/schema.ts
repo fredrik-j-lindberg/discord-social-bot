@@ -20,6 +20,17 @@ const commonTimestamps = {
   recordCreatedAt: timestamp().defaultNow().notNull(),
 }
 
+const memberStatuses = [
+  /** In guild and active */
+  "active",
+  /** In guild but marked as inactive */
+  "inactive",
+  /** No longer in guild */
+  "departed",
+] as const
+export type MemberStatus = (typeof memberStatuses)[number]
+export const memberStatusEnum = pgEnum("member_status", memberStatuses)
+
 export const membersTable = pgTable(
   "member_data",
   {
@@ -45,6 +56,8 @@ export const membersTable = pgTable(
     switchFriendCode: varchar({ length: 255 }),
     pokemonTcgpFriendCode: varchar({ length: 255 }),
     dietaryPreferences: varchar({ length: 255 }),
+
+    status: memberStatusEnum().notNull().default("active"),
 
     ...commonTimestamps,
   },

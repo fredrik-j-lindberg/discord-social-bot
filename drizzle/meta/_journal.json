@@ -92,6 +92,13 @@
       "when": 1764517518686,
       "tag": "0012_add-guild-config-table",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1766694844308,
+      "tag": "0013_add-member-status",
+      "breakpoints": true
     }
   ]
 }
