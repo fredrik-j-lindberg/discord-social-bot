@@ -37,6 +37,8 @@ const guildConfigInactivitySchema = z.object({
   inactiveRoleId: z.string().optional(),
 })
 
+export type InactivityConfig = z.infer<typeof guildConfigInactivitySchema>
+
 const guildConfigDataSchema = z.object({
   /** Configuration for logging, leave out of guild config to disable logging */
   logs: guildConfigLogsSchema.optional(),

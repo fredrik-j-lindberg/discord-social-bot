@@ -6,7 +6,7 @@ import {
   User,
 } from "discord.js"
 
-import type { GuildConfig } from "~/lib/database/guildConfigService"
+import type { InactivityConfig } from "~/lib/database/guildConfigService"
 
 import { addDaysToDate } from "../helpers/date"
 import type { DoraMember } from "../helpers/member"
@@ -69,7 +69,7 @@ const removeEmojis = (input: string) => {
 const getInactivityInfoText = ({
   inactivityConfig,
 }: {
-  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
+  inactivityConfig: InactivityConfig
 }) => {
   const { daysUntilInactive, daysAsInactiveBeforeKick } = inactivityConfig
   return `Anyone with no activity for **${daysUntilInactive}** days is considered inactive, once marked as inactive you will be removed from the server after **${daysAsInactiveBeforeKick}** days. All that is needed to lose the inactive status is to send a message in the server!`
@@ -84,7 +84,7 @@ export const sendDebugInactivitySummaryToUser = async ({
   inactiveMembers: DoraMember[]
   debugUser: User
   guildName: string
-  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
+  inactivityConfig: InactivityConfig
 }) => {
   if (inactiveMembers.length === 0) {
     return
@@ -117,7 +117,7 @@ export const sendInactivityNotice = async ({
 }: {
   doraMember: DoraMember
   guildName: string
-  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
+  inactivityConfig: InactivityConfig
 }) => {
   const lastSeenText = doraMember.stats.latestActivityAt
     ? `were last seen ${createDiscordTimestamp(doraMember.stats.latestActivityAt)}`
@@ -137,7 +137,7 @@ export const sendKickNotice = async ({
 }: {
   guildName: string
   doraMember: DoraMember
-  inactivityConfig: NonNullable<GuildConfig["inactivity"]>
+  inactivityConfig: InactivityConfig
 }) => {
   const intro = `Hello **${doraMember.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
 
