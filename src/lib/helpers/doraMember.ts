@@ -1,6 +1,6 @@
 import type { Guild, GuildMember } from "discord.js"
 
-import { getMemberData } from "../database/memberDataService"
+import { getMemberData, setMemberData } from "../database/memberDataService"
 import {
   type EmojiCount,
   getMemberEmojiCounts,
@@ -272,4 +272,32 @@ export const convertDatabaseMembersToDoraMembers = async ({
   }
 
   return doraMembers
+}
+
+export const kickDoraMember = async ({
+  doraMember,
+  kickReason,
+  kickMessage,
+}: {
+  doraMember: DoraMember
+  /** Reason for kicking the member, will appear in the audit log */
+  kickReason: string
+  /** Optional message to send to the member before kicking them */
+  kickMessage?: string
+}): Promise<void> => {
+  if (kickMessage) {
+    await doraMember.guildMember.send(kickMessage)
+  }
+
+  await doraMember.guildMember.kick(kickReason)
+
+  await setMemberData({
+    doraMember: {
+      guildId: doraMember.guildId,
+      userId: doraMember.userId,
+      username: doraMember.username,
+      displayName: doraMember.displayName,
+      stats: { inactiveSince: null },
+    },
+  })
 }

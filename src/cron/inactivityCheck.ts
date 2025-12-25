@@ -8,17 +8,18 @@ import {
   setMemberData,
 } from "~/lib/database/memberDataService"
 import { getGuild } from "~/lib/discord/guilds"
-import { addRole } from "~/lib/discord/roles"
 import {
-  sendDebugInactivitySummaryToUser,
-  sendInactivityNotice,
-  sendKickNotice,
-} from "~/lib/discord/sendMessage"
+  createDebugInactivitySummary,
+  createInactivityKickNotice,
+  createInactivityWarningMessage,
+} from "~/lib/discord/message"
+import { addRole } from "~/lib/discord/roles"
 import { getMember } from "~/lib/discord/user"
 import { subtractDaysFromDate } from "~/lib/helpers/date"
 import {
   convertDatabaseMembersToDoraMembers,
   type DoraMember,
+  kickDoraMember,
 } from "~/lib/helpers/doraMember"
 import { logger } from "~/lib/logger"
 
@@ -89,12 +90,12 @@ const handleInactivityCheck = async ({
 
   // TODO: Handle the summary differently
   const debugMember = await getMember({ guild, userId: "106098921985556480" }) // Neylion
-  await sendDebugInactivitySummaryToUser({
+  const debugSummary = createDebugInactivitySummary({
     inactiveMembers: doraMembers,
-    debugUser: debugMember.user,
     guildName: guild.name,
     inactivityConfig,
   })
+  await debugMember.user.send({ content: debugSummary })
 }
 
 /** Kicks the member if it has been inactive for too enough, based on the guild config */
@@ -111,16 +112,14 @@ const handleKickingInactiveMemberIfRelevant = async ({
     new Date(),
     inactivityConfig.daysAsInactiveBeforeKick,
   )
-  if (
-    !doraMember.stats.inactiveSince ||
-    doraMember.stats.inactiveSince > kickThresholdDate
-  ) {
+  const inactiveSince = doraMember.stats.inactiveSince
+  if (!inactiveSince || inactiveSince > kickThresholdDate) {
     logger.debug(
       {
         userId: doraMember.userId,
         guildId: guild.id,
         inactivityConfig,
-        inactiveSince: doraMember.stats.inactiveSince,
+        inactiveSince,
         kickThresholdDate,
       },
       "Not yet time to kick inactive member",
@@ -128,24 +127,16 @@ const handleKickingInactiveMemberIfRelevant = async ({
     return
   }
 
-  await sendKickNotice({
-    doraMember,
+  const kickMessage = createInactivityKickNotice({
     guildName: guild.name,
+    doraMember,
     inactivityConfig,
   })
 
-  await doraMember.guildMember.kick(
-    `Automatically kicked due to inactivity. Last seen ${doraMember.stats.latestActivityAt?.toISOString() || "N/A"}`,
-  )
-
-  await setMemberData({
-    doraMember: {
-      guildId: guild.id,
-      userId: doraMember.userId,
-      username: doraMember.username,
-      displayName: doraMember.displayName,
-      stats: { inactiveSince: null },
-    },
+  await kickDoraMember({
+    doraMember,
+    kickReason: `Automatically kicked due to inactivity. Last seen ${doraMember.stats.latestActivityAt?.toISOString() || "N/A"}`,
+    kickMessage,
   })
 
   logger.info(
@@ -185,11 +176,12 @@ const handleSetMemberAsInactive = async ({
       stats: { inactiveSince: new Date() },
     },
   })
-  await sendInactivityNotice({
+  const inactivityNotice = createInactivityWarningMessage({
     doraMember,
     guildName: guild.name,
     inactivityConfig,
   })
+  await doraMember.guildMember.send({ content: inactivityNotice })
 
   logger.info(
     {

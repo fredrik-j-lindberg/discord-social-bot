@@ -4,6 +4,10 @@ import {
   TextDisplayBuilder,
 } from "discord.js"
 
+import type { InactivityConfig } from "../database/guildConfigService"
+import { addDaysToDate } from "../helpers/date"
+import type { DoraMember } from "../helpers/doraMember"
+
 /** Converts a role id into a Discord's native mention */
 export const createRoleMention = (roleId: string) => `<@&${roleId}>`
 
@@ -196,4 +200,81 @@ export const createMediaGalleryContainer = ({
       }),
     ),
   )
+}
+
+const getInactivityInfoText = ({
+  inactivityConfig,
+}: {
+  inactivityConfig: InactivityConfig
+}) => {
+  const { daysUntilInactive, daysAsInactiveBeforeKick } = inactivityConfig
+  return `Anyone with no activity for **${daysUntilInactive}** days is considered inactive, once marked as inactive you will be removed from the server after **${daysAsInactiveBeforeKick}** days. All that is needed to lose the inactive status is to send a message in the server!`
+}
+
+export const createInactivityWarningMessage = ({
+  doraMember,
+  guildName,
+  inactivityConfig,
+}: {
+  doraMember: DoraMember
+  guildName: string
+  inactivityConfig: InactivityConfig
+}) => {
+  const lastSeenText = doraMember.stats.latestActivityAt
+    ? `were last seen ${createDiscordTimestamp(doraMember.stats.latestActivityAt)}`
+    : "have no recorded activity"
+  const intro = `Hello **${doraMember.displayName}** :wave: You are now marked as inactive in the **${guildName}** server as you ${lastSeenText}`
+  const info = `_${getInactivityInfoText({ inactivityConfig })}_`
+
+  return `${intro}\n\n${info}`
+}
+
+export const createInactivityKickNotice = ({
+  guildName,
+  doraMember,
+  inactivityConfig: { inviteLink },
+}: {
+  guildName: string
+  doraMember: DoraMember
+  inactivityConfig: InactivityConfig
+}) => {
+  const intro = `Hello **${doraMember.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
+
+  if (!inviteLink) {
+    return intro
+  }
+
+  const rejoinInfo = `_You can re-join the server at any time using the invite link:_ ${inviteLink}`
+  return `${intro}\n\n${rejoinInfo}`
+}
+
+export const createDebugInactivitySummary = ({
+  inactiveMembers,
+  guildName,
+  inactivityConfig,
+}: {
+  inactiveMembers: DoraMember[]
+  guildName: string
+  inactivityConfig: InactivityConfig
+}) => {
+  if (inactiveMembers.length === 0) {
+    return
+  }
+
+  const intro = `The following members have been inactive recently in **${guildName}**. They were last seen:`
+  const lines = inactiveMembers.map((doraMember) => {
+    const lastSeenText = doraMember.stats.latestActivityAt
+      ? createDiscordTimestamp(doraMember.stats.latestActivityAt)
+      : "N/A"
+
+    const willBeKickedText = createDiscordTimestamp(
+      addDaysToDate(
+        doraMember.stats.inactiveSince || new Date(),
+        inactivityConfig.daysAsInactiveBeforeKick,
+      ),
+    )
+    return `**${doraMember.displayName}** (${doraMember.userId}) - Last seen: ${lastSeenText}, will be kicked: ${willBeKickedText}`
+  })
+
+  return `${intro}\n\n${lines.join("\n")}\n\n${getInactivityInfoText({ inactivityConfig })}`
 }

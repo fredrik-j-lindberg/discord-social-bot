@@ -8,13 +8,12 @@ import {
 } from "~/lib/database/guildConfigService"
 import {
   getInactiveGuildMemberData,
-  type MemberData,
   setMemberData,
 } from "~/lib/database/memberDataService"
 import { mockMember, mockUser } from "~/lib/discord/__mocks__/mockUser"
 import { getGuild } from "~/lib/discord/guilds"
 import { addRole } from "~/lib/discord/roles"
-import { sendInactivityNotice, sendKickNotice } from "~/lib/discord/sendMessage"
+import { getMember } from "~/lib/discord/user"
 import { expectDoraMember } from "~/lib/helpers/__mocks__/mockDoraMember"
 import { subtractDaysFromDate } from "~/lib/helpers/date"
 import { logger } from "~/lib/logger"
@@ -25,7 +24,7 @@ vi.mock("~/lib/database/guildConfigService")
 vi.mock("~/lib/database/memberDataService")
 vi.mock("~/lib/discord/guilds")
 vi.mock("~/lib/discord/roles")
-vi.mock("~/lib/discord/sendMessage")
+vi.mock("~/lib/discord/user")
 vi.mock("~/lib/logger", () => ({
   logger: {
     debug: vi.fn(),
@@ -70,11 +69,13 @@ const mockAlreadyInactiveMember = mockMember({
   }),
   displayName: "Already Inactive User",
 })
-const mockKickFn = vi.fn()
 const mockMemberToKick = mockMember({
   user: mockUser({ id: "kick-user", username: "kick" }),
   displayName: "Kick User",
-  kick: mockKickFn,
+})
+const mockDebugMember = mockMember({
+  user: mockUser({ id: "debug-user", username: "debug" }),
+  displayName: "Debug User",
 })
 
 /** Member that should be marked as inactive */
@@ -115,9 +116,8 @@ describe("inactivityMonitor", () => {
   const mockSetMemberData = vi.mocked(setMemberData)
   const mockGetGuild = vi.mocked(getGuild)
   const mockAddRole = vi.mocked(addRole)
-  const mockSendInactivityNotice = vi.mocked(sendInactivityNotice)
-  const mockSendKickNotice = vi.mocked(sendKickNotice)
   const mockLogger = vi.mocked(logger)
+  const mockGetMember = vi.mocked(getMember)
 
   const setupMocks = (guildConfig: GuildConfig = mockGuildConfig) => {
     mockGetAllGuildConfigs.mockResolvedValue([guildConfig])
@@ -137,6 +137,9 @@ describe("inactivityMonitor", () => {
       },
     } as unknown as Guild
     mockGetGuild.mockResolvedValue(mockGuild)
+    mockGetMember.mockResolvedValue({
+      user: mockDebugMember,
+    } as unknown as GuildMember)
 
     mockGetInactiveGuildMemberData.mockResolvedValue([
       mockToMarkInactiveMemberData,
@@ -179,42 +182,12 @@ describe("inactivityMonitor", () => {
       roleId: mockInactiveRoleId,
       member: mockToMarkAsInactiveMember,
     })
-
     expect(mockSetMemberData).toHaveBeenCalledWith({
       doraMember: expectDoraMember({
         userId: mockToMarkInactiveMemberData.userId,
         stats: { inactiveSince: mockNowTime },
       }),
     })
-
-    expect(mockSendInactivityNotice).toHaveBeenCalledExactlyOnceWith({
-      doraMember: expectDoraMember({
-        userId: mockToMarkInactiveMemberData.userId,
-      }),
-      guildName: mockGuild.name,
-      inactivityConfig: mockGuildConfig.inactivity,
-    })
-
-    // Kick relevant member
-    expect(mockSendKickNotice).toHaveBeenCalledExactlyOnceWith({
-      doraMember: expectDoraMember({
-        userId: mockToKickMemberData.userId,
-      }) as unknown as MemberData,
-      guildName: mockGuild.name,
-      inactivityConfig: mockGuildConfig.inactivity,
-    })
-    expect(mockKickFn).toHaveBeenCalledWith(
-      `Automatically kicked due to inactivity. Last seen ${mockToKickMemberData.stats.latestActivityAt?.toISOString() || "N/A"}`,
-    )
-    expect(mockSetMemberData).toHaveBeenCalledWith({
-      doraMember: expect.objectContaining({
-        userId: mockToKickMemberData.userId,
-        stats: {
-          inactiveSince: null, // After kicking, the inactivity status should be reset
-        },
-      }) as unknown as MemberData,
-    })
-
     expect(mockLogger.info).toHaveBeenCalledWith(
       {
         userId: mockToMarkAsInactiveMember.id,
@@ -222,6 +195,18 @@ describe("inactivityMonitor", () => {
       },
       `Set member ${mockToMarkAsInactiveMember.displayName} as inactive in guild as their latest activity was ${mockToMarkInactiveMemberData.stats.latestActivityAt?.toISOString() || "N/A"} and the guild inactivity threshold is ${mockDaysUntilInactive} days`,
     )
+    expect(mockToMarkAsInactiveMember.kick.mock.calls[0]?.[0]).toBeUndefined()
+    expect(mockToMarkAsInactiveMember.send.mock.calls[0]?.[0]).toMatchSnapshot()
+
+    // Kick relevant member
+    expect(mockSetMemberData).toHaveBeenCalledWith({
+      doraMember: expectDoraMember({
+        userId: mockToKickMemberData.userId,
+        stats: {
+          inactiveSince: null, // After kicking, the inactivity status should be reset
+        },
+      }),
+    })
     expect(mockLogger.info).toHaveBeenCalledWith(
       {
         userId: mockMemberToKick.id,
@@ -229,6 +214,9 @@ describe("inactivityMonitor", () => {
       },
       `Kicked inactive member ${mockMemberToKick.displayName} from guild as their latest activity was ${mockToKickMemberData.stats.latestActivityAt?.toISOString() || "N/A"}`,
     )
+    expect(mockMemberToKick.kick.mock.calls[0]?.[0]).toMatchSnapshot()
+    expect(mockMemberToKick.send.mock.calls[0]?.[0]).toMatchSnapshot()
+
     expect(mockLogger.info).toHaveBeenCalledTimes(2) // Make sure we don't log more than expected
   })
 })

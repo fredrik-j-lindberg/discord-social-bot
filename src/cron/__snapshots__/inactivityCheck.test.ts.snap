@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`inactivityMonitor > handles marking inactive members and kicking relevant members 1`] = `
+{
+  "content": "Hello **Inactive User** :wave: You are now marked as inactive in the **Test Guild** server as you were last seen <t:1764547200:R>
+
+_Anyone with no activity for **30** days is considered inactive, once marked as inactive you will be removed from the server after **10** days. All that is needed to lose the inactive status is to send a message in the server!_",
+}
+`;
+
+exports[`inactivityMonitor > handles marking inactive members and kicking relevant members 2`] = `"Automatically kicked due to inactivity. Last seen 2025-11-21T00:00:00.000Z"`;
+
+exports[`inactivityMonitor > handles marking inactive members and kicking relevant members 3`] = `"Hello **Kick User** :wave: You have been removed from the **Test Guild** server due to inactivity :cry:"`;
