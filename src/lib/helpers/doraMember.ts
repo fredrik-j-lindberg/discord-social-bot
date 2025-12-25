@@ -8,6 +8,7 @@ import {
 import type { MemberStatus } from "../database/schema"
 import { getMember } from "../discord/user"
 import { DoraException } from "../exceptions/DoraException"
+import { logger } from "../logger"
 import { getValidDate } from "./date"
 
 interface DoraMemberStats {
@@ -251,16 +252,11 @@ export const convertDatabaseMembersToDoraMembers = async ({
   for (const doraDatabaseMember of doraDatabaseMembers) {
     const guildMember = discordMembers.get(doraDatabaseMember.userId)
     if (!guildMember) {
-      throw new DoraException(
-        "Member not found in guild when converting database members to DoraMembers. Are they part of the guild?",
-        DoraException.Type.NotFound,
-        {
-          metadata: {
-            userId: doraDatabaseMember.userId,
-            guildId: guild.id,
-          },
-        },
+      logger.warn(
+        { userId: doraDatabaseMember.userId, guildId: guild.id },
+        `Member was not found in guild when converting database members to DoraMembers. Are they no longer part of the guild? If so, consider marking that in the database via the \`/setmemberstatus ${doraDatabaseMember.userId}\` command.`,
       )
+      continue
     }
 
     if (skipBots && guildMember.user.bot) {
