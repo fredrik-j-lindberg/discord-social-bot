@@ -5,6 +5,7 @@ import {
   type EmojiCount,
   getMemberEmojiCounts,
 } from "../database/memberEmojisService"
+import type { MemberStatus } from "../database/schema"
 import { getMember } from "../discord/user"
 import { DoraException } from "../exceptions/DoraException"
 import { getValidDate } from "./date"
@@ -59,6 +60,8 @@ export interface DoraMember {
   friendCodes?: DoraMemberFriendCodes
   /** The original guild member object from Discord */
   guildMember: GuildMember
+  /** The current status of the member */
+  status?: MemberStatus
 }
 
 /** A Dora member representation without the discord provided data guild member data (based solely on the database data) */
@@ -159,6 +162,7 @@ export const getDoraDatabaseMember = async ({
   const doraDatabaseMember = await getMemberData({
     userId,
     guildId,
+    includeDeparted: true, // Likely irrelevant to filter for this when we manually fetch a single member
   })
 
   if (!doraDatabaseMember) return doraDatabaseMember
@@ -298,6 +302,7 @@ export const kickDoraMember = async ({
       username: doraMember.username,
       displayName: doraMember.displayName,
       stats: { inactiveSince: null },
+      status: "departed",
     },
   })
 }

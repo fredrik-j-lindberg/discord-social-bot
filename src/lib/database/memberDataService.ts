@@ -49,6 +49,14 @@ const getRoleFilter = (roleIds?: string[]) => [
       )
     : undefined,
 ]
+/**
+ * Returns a filter that excludes departed members unless explicitly included.
+ */
+const getStatusFilter = (includeDeparted?: boolean) => [
+  includeDeparted
+    ? undefined
+    : inArray(membersTable.status, ["active", "inactive"]),
+]
 // Function to calculate the next birthday SQL expression
 const getComputedNextBirthday = () => {
   return sql`
@@ -140,6 +148,7 @@ const mapMemberDataToDoraMember = ({
       switch: memberData.switchFriendCode,
       pokemonTcgp: memberData.pokemonTcgpFriendCode,
     },
+    status: memberData.status,
   }
 }
 
@@ -180,20 +189,27 @@ export const mapDoraDatabaseMemberToMemberDataInsert = (
     pokemonTcgpFriendCode: doraMemberUpsert.friendCodes?.pokemonTcgp,
     dietaryPreferences: doraMemberUpsert.personalInfo?.dietaryPreferences,
     roleIds: doraMemberUpsert.roleIds,
+    status: doraMemberUpsert.status,
   }
 }
 
 export const getMemberData = async ({
   userId,
   guildId,
+  includeDeparted,
 }: {
   userId: string
   guildId: string
+  /** Include members with status 'departed' if true, otherwise exclude */
+  includeDeparted?: boolean
 }): Promise<DoraDatabaseMember | undefined> => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
-      where: and(...getMemberFilter(userId, guildId)),
+      where: and(
+        ...getMemberFilter(userId, guildId),
+        ...getStatusFilter(includeDeparted),
+      ),
       with: { roles: true },
     })
 
@@ -271,6 +287,7 @@ export const addMemberMessageToStats = async ({
     latestMessageAt: messageTimestamp,
     latestActivityAt: messageTimestamp,
     inactiveSince: null,
+    status: "active",
   }
   return await actionWrapper({
     actionDescription: "Update member message stats",
@@ -322,6 +339,7 @@ export const addMemberReactionToStats = async ({
     latestReactionAt: reactionTimestamp,
     latestActivityAt: reactionTimestamp,
     inactiveSince: null,
+    status: "active",
   }
   return await actionWrapper({
     actionDescription: "Add member reaction to stats",
@@ -387,13 +405,14 @@ export const removeMemberReactionFromStats = async ({
   })
 }
 
-export const getMembersWithBirthdayTodayForAllGuilds = async (): Promise<
-  DoraDatabaseMember[]
-> => {
+export const getMembersWithBirthdayTodayForAllGuilds = async (
+  includeDeparted?: boolean,
+): Promise<DoraDatabaseMember[]> => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
       where: and(
+        ...getStatusFilter(includeDeparted),
         isNotNull(membersTable.birthday),
         sql`EXTRACT(MONTH FROM ${membersTable.birthday}) = EXTRACT(MONTH FROM CURRENT_DATE) AND 
             EXTRACT(DAY FROM ${membersTable.birthday}) = EXTRACT(DAY FROM CURRENT_DATE)`,
@@ -424,11 +443,14 @@ export const getMembersWithField = async ({
   guildId,
   field,
   roleIds,
+  includeDeparted,
 }: {
   guildId: string
   field: Exclude<MemberDataDbKeysWithExtras, "roles">
   /** Pass if it should filter based on these roleIds */
   roleIds?: string[]
+  /** Include members with status 'departed' if true, otherwise exclude */
+  includeDeparted?: boolean
 }): Promise<DoraDatabaseMember[]> => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
@@ -437,6 +459,7 @@ export const getMembersWithField = async ({
         eq(membersTable.guildId, guildId),
         isNotNull(getRelatedMemberDataField(field)),
         ...getRoleFilter(roleIds),
+        ...getStatusFilter(includeDeparted),
       ),
       orderBy: getFieldOrderBy(field),
       with: { roles: true },
@@ -451,11 +474,15 @@ export const getMembersWithField = async ({
  */
 export const getAllGuildMemberData = async (
   guildId: string,
+  includeDeparted = false,
 ): Promise<DoraDatabaseMember[]> => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
-      where: eq(membersTable.guildId, guildId),
+      where: and(
+        eq(membersTable.guildId, guildId),
+        ...getStatusFilter(includeDeparted),
+      ),
       orderBy: membersTable.latestActivityAt,
       with: { roles: true },
     })
@@ -470,15 +497,19 @@ export const getAllGuildMemberData = async (
 export const getInactiveGuildMemberData = async ({
   guildId,
   inactiveThresholdDate,
+  includeDeparted,
 }: {
   guildId: string
   inactiveThresholdDate: Date
+  /** Include members with status 'departed' if true, otherwise exclude */
+  includeDeparted?: boolean
 }): Promise<DoraDatabaseMember[]> => {
   const memberRecords: MemberRecordSelectWithRelations[] =
     await db.query.membersTable.findMany({
       extras: getSharedExtras(),
       where: and(
         eq(membersTable.guildId, guildId),
+        ...getStatusFilter(includeDeparted),
         or(
           isNull(membersTable.latestActivityAt),
           lte(membersTable.latestActivityAt, inactiveThresholdDate),

@@ -174,6 +174,7 @@ const handleSetMemberAsInactive = async ({
       username: doraMember.username,
       displayName: doraMember.displayName,
       stats: { inactiveSince: new Date() },
+      status: "inactive",
     },
   })
   const inactivityNotice = createInactivityWarningMessage({
