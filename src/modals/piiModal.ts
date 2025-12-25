@@ -9,7 +9,7 @@ import {
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
 import { setMemberData } from "~/lib/database/memberDataService"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
-import type { DoraDatabaseMember } from "~/lib/helpers/member"
+import type { DoraDatabaseMember } from "~/lib/helpers/doraMember"
 import {
   createDynamicModal,
   extractAndValidateModalValues,

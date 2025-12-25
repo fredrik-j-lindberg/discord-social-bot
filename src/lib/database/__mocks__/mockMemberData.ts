@@ -1,6 +1,6 @@
 import type { GuildMember } from "discord.js"
 
-import type { DoraDatabaseMember } from "../../helpers/member"
+import type { DoraDatabaseMember } from "../../helpers/doraMember"
 
 const baseMemberData: DoraDatabaseMember = {
   databaseId: "uuid",

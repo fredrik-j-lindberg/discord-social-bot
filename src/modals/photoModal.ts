@@ -7,7 +7,7 @@ import {
   createMediaGalleryContainer,
   createUserMention,
 } from "~/lib/discord/message"
-import { getDoraDatabaseMember } from "~/lib/helpers/member"
+import { getDoraDatabaseMember } from "~/lib/helpers/doraMember"
 import {
   createDynamicModal,
   extractAndValidateModalValues,

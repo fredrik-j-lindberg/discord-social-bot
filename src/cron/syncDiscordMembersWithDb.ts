@@ -3,7 +3,7 @@ import type { Guild } from "discord.js"
 import { client } from "~/client"
 import { actionWrapper } from "~/lib/actionWrapper"
 import { setMemberData } from "~/lib/database/memberDataService"
-import { getDoraDiscordMembers } from "~/lib/helpers/member"
+import { getDoraDiscordMembers } from "~/lib/helpers/doraMember"
 
 /**
  * Make sure the database is up to date with relevant info from Discord.

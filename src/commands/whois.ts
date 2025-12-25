@@ -11,7 +11,7 @@ import {
 } from "~/events/interactionCreate/listeners/commandRouter"
 import type { DoraReply } from "~/lib/discord/interaction"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
-import { getDoraMember } from "~/lib/helpers/member"
+import { getDoraMember } from "~/lib/helpers/doraMember"
 import {
   assertHasDefinedProperty,
   assertValidMemberField,

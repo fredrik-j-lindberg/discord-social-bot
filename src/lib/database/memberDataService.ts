@@ -2,7 +2,7 @@ import { and, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm"
 
 import { actionWrapper } from "../actionWrapper"
 import { DoraException } from "../exceptions/DoraException"
-import type { DoraDatabaseMember } from "../helpers/member"
+import type { DoraDatabaseMember } from "../helpers/doraMember"
 import { db } from "./client"
 import { setMemberRoles } from "./memberRolesService"
 import {

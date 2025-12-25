@@ -6,7 +6,7 @@ import type {
   DoraDatabaseMember,
   DoraDiscordMember,
   DoraMember,
-} from "../member"
+} from "../doraMember"
 
 export const mockDoraDiscordMember = ({
   userId = "mock-user-id",

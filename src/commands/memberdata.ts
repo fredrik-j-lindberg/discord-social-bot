@@ -16,7 +16,7 @@ import {
   type DoraDatabaseMember,
   type DoraMember,
   getDoraDiscordMembers,
-} from "~/lib/helpers/member"
+} from "~/lib/helpers/doraMember"
 import {
   assertHasDefinedProperty,
   assertValidMemberField,

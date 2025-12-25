@@ -4,7 +4,7 @@ import {
   type Command,
   ephemeralOptionName,
 } from "~/events/interactionCreate/listeners/commandRouter"
-import { getDoraDatabaseMember } from "~/lib/helpers/member"
+import { getDoraDatabaseMember } from "~/lib/helpers/doraMember"
 import { assertHasDefinedProperty } from "~/lib/validation"
 
 import piiModal from "../modals/piiModal"

@@ -19,7 +19,7 @@ import { subtractDaysFromDate } from "~/lib/helpers/date"
 import {
   convertDatabaseMembersToDoraMembers,
   type DoraMember,
-} from "~/lib/helpers/member"
+} from "~/lib/helpers/doraMember"
 import { logger } from "~/lib/logger"
 
 export const inactivityMonitor = async () => {

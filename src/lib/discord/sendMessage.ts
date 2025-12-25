@@ -9,7 +9,7 @@ import {
 import type { InactivityConfig } from "~/lib/database/guildConfigService"
 
 import { addDaysToDate } from "../helpers/date"
-import type { DoraMember } from "../helpers/member"
+import type { DoraMember } from "../helpers/doraMember"
 import { assertChannelIsTextBased, assertIsDefined } from "../validation"
 import { createDiscordTimestamp, createUserMention } from "./message"
 

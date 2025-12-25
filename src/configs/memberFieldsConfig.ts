@@ -5,7 +5,7 @@ import {
   createRoleMention,
 } from "~/lib/discord/message"
 import { formatDate } from "~/lib/helpers/date"
-import type { DoraMember } from "~/lib/helpers/member"
+import type { DoraMember } from "~/lib/helpers/doraMember"
 
 export type MemberOptInFieldIds =
   | "birthday"

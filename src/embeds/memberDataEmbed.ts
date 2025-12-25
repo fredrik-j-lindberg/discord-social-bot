@@ -4,7 +4,7 @@ import {
   getActiveMemberFieldsMap,
   type MemberFieldsIds,
 } from "~/configs/memberFieldsConfig"
-import type { DoraMember } from "~/lib/helpers/member"
+import type { DoraMember } from "~/lib/helpers/doraMember"
 
 import { getStaticGuildConfigById } from "../../guildConfigs"
 
