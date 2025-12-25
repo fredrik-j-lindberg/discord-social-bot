@@ -15,6 +15,7 @@ import { mockMember, mockUser } from "~/lib/discord/__mocks__/mockUser"
 import { getGuild } from "~/lib/discord/guilds"
 import { addRole } from "~/lib/discord/roles"
 import { sendInactivityNotice, sendKickNotice } from "~/lib/discord/sendMessage"
+import { expectDoraMember } from "~/lib/helpers/__mocks__/mockDoraMember"
 import { subtractDaysFromDate } from "~/lib/helpers/date"
 import { logger } from "~/lib/logger"
 
@@ -180,25 +181,23 @@ describe("inactivityMonitor", () => {
     })
 
     expect(mockSetMemberData).toHaveBeenCalledWith({
-      doraMember: expect.objectContaining({
+      doraMember: expectDoraMember({
         userId: mockToMarkInactiveMemberData.userId,
-        stats: {
-          inactiveSince: mockNowTime,
-        },
-      }) as unknown as MemberData,
+        stats: { inactiveSince: mockNowTime },
+      }),
     })
 
     expect(mockSendInactivityNotice).toHaveBeenCalledExactlyOnceWith({
-      doraMember: expect.objectContaining({
+      doraMember: expectDoraMember({
         userId: mockToMarkInactiveMemberData.userId,
-      }) as unknown as MemberData,
+      }),
       guildName: mockGuild.name,
       inactivityConfig: mockGuildConfig.inactivity,
     })
 
     // Kick relevant member
     expect(mockSendKickNotice).toHaveBeenCalledExactlyOnceWith({
-      doraMember: expect.objectContaining({
+      doraMember: expectDoraMember({
         userId: mockToKickMemberData.userId,
       }) as unknown as MemberData,
       guildName: mockGuild.name,
