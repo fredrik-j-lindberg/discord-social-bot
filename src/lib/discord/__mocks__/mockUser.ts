@@ -1,5 +1,5 @@
 import { Collection, type GuildMember, type User } from "discord.js"
-import { vi } from "vitest"
+import { type Mock, vi } from "vitest"
 
 /**
  * Creates a GuildMember roles-like object with a cache collection
@@ -22,41 +22,42 @@ export const mockRoles = ({
   } as unknown as GuildMember["roles"]
 }
 
-export const mockMember = ({
-  user,
-  displayName,
-  kick = vi.fn(),
-  roles,
-  roleIds,
-}: {
-  user: User
-  displayName: string
-  kick?: (reason?: string) => Promise<GuildMember>
-  /** Provide a preconstructed roles manager-like object if desired */
-  roles?: GuildMember["roles"]
-  /** Or provide role IDs to construct a mock roles manager (besides @everyone) */
-  roleIds?: string[]
-}): GuildMember =>
-  ({
+type TestUser = User & {
+  send: Mock
+}
+
+type TestMember = GuildMember & {
+  user: TestUser
+  kick: Mock
+  send: Mock
+}
+
+export const mockMember = (
+  member: Pick<
+    Partial<TestMember>,
+    "id" | "user" | "displayName" | "guild" | "kick" | "send" | "roles"
+  >,
+) => {
+  const user = member.user ?? mockUser()
+  return {
     id: user.id,
     user,
-    displayName,
-    kick,
+    displayName: "Mock Member",
+    kick: vi.fn(),
+    send: vi.fn(),
     guild: { id: "mock-guild-id" },
-    roles: roles ?? mockRoles({ guildId: "mock-guild-id", roleIds }),
-  }) as unknown as GuildMember
+    roles: mockRoles({ guildId: "mock-guild-id", roleIds: [] }),
+    ...member,
+  } as unknown as TestMember
+}
 
-export const mockUser = ({
-  id,
-  username,
-  bot = false,
-}: {
-  id: string
-  username: string
-  bot?: boolean
-}): User =>
+export const mockUser = (
+  user: Pick<Partial<TestUser>, "id" | "username" | "bot" | "send"> = {},
+) =>
   ({
-    id,
-    username,
-    bot,
-  }) as User
+    id: "mock-user-id",
+    username: "mock-user",
+    bot: false,
+    send: vi.fn(),
+    ...user,
+  }) as TestUser

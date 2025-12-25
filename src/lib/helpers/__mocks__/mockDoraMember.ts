@@ -1,6 +1,10 @@
 import { expect } from "vitest"
 
-import { mockMember, mockUser } from "~/lib/discord/__mocks__/mockUser"
+import {
+  mockMember,
+  mockRoles,
+  mockUser,
+} from "~/lib/discord/__mocks__/mockUser"
 
 import type {
   DoraDatabaseMember,
@@ -27,7 +31,7 @@ export const mockDoraDiscordMember = ({
   guildMember: mockMember({
     user: mockUser({ id: userId, username: "mock-username" }),
     displayName: "Mock Display Name",
-    roleIds,
+    roles: mockRoles({ guildId: "mock-guild-id", roleIds }),
   }),
 })
 
