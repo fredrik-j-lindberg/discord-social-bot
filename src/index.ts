@@ -15,7 +15,8 @@ const initDiscordFeatures = async () => {
   const logConfigs = await setDiscordLoggers()
   logConfigs.forEach(({ guildId, levelThreshold }) => {
     // On development environment, set log level to debug to avoid spamming the channel while developing
-    const level = env.APP_ENV === "development" ? "debug" : "info"
+    const level =
+      env.APP_ENV === "development" || env.SILENT_START ? "debug" : "info"
     logger[level](
       { guildId },
       `Bot started and logging is enabled for guild \`${guildId}\` with level threshold \`${levelThreshold}\``,
