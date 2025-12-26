@@ -258,7 +258,7 @@ export const convertDatabaseMembersToDoraMembers = async ({
     if (!guildMember) {
       logger.warn(
         { userId: doraDatabaseMember.userId, guildId: guild.id },
-        `Member was not found in guild when converting database members to DoraMembers. Are they no longer part of the guild? If so, consider marking that in the database via the \`/setmemberstatus ${doraDatabaseMember.userId}\` command.`,
+        `Member ${doraDatabaseMember.displayName} was not found in guild when converting database members to DoraMembers. Are they no longer part of the guild? If so, consider marking that in the database via the \`/setmemberstatus userid:${doraDatabaseMember.userId} status:Departed\` command.`,
       )
       continue
     }
