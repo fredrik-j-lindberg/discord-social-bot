@@ -7,6 +7,7 @@ import {
 import type { InactivityConfig } from "../database/guildConfigService"
 import { addDaysToDate } from "../helpers/date"
 import type { DoraMember } from "../helpers/doraMember"
+import { logger } from "../logger"
 
 /** Converts a role id into a Discord's native mention */
 export const createRoleMention = (roleId: string) => `<@&${roleId}>`
@@ -241,6 +242,13 @@ export const createInactivityKickNotice = ({
   const intro = `Hello **${doraMember.displayName}** :wave: You have been removed from the **${guildName}** server due to inactivity :cry:`
 
   if (!inviteLink) {
+    logger.info(
+      {
+        userId: doraMember.userId,
+        guildId: doraMember.guildId,
+      },
+      `No invite link configured for guild when creating inactivity kick notice. Message will not contain re-join info.`,
+    )
     return intro
   }
 

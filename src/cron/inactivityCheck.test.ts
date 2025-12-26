@@ -195,18 +195,10 @@ describe("inactivityMonitor", () => {
       },
       `Set member ${mockToMarkAsInactiveMember.displayName} as inactive in guild as their latest activity was ${mockToMarkInactiveMemberData.stats.latestActivityAt?.toISOString() || "N/A"} and the guild inactivity threshold is ${mockDaysUntilInactive} days`,
     )
-    expect(mockToMarkAsInactiveMember.kick.mock.calls[0]?.[0]).toBeUndefined()
+    expect(mockToMarkAsInactiveMember.kick).not.toHaveBeenCalled()
+    expect(mockToMarkAsInactiveMember.send).toHaveBeenCalledOnce()
     expect(mockToMarkAsInactiveMember.send.mock.calls[0]?.[0]).toMatchSnapshot()
 
-    // Kick relevant member
-    expect(mockSetMemberData).toHaveBeenCalledWith({
-      doraMember: expectDoraMember({
-        userId: mockToKickMemberData.userId,
-        stats: {
-          inactiveSince: null, // After kicking, the inactivity status should be reset
-        },
-      }),
-    })
     expect(mockLogger.info).toHaveBeenCalledWith(
       {
         userId: mockMemberToKick.id,
@@ -214,9 +206,33 @@ describe("inactivityMonitor", () => {
       },
       `Kicked inactive member ${mockMemberToKick.displayName} from guild as their latest activity was ${mockToKickMemberData.stats.latestActivityAt?.toISOString() || "N/A"}`,
     )
+    expect(mockMemberToKick.kick).toHaveBeenCalledOnce()
     expect(mockMemberToKick.kick.mock.calls[0]?.[0]).toMatchSnapshot()
+    expect(mockMemberToKick.send).toHaveBeenCalledOnce()
     expect(mockMemberToKick.send.mock.calls[0]?.[0]).toMatchSnapshot()
+  })
 
-    expect(mockLogger.info).toHaveBeenCalledTimes(2) // Make sure we don't log more than expected
+  it("does not add inactive role when inactiveRoleId is not configured", async () => {
+    setupMocks({
+      ...mockGuildConfig,
+      inactivity: {
+        daysUntilInactive: mockDaysUntilInactive,
+        daysAsInactiveBeforeKick: mockDaysAsInactiveBeforeKick,
+        inactiveRoleId: undefined,
+      },
+    })
+
+    await inactivityMonitor()
+
+    // Should not attempt to add role
+    expect(mockAddRole).not.toHaveBeenCalled()
+
+    // Still sets inactive status and sends notice
+    expect(mockSetMemberData).toHaveBeenCalledWith({
+      doraMember: expectDoraMember({
+        userId: mockToMarkInactiveMemberData.userId,
+        stats: { inactiveSince: mockNowTime },
+      }),
+    })
   })
 })

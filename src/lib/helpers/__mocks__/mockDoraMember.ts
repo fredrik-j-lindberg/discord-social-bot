@@ -14,13 +14,15 @@ import type {
 
 export const mockDoraDiscordMember = ({
   userId = "mock-user-id",
+  guildId = "mock-guild-id",
   roleIds = ["role-1", "role-2"],
 }: {
   userId?: string
+  guildId?: string
   roleIds?: string[]
 }): DoraDiscordMember => ({
   userId,
-  guildId: "mock-guild-id",
+  guildId,
   username: "mock-username",
   displayName: "Mock Display Name",
   roleIds,

@@ -164,6 +164,14 @@ const handleSetMemberAsInactive = async ({
       member: doraMember.guildMember,
       roleId: inactivityConfig.inactiveRoleId,
     })
+  } else {
+    logger.info(
+      {
+        userId: doraMember.userId,
+        guildId: guild.id,
+      },
+      "No inactiveRoleId configured for guild, skipping adding inactive role",
+    )
   }
 
   // Set inactive status
