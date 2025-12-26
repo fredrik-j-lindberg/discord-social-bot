@@ -39,10 +39,8 @@ interface DoraMemberFriendCodes {
   pokemonTcgp?: string | null
 }
 
-/** The official Dora member representation, combining data from both discord and Dora member database */
-export interface DoraMember {
-  /** The unique ID of the member data record in the database. Optional as some members may not have a database record */
-  databaseId?: string
+/** The properties that are essential to things such as updating Dora member data */
+export interface DoraMemberCoreValues {
   /** The Discord user ID of the user */
   userId: string
   /** The Discord username of the user */
@@ -51,6 +49,12 @@ export interface DoraMember {
   displayName: string
   /** The guild ID where this member belongs */
   guildId: string
+}
+
+/** The official Dora member representation, combining data from both discord and Dora member database */
+export interface DoraMember extends DoraMemberCoreValues {
+  /** The unique ID of the member data record in the database. Optional as some members may not have a database record */
+  databaseId?: string
   /** Role IDs assigned to the member in the guild */
   roleIds: string[]
   /** Various statistics about the member */
@@ -290,15 +294,20 @@ export const kickDoraMember = async ({
   }
 
   await doraMember.guildMember.kick(kickReason)
+}
 
+export const setDoraMemberAsDeparted = async (
+  doraMember: DoraMemberCoreValues,
+): Promise<void> => {
   await setMemberData({
     doraMember: {
       guildId: doraMember.guildId,
       userId: doraMember.userId,
       username: doraMember.username,
       displayName: doraMember.displayName,
-      stats: { inactiveSince: null },
       status: "departed",
+      stats: { inactiveSince: null },
+      roleIds: [], // Clear role IDs as the member is no longer part of the guild (in which case Discord strips all roles from the user)
     },
   })
 }
