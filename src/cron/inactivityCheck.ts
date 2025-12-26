@@ -95,7 +95,9 @@ const handleInactivityCheck = async ({
     guildName: guild.name,
     inactivityConfig,
   })
-  await debugMember.user.send({ content: debugSummary })
+  if (debugSummary) {
+    await debugMember.user.send({ content: debugSummary })
+  }
 }
 
 /** Kicks the member if it has been inactive for too enough, based on the guild config */
