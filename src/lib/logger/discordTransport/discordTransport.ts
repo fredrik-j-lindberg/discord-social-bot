@@ -3,30 +3,10 @@ import z from "zod"
 
 import { sendWebhookMessage } from "./webhook"
 
-const logLevels = {
-  10: "trace",
-  20: "debug",
-  30: "info",
-  40: "warn",
-  50: "error",
-  60: "fatal",
-} as const
-
-type LogLevel = (typeof logLevels)[keyof typeof logLevels]
-
-function assertIsLogLevel(
-  level: number | string,
-): asserts level is keyof typeof logLevels {
-  if (!(level in logLevels)) {
-    throw new Error(`Invalid log level: ${level}`)
-  }
-}
-
 const logSchema = z.looseObject({
-  level: z.number().transform<LogLevel>((level) => {
-    assertIsLogLevel(level)
-    return logLevels[level]
-  }),
+  serviceName: z.string().optional(),
+  level: z.number().optional(),
+  severity: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]),
   time: z.number().optional(),
   guildId: z.string().optional(),
   msg: z.string(),
@@ -38,6 +18,8 @@ const logSchema = z.looseObject({
       cause: z.any().optional(),
     })
     .optional(),
+  hostname: z.string().optional(),
+  pid: z.number().optional(),
 })
 
 export type DiscordLog = z.infer<typeof logSchema>

@@ -6,6 +6,6 @@ export const getConsolePrettyTarget = (): TransportTargetOptions => ({
   options: {
     translateTime: "SYS:mm-dd-yyyy hh:mm:ss TT",
     colorize: true,
-    ignore: "pid,hostname",
+    ignore: "pid,hostname,severity,serviceName",
   },
 })

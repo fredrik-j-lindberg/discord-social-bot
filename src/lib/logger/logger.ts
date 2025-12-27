@@ -22,6 +22,17 @@ const loggerOptions: LoggerOptions = {
     error: pino.stdSerializers.errWithCause,
     err: pino.stdSerializers.err,
   },
+  formatters: {
+    // By default pino only outputs the numeric log level, we want the string label as well and for now choose to call it "severity"
+    // Apart from making the json logs more readable this will also allow third party services like Loki to parse and display the log level label correctly
+    level(label, number) {
+      return { level: number, severity: label }
+    },
+  },
+  base: {
+    // Will help identify and group logs from this service (becomes service name in Loki for example)
+    serviceName: "dora-bot",
+  },
 }
 
 const baseTargets: TransportTargetOptions[] = [

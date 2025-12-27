@@ -44,8 +44,18 @@ export const sendWebhookMessage = async ({
     url: webhookUrl,
   })
 
-  const color = logLevelToEmbedColor[log.level]
-  const { level, msg: logMessage, error, time, ...restLog } = log
+  const {
+    severity,
+    msg: logMessage,
+    error,
+    time,
+    level: _level,
+    pid: _pid,
+    hostname: _hostname,
+    serviceName: _serviceName,
+    ...restLog
+  } = log
+  const color = logLevelToEmbedColor[severity]
   const { message: errorMessage, stack: errorStack, ...restError } = error || {}
 
   const embed = new EmbedBuilder().setColor(color).addFields([
@@ -57,7 +67,7 @@ export const sendWebhookMessage = async ({
     },
     {
       name: "Level",
-      value: level,
+      value: severity,
       inline: true,
     },
   ])
