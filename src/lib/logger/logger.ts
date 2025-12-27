@@ -8,6 +8,7 @@ import { getAllGuildConfigs } from "../database/guildConfigService"
 import { hasDefinedProperty } from "../validation"
 import { getConsolePrettyTarget } from "./consoleTarget"
 import { getDiscordTargets } from "./discordTargets"
+import { getFileTarget } from "./fileTarget"
 
 const convertTransportToStream = (targets: TransportTargetOptions[]) => {
   return pino.transport({ targets }) as DestinationStream
@@ -21,9 +22,14 @@ const loggerOptions: LoggerOptions = {
   },
 }
 
+const baseTargets: TransportTargetOptions[] = [
+  getConsolePrettyTarget(),
+  getFileTarget(),
+]
+
 const multistream = pino.multistream({
   level: "debug",
-  stream: convertTransportToStream([getConsolePrettyTarget()]),
+  stream: convertTransportToStream(baseTargets),
 })
 
 export const logger = pino(loggerOptions, multistream)
