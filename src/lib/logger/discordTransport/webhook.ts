@@ -53,6 +53,7 @@ export const sendWebhookMessage = async ({
     pid: _pid,
     hostname: _hostname,
     serviceName: _serviceName,
+    guildId: _guildId,
     ...restLog
   } = log
   const color = logLevelToEmbedColor[severity]
@@ -90,11 +91,13 @@ export const sendWebhookMessage = async ({
     error: error ? restError : undefined,
   }
 
-  const stringifiedLog = JSON.stringify(unprocessedProperties)
-  embed.addFields({
-    name: "Unprocessed Log Properties",
-    value: `\`\`\`json\n${truncateString(stringifiedLog)}\`\`\``,
-  })
+  if (Object.values(unprocessedProperties).filter(Boolean).length > 0) {
+    const stringifiedLog = JSON.stringify(unprocessedProperties)
+    embed.addFields({
+      name: "Unprocessed Log Properties",
+      value: `\`\`\`json\n${truncateString(stringifiedLog)}\`\`\``,
+    })
+  }
 
   await webhookClient.send({
     embeds: [embed],
