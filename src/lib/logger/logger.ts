@@ -4,6 +4,8 @@ import pino, {
   type TransportTargetOptions,
 } from "pino"
 
+import { env } from "~/env"
+
 import { getAllGuildConfigs } from "../database/guildConfigService"
 import { hasDefinedProperty } from "../validation"
 import { getConsolePrettyTarget } from "./consoleTarget"
@@ -24,7 +26,7 @@ const loggerOptions: LoggerOptions = {
 
 const baseTargets: TransportTargetOptions[] = [
   getConsolePrettyTarget(),
-  getFileTarget(),
+  getFileTarget(env.LOG_FILE_PATH),
 ]
 
 const multistream = pino.multistream({
