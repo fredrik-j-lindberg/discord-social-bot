@@ -185,6 +185,25 @@ There are also some helpful scripts for this:
 
 - `pnpm test` - run the Vitest test suite
 
+## Logging
+
+The bot logs to a few places:
+
+- **Console** (pretty printed)
+- **Log file** (JSON). Defaults to `./logs/app.log` but can be configured via the `LOG_FILE_PATH` env variable.
+  - The `start` script currently override this to match the deployed setup.
+  - In production, the file is scraped and sent to [Loki](#loki-grafana-cloud).
+- **Guild webhook** (optional). Configure via `/config`.
+  - For a log to be sent to a guild, it needs a `guildId` that matches that guild.
+
+### Loki (Grafana Cloud)
+
+In production we use Grafana Alloy to scrape the log file(s) and send them to Grafana Cloud Loki.
+
+- Logs can be found [here](https://dorabot.grafana.net/a/grafana-lokiexplore-app/explore/service/dora-bot/logs?from=now-6h&to=now&var-ds=grafanacloud-logs&var-filters=service_name%7C%3D%7Cdora-bot&patterns=%5B%5D&var-lineFormat=&var-fields=&var-levels=&var-metadata=&var-jsonFields=&var-patterns=&var-lineFilterV2=&var-lineFilters=&timezone=browser&var-all-fields=&displayedFields=%5B%22msg%22,%22action%22,%22event%22%5D&urlColumns=%5B%22Time%22,%22Line%22,%22detected_level%22,%22msg%22,%22action%22,%22event%22%5D&visualizationType=%22table%22&sortOrder=%22Descending%22)
+- A guide for configuring the scraping can be found [here](https://grafana.com/docs/grafana-cloud/send-data/logs/collect-logs-with-alloy/).
+- We use logrotate to avoid the log files becoming too large. See a guide about it [here](https://betterstack.com/community/guides/logging/how-to-manage-log-files-with-logrotate-on-ubuntu-20-04/) & pino's recommendation for what config to use [here](https://getpino.io/#/docs/help?id=log-rotation)
+
 ## TODO
 
 ### Feats
@@ -200,10 +219,6 @@ There are also some helpful scripts for this:
   - Note that as long as we use an API for the LLM we need to make this opt in
 - Move remaining guildconfigs to database (see how it was done for inactivity and logs config in the /config command)
 - Event gcal syncing?
-
-### Improved devx
-
-- Add an actual monitoring tool, e.g. grafana logs?
 
 ### Misc
 
