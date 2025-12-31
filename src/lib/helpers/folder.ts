@@ -49,7 +49,9 @@ export const importFolderModules = async <
   folderPath: string,
 ): Promise<{ [name: string]: TDefaultExport }> => {
   try {
-    const filesToImport = fs.readdirSync(folderPath)
+    const filesToImport = fs
+      .readdirSync(folderPath)
+      .filter((file) => !file.includes(".test."))
 
     const modulesByName: Record<string, TDefaultExport> = {}
     for (const file of filesToImport) {
