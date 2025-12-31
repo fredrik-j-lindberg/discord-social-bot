@@ -129,43 +129,52 @@ export const createPaginatedList = ({
   itemsPerPage?: number
   listType?: "bullet" | "number"
 }): ContainerBuilder[] => {
-  const headerTextComponent = new TextDisplayBuilder().setContent(
-    `### ${header}`,
-  )
   if (!items?.length) {
-    const fallbackTextComponent = new TextDisplayBuilder().setContent(fallback)
-    return [
-      new ContainerBuilder().addTextDisplayComponents(
-        headerTextComponent,
-        fallbackTextComponent,
-      ),
-    ]
+    return createPages({
+      header,
+      lines: [fallback],
+      linesPerPage: 1,
+    })
   }
 
-  const totalPages = Math.ceil(items.length / itemsPerPage)
+  const lines = items.map((item, index) =>
+    listType === "number" ? `${index + 1}. ${item}` : `- ${item}`,
+  )
+
+  return createPages({
+    header,
+    lines,
+    linesPerPage: itemsPerPage,
+  })
+}
+
+export const createPages = ({
+  header,
+  description,
+  lines,
+  linesPerPage,
+}: {
+  header: string
+  description?: string
+  lines: string[]
+  linesPerPage: number
+}): ContainerBuilder[] => {
+  const formattedHeader = `### ${header}`
   const pages: ContainerBuilder[] = []
+  const totalPages = Math.max(1, Math.ceil(lines.length / linesPerPage))
 
   for (let i = 0; i < totalPages; i++) {
-    const startIndex = i * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
-    const itemChunk = items.slice(startIndex, endIndex)
+    const startIndex = i * linesPerPage
+    const pageLines = lines.slice(startIndex, startIndex + linesPerPage)
 
-    const description =
-      listType === "number"
-        ? itemChunk
-            .map((item, index) => `${startIndex + index + 1}. ${item}`)
-            .join("\n")
-        : itemChunk.map((item) => `- ${item}`).join("\n")
-
-    const descriptionTextComponent = new TextDisplayBuilder().setContent(
-      description,
-    )
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      headerTextComponent,
-      descriptionTextComponent,
+    const page = new ContainerBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `${formattedHeader}${description ? `\n_${description}_` : ""}`,
+      ),
+      new TextDisplayBuilder().setContent(pageLines.join("\n")),
     )
 
-    pages.push(container)
+    pages.push(page)
   }
 
   return pages
