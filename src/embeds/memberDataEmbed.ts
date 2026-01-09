@@ -17,15 +17,15 @@ const embedFieldOrder: MemberFieldsIds[] = [
   "email",
   "phoneNumber",
   "dietaryPreferences",
-  "switchFriendCode",
-  "pokemonTcgpFriendCode",
   "messageCount",
   "reactionCount",
+  "favoriteEmojis",
   "latestMessageAt",
   "latestReactionAt",
-  "favoriteEmojis",
-  // "roles", A bit verbose to show in embeds as users often have a large number of roles
   "joinedServer",
+  "switchFriendCode",
+  "pokemonTcgpFriendCode",
+  // "roles", A bit verbose to show in embeds as users often have a large number of roles
   "accountCreation",
 ]
 
