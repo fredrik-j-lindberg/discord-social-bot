@@ -6,7 +6,9 @@ import {
   type MemberFieldsIds,
   type MemberOptInFieldIds,
 } from "~/configs/memberFieldsConfig"
+import { syncAllBirthdayCalendars } from "~/cron/syncBirthdayCalendars"
 import type { ModalData } from "~/events/interactionCreate/listeners/modalSubmitRouter"
+import { actionWrapper } from "~/lib/actionWrapper"
 import { setMemberData } from "~/lib/database/memberDataService"
 import { formatDate, ukDateStringToDate } from "~/lib/helpers/date"
 import type { DoraDatabaseMember } from "~/lib/helpers/doraMember"
@@ -202,6 +204,17 @@ export default {
         },
       },
     })
+
+    // Sync birthday calendars if birthday field was potentially updated
+    // This runs in the background and doesn't block the response
+    if (validatedInput.birthday !== undefined) {
+      void actionWrapper({
+        action: syncAllBirthdayCalendars,
+        actionDescription: "Sync birthday calendars after PII update",
+        swallowError: true,
+      })
+    }
+
     return "Your member data was submitted successfully!"
   },
 } satisfies ModalData

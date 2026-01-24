@@ -6,6 +6,7 @@ import { logger } from "../lib/logger"
 import { announceRelevantScheduledEventsForAllGuilds } from "./announceEvents"
 import { happyBirthday } from "./happyBirthday"
 import { inactivityMonitor } from "./inactivityCheck"
+import { syncAllBirthdayCalendars } from "./syncBirthdayCalendars"
 import { syncDiscordMembersWithDb } from "./syncDiscordMembersWithDb"
 
 /**
@@ -50,6 +51,14 @@ export const registerCronJobs = () => {
     await actionWrapper({
       action: syncDiscordMembersWithDb,
       actionDescription: "Sync discord members with database",
+      swallowError: true,
+    })
+  })
+  schedule.scheduleJob(CRON_INTERVAL.MIDNIGHT, async () => {
+    logger.debug("Running daily birthday calendar sync cron job")
+    await actionWrapper({
+      action: syncAllBirthdayCalendars,
+      actionDescription: "Sync birthday calendars to R2",
       swallowError: true,
     })
   })

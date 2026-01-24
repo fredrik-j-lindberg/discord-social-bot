@@ -42,6 +42,28 @@ Bot will wish happy birthday to those who have their birthday today
 
 _Note: This requires the birthdayWishes channel to be set in the guild config and that the user has added their birthday via /pii_
 
+##### Google Calendar Integration
+
+Birthday data can be synced to Google Calendar (or any calendar app that supports iCal/ICS feeds). The bot automatically generates and hosts an ICS calendar feed for each guild that has birthdays enabled.
+
+**How it works:**
+
+- The bot generates an ICS file containing all member birthdays as recurring yearly events
+- The calendar is uploaded to R2 storage and publicly accessible
+- The calendar is updated:
+  - Daily (via cron job at midnight)
+  - Immediately when any member updates their birthday via `/pii`
+- Changes to birthdays (additions, updates, removals) are automatically reflected in the calendar
+
+**To subscribe in Google Calendar:**
+
+1. Get your guild's calendar URL: `https://pub-c6e6274e80fa4883b490d132062cb48c.r2.dev/calendars/<guildId>/birthdays.ics`
+2. In Google Calendar, click the "+" next to "Other calendars"
+3. Select "From URL"
+4. Paste the calendar URL and click "Add calendar"
+
+Google Calendar will periodically refresh the feed (typically every 12-24 hours), so birthday changes will be reflected automatically.
+
 ### Server data
 
 Via the /serverdata command you can access some information relating to the server. E.g. the most or least popular server emojis
