@@ -46,6 +46,21 @@ _Note: This requires the birthdayWishes channel to be set in the guild config an
 
 Via the /serverdata command you can access some information relating to the server. E.g. the most or least popular server emojis
 
+### Weather
+
+The `/weather` command provides a 10-day weather forecast for Swedish cities using data from SMHI (Swedish Meteorological and Hydrological Institute).
+
+Usage: `/weather city:<city name>`
+
+The forecast includes:
+
+- Daily min/max temperatures
+- Precipitation amounts
+- Wind speed and gusts
+- Weather condition icons
+
+_Note: Only Swedish cities are currently supported_
+
 ### Inactivity monitor
 
 Opt in functionality for all guilds is to enable inactivity monitoring. You opt in via `/config setting: Inactivity`, and can set:
