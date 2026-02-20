@@ -521,3 +521,26 @@ export const getInactiveGuildMemberData = async ({
 
   return memberRecords.map(mapMemberDataToDoraMember)
 }
+
+/**
+ * Gets members in a guild that are currently marked as inactive (status = 'inactive')
+ * These are members who have been warned about inactivity and may be kicked soon
+ */
+export const getMarkedInactiveGuildMembers = async ({
+  guildId,
+}: {
+  guildId: string
+}): Promise<DoraDatabaseMember[]> => {
+  const memberRecords: MemberRecordSelectWithRelations[] =
+    await db.query.membersTable.findMany({
+      extras: getSharedExtras(),
+      where: and(
+        eq(membersTable.guildId, guildId),
+        eq(membersTable.status, "inactive"),
+      ),
+      orderBy: membersTable.inactiveSince,
+      with: { roles: true },
+    })
+
+  return memberRecords.map(mapMemberDataToDoraMember)
+}
