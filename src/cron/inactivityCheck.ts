@@ -1,3 +1,5 @@
+import type { GuildMember } from "discord.js"
+
 import { actionWrapper } from "~/lib/actionWrapper"
 import {
   getAllGuildConfigs,
@@ -70,6 +72,7 @@ const handleInactivityCheck = async ({
     guild,
     skipBots: true,
   })
+  const debugMember = await getMember({ guild, userId: "106098921985556480" }) // Neylion
 
   for (const doraMember of doraMembers) {
     if (doraMember.stats.inactiveSince) {
@@ -80,6 +83,7 @@ const handleInactivityCheck = async ({
       })
     } else {
       await handleSetMemberAsInactive({
+        debugMember,
         doraMember,
         guild,
         inactivityConfig,
@@ -89,7 +93,6 @@ const handleInactivityCheck = async ({
   }
 
   // TODO: Handle the summary differently
-  const debugMember = await getMember({ guild, userId: "106098921985556480" }) // Neylion
   const debugSummary = createDebugInactivitySummary({
     inactiveMembers: doraMembers,
     guildName: guild.name,
@@ -151,10 +154,12 @@ const handleKickingInactiveMemberIfRelevant = async ({
 }
 
 const handleSetMemberAsInactive = async ({
+  debugMember,
   doraMember,
   guild,
   inactivityConfig,
 }: {
+  debugMember: GuildMember
   doraMember: DoraMember
   guild: Awaited<ReturnType<typeof getGuild>>
   inactivityConfig: NonNullable<GuildConfig["inactivity"]>
@@ -193,6 +198,7 @@ const handleSetMemberAsInactive = async ({
     inactivityConfig,
   })
   await doraMember.guildMember.send({ content: inactivityNotice })
+  await debugMember.send({ content: inactivityNotice })
 
   logger.info(
     {

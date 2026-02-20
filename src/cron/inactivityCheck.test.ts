@@ -137,9 +137,7 @@ describe("inactivityMonitor", () => {
       },
     } as unknown as Guild
     mockGetGuild.mockResolvedValue(mockGuild)
-    mockGetMember.mockResolvedValue({
-      user: mockDebugMember,
-    } as unknown as GuildMember)
+    mockGetMember.mockResolvedValue(mockDebugMember)
 
     mockGetInactiveGuildMemberData.mockResolvedValue([
       mockToMarkInactiveMemberData,
@@ -198,6 +196,8 @@ describe("inactivityMonitor", () => {
     expect(mockToMarkAsInactiveMember.kick).not.toHaveBeenCalled()
     expect(mockToMarkAsInactiveMember.send).toHaveBeenCalledOnce()
     expect(mockToMarkAsInactiveMember.send.mock.calls[0]?.[0]).toMatchSnapshot()
+    expect(mockDebugMember.send).toHaveBeenCalledOnce()
+    expect(mockDebugMember.send.mock.calls[0]?.[0]).toMatchSnapshot()
 
     expect(mockLogger.info).toHaveBeenCalledWith(
       {
