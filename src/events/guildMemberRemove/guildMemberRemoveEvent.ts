@@ -2,7 +2,7 @@ import { Events } from "discord.js"
 
 import { registerEventListeners } from "~/lib/discord/events/registerEvent"
 
-export const registerMemberUpdateEvent = () => {
+export const registerMemberRemoveEvent = () => {
   return registerEventListeners({
     event: Events.GuildMemberRemove,
     listenerFolder: `${import.meta.dirname}/listeners`,
