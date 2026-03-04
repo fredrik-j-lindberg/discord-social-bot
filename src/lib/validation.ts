@@ -6,6 +6,7 @@ import {
 } from "~/configs/memberFieldsConfig"
 
 import { DoraException, type Severity } from "./exceptions/DoraException"
+import { DoraUserException } from "./exceptions/DoraUserException"
 
 export const isDefined = <T>(value: T): value is NonNullable<T> =>
   value !== undefined && value !== null
@@ -111,7 +112,7 @@ export function assertValidMemberField(
   )
 
   if (!isOneOf(value, validChoices)) {
-    throw new DoraException(
+    throw new DoraUserException(
       `Invalid field '${value}' provided. Valid fields are: ${validChoices.join(
         ", ",
       )}`,
