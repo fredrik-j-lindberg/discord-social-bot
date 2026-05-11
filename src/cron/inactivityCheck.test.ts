@@ -20,6 +20,15 @@ import { logger } from "~/lib/logger"
 
 import { inactivityMonitor } from "./inactivityCheck"
 
+vi.mock("~/client", () => ({
+  client: {
+    guilds: {
+      cache: {
+        has: vi.fn().mockReturnValue(true),
+      },
+    },
+  },
+}))
 vi.mock("~/lib/database/guildConfigService")
 vi.mock("~/lib/database/memberDataService")
 vi.mock("~/lib/discord/guilds")

@@ -1,5 +1,6 @@
 import type { GuildMember } from "discord.js"
 
+import { client } from "~/client"
 import { actionWrapper } from "~/lib/actionWrapper"
 import {
   getAllGuildConfigs,
@@ -50,6 +51,11 @@ const handleInactivityCheck = async ({
   inactivityConfig?: GuildConfig["inactivity"]
 }) => {
   if (!inactivityConfig) {
+    return
+  }
+
+  if (!client.guilds.cache.has(guildId)) {
+    logger.warn({ guildId }, "Skipping inactivity check: bot is not in guild")
     return
   }
 
