@@ -5,7 +5,10 @@ import {
   getActiveMemberFieldsMap,
   type MemberFieldsIds,
 } from "~/configs/memberFieldsConfig"
-import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
+import {
+  type Command,
+  ephemeralOptionName,
+} from "~/events/interactionCreate/listeners/commandRouter"
 import {
   getMembersWithField,
   type MemberDataDbKeysWithExtras,
@@ -58,6 +61,12 @@ const command = new SlashCommandBuilder()
     option
       .setName(roleOptionName)
       .setDescription("Optionally filter by role")
+      .setRequired(false),
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName(ephemeralOptionName)
+      .setDescription("Whether to reply silently (only visible to you)")
       .setRequired(false),
   )
 

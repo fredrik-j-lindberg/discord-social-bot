@@ -1,10 +1,19 @@
 import { SlashCommandBuilder } from "discord.js"
 
-import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
+import {
+  type Command,
+  ephemeralOptionName,
+} from "~/events/interactionCreate/listeners/commandRouter"
 
 const command = new SlashCommandBuilder()
   .setName("ping")
   .setDescription("Replies with Pong!")
+  .addBooleanOption((option) =>
+    option
+      .setName(ephemeralOptionName)
+      .setDescription("Whether to reply silently (only visible to you)")
+      .setRequired(false),
+  )
 
 export default {
   type: "chat",

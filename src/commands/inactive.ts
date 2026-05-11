@@ -1,6 +1,9 @@
 import { SlashCommandBuilder } from "discord.js"
 
-import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
+import {
+  type Command,
+  ephemeralOptionName,
+} from "~/events/interactionCreate/listeners/commandRouter"
 import { getGuildConfig } from "~/lib/database/guildConfigService"
 import { getMarkedInactiveGuildMembers } from "~/lib/database/memberDataService"
 import {
@@ -17,6 +20,12 @@ const command = new SlashCommandBuilder()
   .setDescription("Lists members marked as inactive and their kick countdown")
   .setContexts(0) // Guild only
   .setDefaultMemberPermissions(0) // Administrator only
+  .addBooleanOption((option) =>
+    option
+      .setName(ephemeralOptionName)
+      .setDescription("Whether to reply silently (only visible to you)")
+      .setRequired(false),
+  )
 
 export default {
   type: "chat",

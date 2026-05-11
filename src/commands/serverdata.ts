@@ -3,7 +3,10 @@ import {
   SlashCommandBuilder,
 } from "discord.js"
 
-import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
+import {
+  type Command,
+  ephemeralOptionName,
+} from "~/events/interactionCreate/listeners/commandRouter"
 import { getEmojiCounts } from "~/lib/database/memberEmojisService"
 import { getGuildEmojis } from "~/lib/discord/guilds"
 import type { DoraReply } from "~/lib/discord/interaction"
@@ -33,6 +36,12 @@ const command = new SlashCommandBuilder()
       .setDescription(dataOption.description)
       .setRequired(true)
       .setChoices(...Object.values(dataOption.choices)),
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName(ephemeralOptionName)
+      .setDescription("Whether to reply silently (only visible to you)")
+      .setRequired(false),
   )
 
 export default {

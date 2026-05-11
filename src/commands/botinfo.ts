@@ -1,11 +1,20 @@
 import { SlashCommandBuilder } from "discord.js"
 
-import type { Command } from "~/events/interactionCreate/listeners/commandRouter"
+import {
+  type Command,
+  ephemeralOptionName,
+} from "~/events/interactionCreate/listeners/commandRouter"
 
 const command = new SlashCommandBuilder()
   .setName("botinfo")
   .setDescription("Shows basic info about the bot")
   .setContexts(0) // Guild only
+  .addBooleanOption((option) =>
+    option
+      .setName(ephemeralOptionName)
+      .setDescription("Whether to reply silently (only visible to you)")
+      .setRequired(false),
+  )
 
 export default {
   type: "chat",
