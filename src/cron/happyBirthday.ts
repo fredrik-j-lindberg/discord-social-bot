@@ -1,5 +1,6 @@
 import { Guild, GuildMember } from "discord.js"
 
+import { client } from "~/client"
 import { actionWrapper } from "~/lib/actionWrapper"
 import { getMembersWithBirthdayTodayForAllGuilds } from "~/lib/database/memberDataService"
 import { getChannel } from "~/lib/discord/channels"
@@ -7,6 +8,7 @@ import { getGuild } from "~/lib/discord/guilds"
 import { addRole, getRole } from "~/lib/discord/roles"
 import { sendBirthdayWish } from "~/lib/discord/sendMessage"
 import { DoraException } from "~/lib/exceptions/DoraException"
+import { logger } from "~/lib/logger"
 import { assertIsDefined } from "~/lib/validation"
 
 import { type StaticGuildConfig, staticGuildConfigs } from "../../guildConfigs"
@@ -23,6 +25,13 @@ export const happyBirthday = async () => {
 
   const doraMembers = await getMembersWithBirthdayTodayForAllGuilds()
   for (const doraMember of doraMembers) {
+    if (!client.guilds.cache.has(doraMember.guildId)) {
+      logger.warn(
+        { guildId: doraMember.guildId, userId: doraMember.userId },
+        "Skipping birthday wish: bot is not in guild. This could either mean that the bot has been kicked from the guild or that the prod database has member data from a test bot server",
+      )
+      continue
+    }
     const guild = await getGuild(doraMember.guildId)
     const guildConfig = staticGuildConfigs[guild.id]
     if (!guildConfig) {
