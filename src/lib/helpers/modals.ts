@@ -3,6 +3,7 @@ import {
   LabelBuilder,
   ModalBuilder,
   ModalSubmitInteraction,
+  RoleSelectMenuBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
@@ -75,6 +76,21 @@ export interface ModalFileUploadInputConfig<TId extends string = string>
   maxLength?: never
 }
 
+export interface ModalRoleSelectInputConfig<
+  TId extends string = string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TModalMetadata = any,
+> extends ModalInputBaseConfig<TId> {
+  type: "roleSelect"
+  /** Returns the role IDs that should be pre-selected in the picker */
+  getDefaultRoleIds?: (modalMetadata: TModalMetadata) => string[]
+  /** Maximum number of roles the user can select. Defaults to 25 */
+  maxValues?: number
+  /** Not applicable for role select fields */
+  style?: never
+  maxLength?: never
+}
+
 export type ModalInputConfig<
   TId extends string = string,
   /** The metadata relevant to prefill the data. For example for the member data (/pii) modal this might the database values for the member */
@@ -84,6 +100,7 @@ export type ModalInputConfig<
   | ModalTextInputConfig<TId, TModalMetadata>
   | ModalSelectInputConfig<TId, TModalMetadata>
   | ModalFileUploadInputConfig<TId>
+  | ModalRoleSelectInputConfig<TId, TModalMetadata>
 
 export interface ModalInputConfigsMap {
   [inputId: string]: ModalInputConfig
@@ -149,6 +166,11 @@ export const extractAndValidateModalValues = <
         } else {
           valuesToValidate[inputConfig.id] = values[0] || null
         }
+        break
+      }
+      case "roleSelect": {
+        const roles = interaction.fields.getSelectedRoles(inputConfig.id)
+        valuesToValidate[inputConfig.id] = roles ? [...roles.keys()] : []
         break
       }
       case "text": {
@@ -259,6 +281,28 @@ export const composeTextInput = (
   )
 }
 
+export const composeRoleSelectInput = (
+  roleSelectConfig: ModalRoleSelectInputConfig,
+  modalMetadata?: unknown,
+) => {
+  const builder = new RoleSelectMenuBuilder()
+    .setCustomId(roleSelectConfig.id)
+    .setRequired(roleSelectConfig.isRequired)
+
+  if (roleSelectConfig.maxValues) {
+    builder.setMaxValues(roleSelectConfig.maxValues)
+  }
+
+  const defaultRoleIds = roleSelectConfig.getDefaultRoleIds?.(modalMetadata)
+  if (defaultRoleIds?.length) {
+    builder.addDefaultRoles(defaultRoleIds)
+  }
+
+  return createFieldLabelBuilder(roleSelectConfig).setRoleSelectMenuComponent(
+    builder,
+  )
+}
+
 export const composeFileUploadInput = (
   fileUploadInputConfig: ModalFileUploadInputConfig,
 ) => {
@@ -291,6 +335,8 @@ export const composeModalInputs = async (
           return composeTextInput(inputConfig, modalMetadata)
         case "select":
           return await composeSelectMenuInput(inputConfig, modalMetadata)
+        case "roleSelect":
+          return composeRoleSelectInput(inputConfig, modalMetadata)
         case "fileUpload":
           return composeFileUploadInput(inputConfig)
         default:
