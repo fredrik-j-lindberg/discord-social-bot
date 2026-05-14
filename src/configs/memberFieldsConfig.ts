@@ -19,6 +19,7 @@ export type MemberOptInFieldIds =
 type MemberDoraProvidedFieldIds =
   | "messageCount"
   | "latestMessageAt"
+  | "latestActivityAt"
   | "reactionCount"
   | "latestReactionAt"
   | "favoriteEmojis"
@@ -141,6 +142,13 @@ export const memberFieldsConfig: MemberFieldsConfig = {
     optIn: false,
     dependsOn: undefined,
     selector: ({ stats }) => createDiscordTimestamp(stats.latestMessageAt),
+  },
+  latestActivityAt: {
+    name: "Latest Activity At",
+    id: "latestActivityAt",
+    optIn: false,
+    dependsOn: undefined,
+    selector: ({ stats }) => createDiscordTimestamp(stats.latestActivityAt),
   },
   reactionCount: {
     name: "Reaction Count",
