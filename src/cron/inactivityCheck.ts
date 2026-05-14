@@ -99,13 +99,17 @@ const handleInactivityCheck = async ({
   }
 
   // TODO: Handle the summary differently
-  const debugSummary = createDebugInactivitySummary({
-    inactiveMembers: doraMembers,
-    guildName: guild.name,
-    inactivityConfig,
-  })
-  if (debugSummary) {
-    await debugMember.user.send({ content: debugSummary })
+  // Only send the ongoing inactive-members summary once a week (Sundays) to avoid daily noise
+  const isWeeklySummaryDay = new Date().getDay() === 0
+  if (isWeeklySummaryDay) {
+    const debugSummary = createDebugInactivitySummary({
+      inactiveMembers: doraMembers,
+      guildName: guild.name,
+      inactivityConfig,
+    })
+    if (debugSummary) {
+      await debugMember.user.send({ content: debugSummary })
+    }
   }
 }
 
