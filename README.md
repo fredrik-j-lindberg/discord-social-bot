@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a Discord bot built to cater to some specific needs I had a hard time finding good solutions for in existing bots.
+This is "Dora", a Discord social bot built with **TypeScript**, **discord.js v14**, **Drizzle ORM**, and **PostgreSQL**. It provides community management features including member tracking, activity monitoring, event syncing, weather forecasts, photo uploads, and birthday announcements.
 
 ## Features
 
@@ -112,7 +112,17 @@ To run the bot locally, follow the steps below:
    pnpm start
    ```
 
-## Repository structure
+## Architecture
+
+### Entry Point & Startup (`src/index.ts`)
+
+1. Initialize database connection
+2. Dynamically load commands and modals
+3. Register event listeners
+4. Login to Discord
+5. Set up log webhooks
+6. Register cron jobs
+7. Handle graceful shutdown (SIGINT)
 
 ### Events
 
@@ -136,7 +146,9 @@ If you want to add listeners for a new event, copy a `/events/<eventName>` folde
 
 The `./src/commands` folder houses all of the bot commands. All files under this folder are automatically imported by the [commandRouter](./src/events/interactionCreate/listeners/commandRouter.ts) interactionCreate listener.
 
-The command router will handle some basic error handling for your command, as well as facilitates replying capabilities. Anything returned by the execute function of a command module will be used as the reply to the user. Return an array of EmbedBuilder's to use the pagination feature (one embed for each page).
+Commands export a default object satisfying the `Command` interface (see [commandRouter.ts](./src/events/interactionCreate/listeners/commandRouter.ts) for the type definition). Use [ping.ts](./src/commands/ping.ts) as a minimal reference.
+
+The command router handles basic error handling for the command, as well as facilitates replying capabilities. Anything returned by the execute function of a command module will be used as the reply to the user. Pagination can be achieved by returning an array of EmbedBuilders (one embed for each page).
 
 #### Adding new commands
 
@@ -157,9 +169,36 @@ Modals are Discord native form dialogs that allow you to collect user input in a
 
 You can add a new modal by creating a new file under `/src/modals` containing relevant logic. Use [piiModal](./src/modals/piiModal.ts) as reference
 
+### Utilities (`src/lib/`)
+
+- `database/` — Drizzle ORM schema, client, and service files (e.g. `memberDataService.ts`, `guildConfigService.ts`)
+- `discord/` — Discord API wrappers (channels, roles, guilds, users, messages, scheduledEvents, pagination)
+- `exceptions/` — `DoraException` (internal errors, logged only), `DoraUserException` (user-facing errors, shown to Discord user)
+- `helpers/` — Date helpers, folder module loading, validation, caching, modals
+- `logger/` — Pino with Discord webhook, file, and console transports
+- `r2/` — AWS S3/Cloudflare R2 file uploads
+- `weather/` — SMHI weather API integration
+- `actionWrapper.ts` — Error-handling wrapper for async actions
+
+### Cron Jobs (`src/cron/`)
+
+Scheduled via `node-schedule`:
+
+- Hourly: Event announcements
+- Daily midnight: Birthday wishes
+- Daily noon: Inactivity monitoring
+- Weekly: Discord↔DB member sync
+
+### Configuration
+
+- **Environment**: `@t3-oss/env-core` + Zod validation (`src/env.ts`)
+- **Guild configs**: Static per-guild config (`guildConfigs.ts`) with dev/prod toggle
+
 ## Database
 
-This repo uses [Drizzle](https://orm.drizzle.team/) as the database ORM, and the database schema is configured in code
+This repo uses [Drizzle](https://orm.drizzle.team/) as the database ORM, and the database schema is configured in code.
+
+Database queries should go through service files in `src/lib/database/`, not directly in commands.
 
 ### Modifying database schema
 
@@ -185,19 +224,24 @@ Now your database should be up to date with the latest migration.
 
 Run `pnpm db:inspect` to run Drizzle studio locally, allowing you to inspect how the database looks.
 
-## Linting & formatting
+## Coding Conventions
 
-This project is heavily reliant on linting via typescript eslint and prettier. Without eslint formatting on save you'll have an annoying time coding in this repository.
+- TypeScript strict mode
+- ESLint + Prettier for formatting
+- Path alias `~` maps to `src/`
+- Tests colocated with implementation (`*.test.ts`) using Vitest with `vi.mock()` for mocking
+- Pino for structured logging
+- Wrap async operations with `actionWrapper()` for consistent error handling
+- Use Zod for runtime validation at boundaries
+- Database queries go through service files, not directly in commands
+- Always run `pnpm verify` after making changes (runs lint, type checking, and tests)
 
-There are also some helpful scripts for this:
+### Scripts
 
 - `pnpm lint` - make sure that eslint is happy
 - `pnpm check-types` - make sure typescript is happy
 - `pnpm verify` - convenience script for running the above two (and tests)
 - `pnpm lint:fix` - auto fix what is possible to auto fix
-
-## Testing
-
 - `pnpm test` - run the Vitest test suite
 
 ## Logging
