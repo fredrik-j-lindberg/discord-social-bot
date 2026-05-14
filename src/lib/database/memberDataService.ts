@@ -491,8 +491,10 @@ export const getAllGuildMemberData = async (
 }
 
 /**
- * Gets members in a guild whose latest activity is older than or equal to the provided threshold
- * Also includes members with no recorded activity (NULL latestActivityAt)
+ * Gets members in a guild whose latest activity is older than or equal to the provided threshold.
+ * Also includes members with no recorded activity (NULL latestActivityAt).
+ * Always includes members already marked as inactive, regardless of the threshold — this
+ * ensures that raising daysUntilInactive doesn't silently drop members we've already warned.
  */
 export const getInactiveGuildMemberData = async ({
   guildId,
@@ -513,6 +515,7 @@ export const getInactiveGuildMemberData = async ({
         or(
           isNull(membersTable.latestActivityAt),
           lte(membersTable.latestActivityAt, inactiveThresholdDate),
+          eq(membersTable.status, "inactive"),
         ),
       ),
       orderBy: membersTable.latestActivityAt,
