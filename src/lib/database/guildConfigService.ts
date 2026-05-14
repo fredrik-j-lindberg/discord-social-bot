@@ -39,11 +39,20 @@ const guildConfigInactivitySchema = z.object({
 
 export type InactivityConfig = z.infer<typeof guildConfigInactivitySchema>
 
+const guildConfigInterestsSchema = z.object({
+  /** Discord role IDs that members can self-assign as interests */
+  roles: z.array(z.string()),
+})
+
+export type InterestsConfig = z.infer<typeof guildConfigInterestsSchema>
+
 const guildConfigDataSchema = z.object({
   /** Configuration for logging, leave out of guild config to disable logging */
   logs: guildConfigLogsSchema.optional(),
   /** Configuration for inactivity monitoring, leave out of guild config to disable monitoring */
   inactivity: guildConfigInactivitySchema.optional(),
+  /** Configuration for self-assignable interest roles */
+  interests: guildConfigInterestsSchema.optional(),
 })
 
 /** All the values that can be configured for the guild */

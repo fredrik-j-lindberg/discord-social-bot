@@ -4,6 +4,7 @@ import type { Command } from "~/events/interactionCreate/listeners/commandRouter
 import { getGuildConfig } from "~/lib/database/guildConfigService"
 import { DoraUserException } from "~/lib/exceptions/DoraUserException"
 import guildConfigInactivityModal from "~/modals/guildConfigInactivityModal"
+import guildConfigInterestsModal from "~/modals/guildConfigInterestsModal"
 import guildConfigLogsModal from "~/modals/guildConfigLogsModal"
 
 const command = new SlashCommandBuilder()
@@ -19,6 +20,7 @@ const command = new SlashCommandBuilder()
       .addChoices(
         { name: "Logs", value: "logs" },
         { name: "Inactivity", value: "inactivity" },
+        { name: "Interests", value: "interests" },
       ),
   )
 
@@ -47,6 +49,11 @@ export default {
       case "inactivity": {
         const modal =
           await guildConfigInactivityModal.createModal(currentConfig)
+        await interaction.showModal(modal)
+        return undefined // No immediate reply since we're showing a modal
+      }
+      case "interests": {
+        const modal = await guildConfigInterestsModal.createModal(currentConfig)
         await interaction.showModal(modal)
         return undefined // No immediate reply since we're showing a modal
       }

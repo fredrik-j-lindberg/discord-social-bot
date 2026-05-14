@@ -72,6 +72,12 @@ Opt in functionality for all guilds is to enable inactivity monitoring. You opt 
 
 Members will receive a heads-up when they are marked as inactive and when they are kicked. When kicked the message will also contain the invite link if one has been set via the /config command
 
+### Interest roles
+
+Members can self-assign roles that reflect their personal interests (e.g. Dancing, Climbing, Hiking) using the `/interests` command. Choosing interests will add the corresponding Discord roles to the member; deselecting removes them.
+
+Admins configure which roles are available as interests via `/config setting: Interests`, using Discord's native role picker. Deselecting all roles disables the feature.
+
 ### Random stuff
 
 - If a message contains the text "christian server" the bot will respond with a cross, which is a reference to the legacy pg-13 status of the Eithon community
