@@ -16,9 +16,27 @@ See `README.md` for project architecture, repository structure, coding conventio
   - `createRoleMention` / `createUserMention` / `createDiscordTimestamp` / `createCopyableText` etc. from `~/lib/discord/message` — formatting Discord message strings; do not write inline `<@&id>` or `<@id>` templates directly
   - If a suitable helper does not exist, add it to the appropriate file in `src/lib/discord/` following the existing pattern
 
+## Commits
+
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+
+- Format: `<type>(<optional scope>): <short summary>`
+- Common types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`
+- Use a bullet-point body for non-trivial changes, summarising each meaningful change
+- Group only related changes in a single commit — if changes serve different purposes, split them into separate commits
+- Example:
+
+  ```
+  feat: add /interests command with self-assignable interest roles
+
+  - Add /interests command — opens multi-select modal for members
+  - Add /config setting:Interests for admin role picker
+  - Add roleSelect modal input type to shared modal helper
+  ```
+
 ## Documentation Maintenance
 
-When making changes that affect architecture, conventions, project structure, or features, update the relevant documentation:
+Keep documentation in sync with every change — do not leave docs stale. After any implementation change, immediately update:
 
 - **`README.md`** — for architecture, conventions, setup, commands, features, or environment variable changes
 - **`.github/copilot-instructions.md`** (this file) — for agent-specific coding guidance changes
